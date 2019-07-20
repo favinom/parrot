@@ -48,8 +48,8 @@ private:
     
     
     FEProblem * _localFEProblem;
-    UserObject const & _localUserObject;
+    //UserObject const _localUserObject;
     
-    RegionUserObject const & _regionUserObject;
+    //RegionUserObject const _regionUserObject;
     
 };

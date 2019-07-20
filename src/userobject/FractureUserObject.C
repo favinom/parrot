@@ -10,6 +10,8 @@
 #include "FractureUserObject.h"
 #include "SubProblem.h"
 
+registerMooseObject("parrotApp", FractureUserObject);
+
 template <>
 InputParameters
 validParams<FractureUserObject>()
@@ -39,6 +41,7 @@ _fa1_string(getParam<std::string>("fa1_string")),
 _fd1_string(getParam<std::string>("fd1_string")),
 _fd2_string(getParam<std::string>("fd2_string"))
 {
+    MeshModifier const & _myMeshModifier= _app.getMeshModifier("ciao");
     
     _fn=getParam<int>("fn");
     
@@ -152,10 +155,14 @@ _fd2_string(getParam<std::string>("fd2_string"))
         ComputeNormalsFromAngles(_rotation[i],_n[i][0],_n[i][1],_n[i][2]);
     }
     
+    delete [] _center;
+    delete [] _rotation;
+    
+    std::cout<<"costruito lo UO\n";
     
 }
 
-bool FractureUserObject::isInsideRegion(RealVectorValue const & point, int const i)
+bool FractureUserObject::isInsideRegion(RealVectorValue const & point, int const i) const
 {
     bool ret;
     if (_dim==2)
@@ -169,7 +176,7 @@ bool FractureUserObject::isInsideRegion(RealVectorValue const & point, int const
     return ret;
 };
 
-bool FractureUserObject::isInside(RealVectorValue const & point)
+bool FractureUserObject::isInside(RealVectorValue const & point) const
 {
     for (int i=0; i<_fn; ++i)
     {
@@ -182,7 +189,7 @@ bool FractureUserObject::isInside(RealVectorValue const & point)
 
 
 
-std::vector<int> FractureUserObject::whichIsInside(RealVectorValue const & point)
+std::vector<int> FractureUserObject::whichIsInside(RealVectorValue const & point) const
 {
     std::vector<int> _whichFrac;
     _whichFrac.clear();
@@ -249,7 +256,7 @@ void FractureUserObject::ComputeNormalsFromAngles(RealVectorValue const & angles
 }
 
 
-bool FractureUserObject::isInsideRegion2D(RealVectorValue const & point, int const i)
+bool FractureUserObject::isInsideRegion2D(RealVectorValue const & point, int const i) const
 {
     Real temp1=std::fabs( _n[i][0]*point-_d[i](0) );
     if (temp1<_dimension[i](0)/2.0)
@@ -265,7 +272,7 @@ bool FractureUserObject::isInsideRegion2D(RealVectorValue const & point, int con
     
 }
 
-bool FractureUserObject::isInsideRegion3D(RealVectorValue const & point, int const i)
+bool FractureUserObject::isInsideRegion3D(RealVectorValue const & point, int const i) const
 {
     Real temp1=std::fabs( _n[i][0]*point-_d[i](0) );
     if (temp1<_dimension[i](0)/2.0)

@@ -36,14 +36,21 @@ validParams<RegionSubdomain>()
 
 RegionSubdomain::RegionSubdomain(const InputParameters & parameters) :
 MeshModifier(parameters),
-_block_id(parameters.get<SubdomainID>("block_id")),
-_localFEProblem(getParam<FEProblem *>("_fe_problem")),
-_localUserObject(_localFEProblem[0].getUserObjectBase("regionUserObject")),
-_regionUserObject(dynamic_cast<RegionUserObject const &>(_localUserObject))
-{}
+_block_id(parameters.get<SubdomainID>("block_id"))
+{
+    
+    MeshModifier const & _myMeshModifier= _app.getMeshModifier("ciao");
+    std::cout<<"costruito il MM\n";
+    
+}
 
 void RegionSubdomain::modify()
 {
+    
+    _localFEProblem=getParam<FEProblem *>("_fe_problem");
+    UserObject const &_localUserObject=_localFEProblem[0].getUserObjectBase("regionUserObject");
+    RegionUserObject const & _regionUserObject=dynamic_cast<RegionUserObject const &>(_localUserObject);
+    
     // Check that we have access to the mesh
     if (!_mesh_ptr)
         mooseError("_mesh_ptr must be initialized before calling RegionSubdomain::modify()");

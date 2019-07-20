@@ -25,18 +25,21 @@ InputParameters validParams<RegionUserObject>();
 class RegionUserObject : public UserObject
 {
 public:
-  RegionUserObject(const InputParameters & parameters);
+    RegionUserObject(const InputParameters & parameters);
     
-    virtual bool isInside(RealVectorValue const & point) = 0;
-
-    virtual bool isInsideRegion(RealVectorValue const & point, int region) = 0;
+    virtual void execute(){};
+    virtual void initialize(){};
+    virtual void finalize(){};
+    virtual void threadJoin(const UserObject & uo) {};
     
-    virtual std::vector<int> whichIsInside(RealVectorValue const & point) = 0;
+    virtual bool isInside(RealVectorValue const & point) const = 0;
+    virtual bool isInsideRegion(RealVectorValue const & point, int region) const = 0;
+    virtual std::vector<int> whichIsInside(RealVectorValue const & point) const = 0;
     
 protected:
-  /// The mesh that is being iterated over
-  MooseMesh & _mesh;
-
+    /// The mesh that is being iterated over
+    MooseMesh & _mesh;
+    
     int _dim;
     
     int _fn;

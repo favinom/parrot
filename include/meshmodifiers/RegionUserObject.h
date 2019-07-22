@@ -10,7 +10,8 @@
 #pragma once
 
 // MOOSE includes
-#include "UserObject.h"
+#include "MeshModifier.h"
+#include "MooseMesh.h"
 
 // Forward Declarations
 class RegionUserObject;
@@ -22,23 +23,20 @@ InputParameters validParams<RegionUserObject>();
  * A user object that runs over all the nodes and does an aggregation
  * step to compute a single value.
  */
-class RegionUserObject : public UserObject
+class RegionUserObject : public MeshModifier
 {
 public:
     RegionUserObject(const InputParameters & parameters);
     
-    virtual void execute(){};
-    virtual void initialize(){};
-    virtual void finalize(){};
-    virtual void threadJoin(const UserObject & uo) {};
+    void modify() override;
     
-    virtual bool isInside(RealVectorValue const & point) const = 0;
+    bool isInside(RealVectorValue const & point) const ;
+    std::vector<int> whichIsInside(RealVectorValue const & point) const ;
+    
     virtual bool isInsideRegion(RealVectorValue const & point, int region) const = 0;
-    virtual std::vector<int> whichIsInside(RealVectorValue const & point) const = 0;
+
     
 protected:
-    /// The mesh that is being iterated over
-    MooseMesh & _mesh;
     
     int _dim;
     

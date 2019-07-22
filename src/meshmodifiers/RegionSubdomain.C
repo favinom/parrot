@@ -27,8 +27,8 @@ validParams<RegionSubdomain>()
     params.addParam<SubdomainName>(
                                    "block_name", "Subdomain name to set for inside/outside the bounding box (optional)");
     
-    params.addRequiredParam<UserObjectName>("regionUserObject",
-                                            "regionUserObject");
+    params.addRequiredParam<std::string>("regionMeshModifier",
+                                            "regionMeshModifier");
     
     
     return params;
@@ -36,20 +36,14 @@ validParams<RegionSubdomain>()
 
 RegionSubdomain::RegionSubdomain(const InputParameters & parameters) :
 MeshModifier(parameters),
+_meshModifierName(getParam<std::string>("regionMeshModifier")),
 _block_id(parameters.get<SubdomainID>("block_id"))
-{
-    
-    MeshModifier const & _myMeshModifier= _app.getMeshModifier("ciao");
-    std::cout<<"costruito il MM\n";
-    
-}
+{}
 
 void RegionSubdomain::modify()
 {
-    
-    _localFEProblem=getParam<FEProblem *>("_fe_problem");
-    UserObject const &_localUserObject=_localFEProblem[0].getUserObjectBase("regionUserObject");
-    RegionUserObject const & _regionUserObject=dynamic_cast<RegionUserObject const &>(_localUserObject);
+    MeshModifier const & _myMeshModifier= _app.getMeshModifier(_meshModifierName.c_str());
+    RegionUserObject const & regionUserObject=dynamic_cast<RegionUserObject const &>(_myMeshModifier);
     
     // Check that we have access to the mesh
     if (!_mesh_ptr)
@@ -59,8 +53,9 @@ void RegionSubdomain::modify()
     for (const auto & elem : _mesh_ptr->getMesh().active_element_ptr_range())
     {
         Point punto=elem->centroid();
-        bool contains = _regionUserObject.isInside(punto);
-        if (contains )
+        
+        bool contains = regionUserObject.isInside(punto);
+        if (contains)
         {
             elem->subdomain_id() = _block_id;
         }

@@ -8,7 +8,7 @@
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "FractureUserObject.h"
-#include "SubProblem.h"
+#include "MooseApp.h"
 
 registerMooseObject("parrotApp", FractureUserObject);
 
@@ -41,11 +41,27 @@ _fa1_string(getParam<std::string>("fa1_string")),
 _fd1_string(getParam<std::string>("fd1_string")),
 _fd2_string(getParam<std::string>("fd2_string"))
 {
-    MeshModifier const & _myMeshModifier= _app.getMeshModifier("ciao");
-    
+    // we read the number of fractures
     _fn=getParam<int>("fn");
+    // if all non required params are valid we assume dimension is 3, otherwise dimension is 2
+    if (parameters.isParamValid("fz_string")  &&
+        parameters.isParamValid("fa2_string") &&
+        parameters.isParamValid("fa3_string") &&
+        parameters.isParamValid("fd3_string")   )
+    {
+        
+        std::cout<<"Assuming dimension is 3\n";
+        _dim=3;
+    }
+    else
+    {
+        std::cout<<"Assuming dimension is 2\n";
+        _dim=2;
+    }
     
-    if (_dim==2 && parameters.isParamValid("fz_string") )
+    // Here we check inconsistencies:
+    // if _dim=2 but any non-required parameter is provided something is wrong
+    if (_dim==2 &&  parameters.isParamValid("fz_string") )
         mooseError("You provided fz_string in a 2D code");
     
     if (_dim==2 && parameters.isParamValid("fa2_string") )
@@ -57,19 +73,7 @@ _fd2_string(getParam<std::string>("fd2_string"))
     if (_dim==2 && parameters.isParamValid("fd3_string") )
         mooseError("You provided fd3_string in a 2D code");
     
-    if (_dim==3 && !parameters.isParamValid("fz_string") )
-        mooseError("You did not provided fz_string in a 3D code");
-    
-    if (_dim==3 && !parameters.isParamValid("fa2_string") )
-        mooseError("You did not provided fa2_string in a 3D code");
-    
-    if (_dim==3 && !parameters.isParamValid("fa3_string") )
-        mooseError("You did not provided fa3_string in a 3D code");
-    
-    if (_dim==3 && !parameters.isParamValid("fd3_string") )
-        mooseError("You did not provided fd3_string in a 3D code");
-    
-    
+    // if dim is 3, we read the non-required params
     if (_dim==3)
     {
         _fz_string=getParam<std::string>("fz_string");
@@ -78,15 +82,25 @@ _fd2_string(getParam<std::string>("fd2_string"))
         _fd3_string=getParam<std::string>("fd3_string");
     }
     
+    // At this point, we have read all parameters and set the dimension
+    
+    // we allocate the arrays to store the parameters
+    
+    // coordinates of the centers
     _center   =new RealVectorValue [_fn];
+    // rotation angles
     _rotation =new RealVectorValue [_fn];
+    // dimension
     _dimension=new RealVectorValue [_fn];
+    // the _d defining the planes
     _d        =new RealVectorValue [_fn];
     
+    // the normals
     _n = new RealVectorValue * [_fn];
     for (int i=0; i<_fn; ++i)
     {
-        _n[i]=new RealVectorValue [_dim];
+        // it is correct that we allocate with dimension 3, it is necessary when we call compute normals from angles
+        _n[i]=new RealVectorValue [3];
     }
     
     
@@ -114,11 +128,6 @@ _fd2_string(getParam<std::string>("fd2_string"))
         _dimension[i](0)=atof(token.c_str());
         std::getline(fd2_ss, token, ',');
         _dimension[i](1)=atof(token.c_str());
-        
-        for (int j=0; j<2; ++j)
-        {
-            _d[i](j)=_n[i][j]*_center[i];
-        }
     }
     
     
@@ -144,21 +153,27 @@ _fd2_string(getParam<std::string>("fd2_string"))
             std::getline(fd3_ss, token, ',');
             _dimension[i](2)=atof(token.c_str());
             
-            
-            _d[i](3)=_n[i][3]*_center[i];
         }
         
     }
     
     for (int i=0; i<_fn; ++i)
     {
+        // maybe one day, we write two different functions: 2D and 3D
         ComputeNormalsFromAngles(_rotation[i],_n[i][0],_n[i][1],_n[i][2]);
+        
+        for (int j=0; j<2; ++j)
+        {
+            _d[i](j)=_n[i][j]*_center[i];
+        }
+        
+        if (_dim==3)
+            _d[i](2)=_n[i][2]*_center[i];
+        
     }
     
     delete [] _center;
     delete [] _rotation;
-    
-    std::cout<<"costruito lo UO\n";
     
 }
 
@@ -175,36 +190,6 @@ bool FractureUserObject::isInsideRegion(RealVectorValue const & point, int const
     }
     return ret;
 };
-
-bool FractureUserObject::isInside(RealVectorValue const & point) const
-{
-    for (int i=0; i<_fn; ++i)
-    {
-        if (isInsideRegion(point,i))
-            return true;
-        
-    }
-    return false;
-};
-
-
-
-std::vector<int> FractureUserObject::whichIsInside(RealVectorValue const & point) const
-{
-    std::vector<int> _whichFrac;
-    _whichFrac.clear();
-    
-    for (int i=0; i<_fn; ++i)
-    
-    {
-        if (isInsideRegion(point,i))
-            _whichFrac.push_back(i);
-        
-    }
-    
-    return _whichFrac;
-};
-
 
 void FractureUserObject::ComputeNormalsFromAngles(RealVectorValue const & angles,
                                                   RealVectorValue & n1,
@@ -265,11 +250,9 @@ bool FractureUserObject::isInsideRegion2D(RealVectorValue const & point, int con
         if (temp2<_dimension[i](1)/2.0)
         {
             return true;
-            
         }
     }
     return false;
-    
 }
 
 bool FractureUserObject::isInsideRegion3D(RealVectorValue const & point, int const i) const

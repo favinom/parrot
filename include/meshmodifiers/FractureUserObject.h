@@ -28,14 +28,10 @@ InputParameters validParams<FractureUserObject>();
 class FractureUserObject : public RegionUserObject
 {
 public:
-  FractureUserObject(const InputParameters & parameters);
+    FractureUserObject(const InputParameters & parameters);
     
-    virtual bool isInside(RealVectorValue const & point) const;
-
     virtual bool isInsideRegion(RealVectorValue const & point, int const i) const;
-
-    virtual std::vector<int> whichIsInside(RealVectorValue const & point) const;
-    
+        
 protected:
     
     std::string _fx_string;
@@ -47,7 +43,7 @@ protected:
     std::string _fd1_string;
     std::string _fd2_string;
     std::string _fd3_string;
-
+    
     RealVectorValue * _center;
     RealVectorValue * _rotation;
     RealVectorValue * _dimension;
@@ -55,9 +51,9 @@ protected:
     RealVectorValue *_d;
     
     void ComputeNormalsFromAngles(RealVectorValue const & angles,
-                                                           RealVectorValue & n1,
-                                                           RealVectorValue & n2,
-                                                           RealVectorValue & n3);
+                                  RealVectorValue & n1,
+                                  RealVectorValue & n2,
+                                  RealVectorValue & n3);
     
     bool isInsideRegion2D(RealVectorValue const & point, int const i) const;
     bool isInsideRegion3D(RealVectorValue const & point, int const i) const;

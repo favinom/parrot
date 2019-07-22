@@ -43,13 +43,9 @@ public:
     
 private:
     
+    std::string _meshModifierName;
+    
     /// Block ID to assign to the region
     SubdomainID _block_id;
-    
-    
-    FEProblem * _localFEProblem;
-    //UserObject const _localUserObject;
-    
-    //RegionUserObject const _regionUserObject;
     
 };

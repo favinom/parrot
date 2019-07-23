@@ -40,7 +40,7 @@ public:
     int _factorized;
     
     
-    SparseMatrix<Number> S_matrix;
+    //SparseMatrix<Number> S_matrix;
     
 };
 

@@ -134,3 +134,71 @@ void ParrotProblem::solve()
     
     std::cout<<"END ParrotProblem::solve"<<std::endl;
 }
+
+void
+ParrotProblem::computeJacobianSys(NonlinearImplicitSystem & /*sys*/,
+                                  const NumericVector<Number> & soln,
+                                  SparseMatrix<Number> & jacobian)
+{
+    FEProblemBase::computeJacobian(soln, jacobian);
+}
+
+void
+ParrotProblem::stabilize_A_matrix(SparseMatrix<Number> & jacobian)
+{
+    
+    
+    _console << "Stabilize A matrix:: begin  "  << std::endl;
+    
+    SparseMatrix<Number> A_0_t;
+    
+    jacobian.get_transpose (A_0_t);
+    
+    S_matrix=A_0_t;
+    
+    S_matrix.zero();
+    
+    
+    
+    
+    {
+        utopia::each_read(A_0, [&](const utopia::SizeType i, const utopia::SizeType j, double value){
+            if(i!=j)
+            {
+                double value_1 = 1.0 * value;
+                
+                //utopia::disp(value_1);
+                
+                double value_2 = 1.0 * A_0_t.get(i,j);
+                
+                Real max=std::max(value_1,value_2);
+                
+                if (max>0.0){
+                    
+                    max*=-1.0;
+                    
+                    S_matrix.set(i,j,max);
+                }
+            }
+            
+            
+        });
+    }
+    
+    
+    
+    
+    utopia::UVector diag_elem = -1.0 * sum(S_matrix,1);
+    
+    utopia::USparseMatrix S_diag=diag(diag_elem);
+    
+    // S_matrix += transpose(S_matrix);
+    
+    // S_matrix *=0.5;
+    
+    S_matrix+=S_diag;
+    
+    _console << "Stabilize A matrix:: end  "  << std::endl;
+    
+    
+}

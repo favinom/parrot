@@ -25,6 +25,12 @@ InputParameters validParams<MyUO>();
  */
 class MyUO : public GeneralUserObject
 {
+protected:
+    
+    FEProblem * _fe_problem;
+    EquationSystems & _equationSystems;
+    
+    
 public:
   MyUO(const InputParameters & params);
 

@@ -29,9 +29,18 @@ public:
     virtual void timestepSetup();
     virtual void solve();
     
+    void computeJacobianSys(NonlinearImplicitSystem & /*sys*/,
+                            const NumericVector<Number> & soln,
+                            SparseMatrix<Number> & jacobian);
+
+    
     KSP_PARROT * _ksp_ptr;
     
     PC _problem_PC;
     int _factorized;
+    
+    
+    SparseMatrix<Number> S_matrix;
+    
 };
 

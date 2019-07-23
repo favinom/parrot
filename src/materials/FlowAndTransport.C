@@ -25,7 +25,7 @@ _condInput(getParam<Real>("k")),
 _poroInput(getParam<Real>("phi")),
 _gradP(parameters.isParamValid("pressure") ? coupledGradient("pressure"): _grad_zero),
 _poro(declareProperty<Real>("Porosity")),
-_K(declareProperty<RealTensorValue>("ConductivityTensor")),
+_K(declareProperty<RealTensorValue>("PermeabilityTensor")),
 _U(declareProperty<RealVectorValue>("VelocityVector"))
 {}
 

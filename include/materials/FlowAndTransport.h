@@ -1,5 +1,4 @@
-#ifndef HYDRAULICCONDUCTIVITY_H
-#define HYDRAULICCONDUCTIVITY_H
+#pragma once
 
 #include "Material.h"
 
@@ -27,5 +26,3 @@ protected:
     MaterialProperty<RealVectorValue> &_U;
 
 };
-
-#endif

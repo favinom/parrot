@@ -1,5 +1,6 @@
 [Problem]
 type = ParrotProblem
+use_AFC = false
 []
 
 [Mesh]

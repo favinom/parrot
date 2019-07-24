@@ -154,8 +154,6 @@ ParrotProblem::computeJacobianSys(NonlinearImplicitSystem & /*sys*/,
     {
         computeStabilizationMatrix(jacobian);
         jacobian.add(1.0,_stab_matrix);
-//        jacobian.print_matlab("stabilized.m");
-//        exit(1);
     }
 }
 
@@ -208,7 +206,7 @@ ParrotProblem::computeStabilizationMatrix(SparseMatrix<Number> & jacobian)
     
     for (int row=rb; row<re; ++row)
     {
-        std::cout<<"row="<<row<<std::endl;
+        //std::cout<<"row="<<row<<std::endl;
         PetscInt ncols;
         PetscInt const *cols;
         PetscScalar const *val;
@@ -265,7 +263,7 @@ ParrotProblem::computeStabilizationMatrix(SparseMatrix<Number> & jacobian)
     std::cout<<"prima della chiusura\n";
     _stab_matrix.close();
     
-    _stab_matrix.print_matlab("ciao.m");
+//    _stab_matrix.print_matlab("ciao.m");
     
 //    exit(1);
   

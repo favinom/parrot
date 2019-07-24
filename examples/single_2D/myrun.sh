@@ -1,7 +1,7 @@
 #!/bin/bash
 
-as=0;
-us=2;
+as=3;
+us=0;
 np=1;
 mpirun -n ${np} ../../parrot-opt -i 0refineBlock.i adapSteps=${as} unifSteps=${us}
 
@@ -18,3 +18,4 @@ done
 
 mpirun -n ${np} ../../parrot-opt -i 1diffusion.i adapSteps=${as} unifSteps=${us}
 mpirun -n ${np} ../../parrot-opt -i 2advection.i adapSteps=${as} unifSteps=${us}
+#mpirun -n ${np} ../../parrot-opt -i 2advectionAFC.i adapSteps=${as} unifSteps=${us}

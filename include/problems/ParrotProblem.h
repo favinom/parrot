@@ -15,6 +15,9 @@
 #include "ksp_parrot_impl.h"
 
 
+#include "libmesh/petsc_matrix.h"
+#include "libmesh/petsc_vector.h"
+
 class ParrotProblem;
 
 template <>
@@ -29,9 +32,16 @@ public:
     virtual void timestepSetup();
     virtual void solve();
     
+    void computeStabilizationMatrix(SparseMatrix<Number> & jacobian);
+    
+    
     void computeJacobianSys(NonlinearImplicitSystem & /*sys*/,
                             const NumericVector<Number> & soln,
                             SparseMatrix<Number> & jacobian);
+    
+    void computeResidualSys(NonlinearImplicitSystem & /*sys*/,
+                                      const NumericVector<Number> & soln,
+                            NumericVector<Number> & residual);
 
     
     KSP_PARROT * _ksp_ptr;
@@ -40,7 +50,11 @@ public:
     int _factorized;
     
     
-    //SparseMatrix<Number> S_matrix;
     
+    Parallel::Communicator const & _pp_comm;
+    PetscMatrix<Number> _stab_matrix;
+    
+    bool _use_afc;
+    bool _is_stab_matrix_assembled;
 };
 

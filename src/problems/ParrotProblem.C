@@ -162,6 +162,9 @@ ParrotProblem::computeResidualSys(NonlinearImplicitSystem & /*sys*/,
                                   const NumericVector<Number> & soln,
                                   NumericVector<Number> & residual)
 {
+    
+    std::cout<<"CIAO sono in Residuo"<<std::endl;
+  
     NonlinearImplicitSystem * a;
     FEProblemBase::computeResidualSys(a[0],soln,residual);
     
@@ -172,7 +175,7 @@ ParrotProblem::computeResidualSys(NonlinearImplicitSystem & /*sys*/,
         //_stab_matrix.vector_mult(ciao,soln);
         _stab_matrix.vector_mult_add(residual,soln);
     }
-    
+
 }
 
 

@@ -31,13 +31,13 @@
 
     registerMooseObject("parrotApp", SolveDiffusion);
 
-    void
-    assembly_diffusion(EquationSystems & es, const std::string & system_name)
-    {
-        std::cout<<"CIAO\n";
-        SolveDiffusion * pippo = es.parameters.get< SolveDiffusion*>("pippo");
-        pippo->AssembleDiffusionOP(es, system_name);
-    }
+    // void
+    // assembly_diffusion(EquationSystems & es, const std::string & system_name)
+    // {
+    //     std::cout<<"CIAO\n";
+    //     SolveDiffusion * pippo = es.parameters.get< SolveDiffusion*>("pippo");
+    //     pippo->AssembleDiffusionOP(es, system_name);
+    // }
 
 
     template <>
@@ -102,33 +102,32 @@
 
        // _fe_problem.es().get_mesh().elem_ref(0).set_refinement_flag (Elem::REFINE);
 
-       // Create an equation systems object.
+       // // Create an equation systems object.
        EquationSystems equation_systems (_fe_problem.es().get_mesh());
-
-       equation_systems.parameters.set<bool>("adaptivity") = true;
 
        LinearImplicitSystem & _system = equation_systems.add_system<LinearImplicitSystem> ("Diffusion");
 
-       equation_systems.parameters.set<SolveDiffusion *>("pippo") = this;
-
        _p_var = _system.add_variable ("pressure", FIRST);
-
-       _system.attach_assemble_function(assembly_diffusion);
-
-       //add_bc(_system);
 
        equation_systems.init();
 
+       _fe_problem.es().reinit();
+  
        equation_systems.print_info();
-
+      
        solve(equation_systems, _system);
 
        set_solution(equation_systems);
 
+       std::string sys_name("Diffusion");
 
-       //    _p_var = _fe_problem.es().add_system<LinearImplicitSystem>("Diffusion").add_variable("pressure",FIRST),
-        
-       //    _fe_problem.es().reinit();
+       equation_systems.delete_system(sys_name);
+
+       equation_systems.clear();
+
+       std::cout<<"n_sys"<<equation_systems.n_systems()<<std::endl;
+
+  
      
         
     }
@@ -202,7 +201,7 @@
 
            //solution->print_matlab();
 
-           ExodusII_IO (_es.get_mesh()).write_equation_systems("matrix_c.e", _es);
+           //ExodusII_IO (_es.get_mesh()).write_equation_systems("matrix_c.e", _es);
 
 
             return 0 ;
@@ -485,131 +484,86 @@
     {
         // copy projected solution into target es
 
-        return;
+        //return;
         MeshBase & _mesh = _fe_problem.es().get_mesh();
 
 
         
-      //  MooseVariableFEBase  & _var = _fe_problem.getVariable(0, _aux_var_name, Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
+        MooseVariableFEBase  & aux_var = _fe_problem.getVariable(0, _aux_var_name, Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
         
         // solution of the original system
-        // System & _sys = _var.sys().system();
+        System & aux_sys = aux_var.sys().system();
 
-        // NumericVector<Number> * _solution = _sys.solution.get();
+  
+
+        NumericVector<Number> * aux_solution = aux_sys.solution.get();
+
+        //NumericVector<Number> & from_solution = *ls.solution;
         
       
         LinearImplicitSystem & ls = _es.get_system<LinearImplicitSystem>("Diffusion");
 
-        NumericVector<Number> & from_solution = *ls.solution;
-        // { // loop through our local elements and set the solution from the projection
+      
+        { // loop through our local elements and set the solution from the projection
             
-        //     for (const auto & node : _mesh.local_node_ptr_range())
+            for (const auto & node : _mesh.local_node_ptr_range())
 
-        //     {
-        //     	for (unsigned int comp = 0; comp < node->n_comp(_sys.number(), _var.number()); comp++)
+            {
+            	for (unsigned int comp = 0; comp < node->n_comp(aux_sys.number(), aux_var.number()); comp++)
 
-        //     	{
+            	{
 
-        //         std::cout<<"uno"<<std::endl;
+                std::cout<<"uno"<<std::endl;
 
-        //     		const dof_id_type proj_index = node->dof_number(ls.number(), _p_var, comp);
+            		const dof_id_type proj_index = node->dof_number(ls.number(), _p_var, comp);
                 
-        //         std::cout<<"due"<<std::endl;
+                std::cout<<"due"<<std::endl;
 
-        //     		const dof_id_type to_index = node->dof_number(_sys.number(), _var.number(), comp);
+            		const dof_id_type to_index = node->dof_number(aux_sys.number(), aux_var.number(), comp);
 
-        //         std::cout<<"tre"<<std::endl;
+                std::cout<<"tre"<<std::endl;
 
-        //          //
+                 //
 
-        //     		_solution->set(to_index, (*ls.solution)(proj_index));
-        //     	}
+            		aux_solution->set(to_index, (*ls.solution)(proj_index));
+            	}
 
-        //     }
-        // }
+            }
+        }
 
       //auto &aux_sys = _fe_problem.getAuxiliarySystem();
 
 
 
-      MooseVariableFEBase & aux_var = _fe_problem.getVariable(
-          0, _aux_var_name, Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
+      // MooseVariableFEBase & aux_var = _fe_problem.getVariable(
+      //     0, _aux_var_name, Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
 
-      //_nl.setSolution((*ls.solution));
+      // //_nl.setSolution((*ls.solution));
 
-      System & aux_sys = aux_var.sys().system();
+      // System & aux_sys = aux_var.sys().system();
 
-      NumericVector<Number> * aux_solution = aux_sys.solution.get();
+      // NumericVector<Number> & from_solution = *ls.solution;
 
-      // std::set<dof_id_type> from_var_indices;
-      // ls.local_dof_indices(_p_var, from_var_indices);
+      // NumericVector<Number> & aux_solution = *aux_sys.solution.get();
 
-      // unsigned int aux_vn = aux_var.number();
-      // std::set<dof_id_type> aux_var_indices;
-      // _fe_problem.es().get_system("aux0").local_dof_indices(aux_vn, aux_var_indices);
+      // std::cout<<from_solution.size()<<std::endl;
+      // std::cout<<aux_solution.size()<<std::endl;
 
-      //  // copy the values from from solution vector to to solution vector
-      //  std::set<dof_id_type>::iterator from_it = from_var_indices.begin();
-      //  std::set<dof_id_type>::iterator from_it_end = from_var_indices.end();
-      //  std::set<dof_id_type>::iterator aux_it = aux_var_indices.begin();
-
-      //  for (; from_it != from_it_end; ++from_it, ++aux_it){
-
-      //    aux_sys.solution->set(*aux_it, from_solution(*from_it));
-      //  }
-
-      //  std::cout<<"CIAO sono fuori"<<std::endl;
-      //  aux_sys.solution->close();
-      //  aux_sys.update();
-
-
-      // NumericVector<Number> & from_solution = *from_sys->solution;
-
-      // for (; from_it != from_it_end; ++from_it, ++to_it)
-      //   to_sys->solution->set(*to_it, from_solution(*from_it));
-
-
-      // ;
-
-       //MeshBase::const_node_iterator it = _mesh.local_nodes_begin();
-         //   const MeshBase::const_node_iterator end_it = _mesh.local_nodes_end();
-           // for (; it != end_it; ++it)
-            for (const auto & node : _mesh.local_node_ptr_range())
-            {
-                // set solution for variable 1
-                //const Node * node = *it;
-
-                 //unsigned int comp = 0;
-                  for (unsigned int comp = 0;
-                       comp < node->n_comp(aux_sys.number(), aux_var.number()); comp++)
-                 {
-                    std::cout<<"comp"<<comp<<" "<<aux_sys.number()<<" "<<aux_var.number()<<std::endl;
-                    const dof_id_type pre_index =
-                    node->dof_number(ls.number(), _p_var, comp);
-               
-                    const dof_id_type index =
-                    node->dof_number(aux_sys.number(), aux_var.number(), comp);
-                    //std::cout<<"index"<<index<<std::endl;
-                    aux_solution->set(index, (*ls.solution)(pre_index));
-                  
-                }
-            }
-        
-
-      // for (const auto & node : _mesh.local_node_ptr_range())
+      // for (int i=0; i<from_solution.size(); ++i)
       // {
-      //   for (unsigned int comp = 0; comp < node->n_comp(ls.number(), _p_var); comp++)
-      //   {
-      //     const dof_id_type pre_index = node->dof_number(ls.number(), _p_var, comp);
-      //     std::cout<<comp<<std::endl;
-      //     const dof_id_type aux_index = node->dof_number(aux_sys.number(), aux_var.number(), comp);
-      //     aux_solution->set(aux_index, (*ls.solution)(pre_index));
-      //   }
-      // }
+      //   std::cout<<i<<std::endl;
+      //   std::vector<numeric_index_type> a;
+      //   a.push_back(i);
+      //   Real v[0];
+      //   from_solution.get(a,v);
+      //   aux_solution.set(a.at(0),v[0]);
 
+      // }
 
       aux_solution->close();
       aux_sys.update();
+
+      ExodusII_IO (_fe_problem.es().get_mesh()).write_equation_systems("matrix_c.e", _fe_problem.es());
 
         
     }

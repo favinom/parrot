@@ -15,7 +15,8 @@ use_AFC = false
 []
  
 [AuxVariables]
-[./pressure] [../]
+[./pressure] 
+order=first[../]
 []
 
 [Materials]

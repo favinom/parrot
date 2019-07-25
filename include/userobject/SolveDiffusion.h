@@ -78,7 +78,7 @@ public:
 
     unsigned int _p_var;
 
-    friend void assembly_diffusion(EquationSystems & es, const std::string & system_name);
+    //friend void assembly_diffusion(EquationSystems & es, const std::string & system_name);
 
     int solve(EquationSystems & _es, LinearImplicitSystem & _system);
 

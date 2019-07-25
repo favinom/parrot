@@ -58,8 +58,8 @@ type = Transient
 solve_type= LINEAR
 line_search = none
 
- petsc_options_iname=' -ksp_type             '   # -mat_view
- petsc_options_value='  ksp_parrot_preonly    '   # ::ascii_matlab
+# petsc_options_iname=' -ksp_type             '   # -mat_view
+# petsc_options_value='  ksp_parrot_preonly    '   # ::ascii_matlab
 
 dt = 1e7
 num_steps=100
@@ -85,5 +85,7 @@ perf_graph = true
  function_D_bc='4.0 1.0'
  boundary_N_bc=' '
  value_N_bc=0.0
+ value_D_bc='4.0 1.0'
+ aux_variable=pressure
  [../]
  []

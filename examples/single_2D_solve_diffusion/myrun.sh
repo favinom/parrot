@@ -1,6 +1,6 @@
 #!/bin/bash
 
-as=5;
+as=1;
 us=0;
 np=1;
 mpirun -n ${np} ../../parrot-opt -i 0refineBlock.i adapSteps=${as} unifSteps=${us}

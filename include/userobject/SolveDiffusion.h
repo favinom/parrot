@@ -55,12 +55,20 @@ public:
   virtual void threadJoin(const UserObject & uo) override;
 
   protected:
+
+
+    std::vector<AuxVariableName> _aux_var_names;
+
+    AuxVariableName _aux_var_name;
+
     std::vector<int> _vector_p;
     std::vector<Real> _vector_value;
     std::vector<boundary_id_type> _boundary_D_ids;
     std::vector<boundary_id_type> _boundary_N_ids;
     std::vector<std::string> _string_expr;
     std::vector<Real> _value_N_bc;
+    std::vector<Real> _value_D_bc;
+    //NonlinearSystemBase & _nl;
 
     void AssembleDiffusionOP(EquationSystems & _es, const std::string & system_name);
 
@@ -72,7 +80,7 @@ public:
 
     friend void assembly_diffusion(EquationSystems & es, const std::string & system_name);
 
-    void solve(EquationSystems & _es, LinearImplicitSystem & _system);
+    int solve(EquationSystems & _es, LinearImplicitSystem & _system);
 
     void set_solution(EquationSystems & _es);
 

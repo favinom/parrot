@@ -5,13 +5,13 @@ np=4;
 #background elements, THIS NUMBER HAS TO BE DIVISIBLE BY 8
 be=600;
 # element per fracture
-fe=4;
+fe=8;
 # starting level
 res=`expr ${be} + 3 \\* ${fe}`
 #echo $res
 
 # number of adaptive steps
-as=1;
+as=0;
 us=0;
 
 rm -rf uniform*

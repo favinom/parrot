@@ -73,7 +73,7 @@ full = true
 
 [Outputs]
 file_base = AdvectionOut_${resolution}_${unifSteps}_${adaptSteps}
-exodus = true
+# exodus = true
 csv=true
 perf_graph = true
 []
@@ -90,4 +90,28 @@ perf_graph = true
  value_N_bc='-1.0 '
  aux_variable='pressure'
  [../]
+ []
+
+[Postprocessors]
+ [./int0] type = ElementIntegralVariableOverRegion variable = CM region = 0 [../]
+ [./int1] type = ElementIntegralVariableOverRegion variable = CM region = 1 [../]
+ [./int2] type = ElementIntegralVariableOverRegion variable = CM region = 2 [../]
+ [./int3] type = ElementIntegralVariableOverRegion variable = CM region = 3 [../]
+ [./int4] type = ElementIntegralVariableOverRegion variable = CM region = 4 [../]
+ [./int5] type = ElementIntegralVariableOverRegion variable = CM region = 5 [../]
+ [./int6] type = ElementIntegralVariableOverRegion variable = CM region = 6 [../]
+ [./int7] type = ElementIntegralVariableOverRegion variable = CM region = 7 [../]
+ [./int8] type = ElementIntegralVariableOverRegion variable = CM region = 8 [../]
+ [./int9] type = ElementIntegralVariableOverRegion variable = CM region = 9 [../]
+
+ [./reg0] type = ElementIntegralVariableOverRegion region = 0 [../]
+ [./reg1] type = ElementIntegralVariableOverRegion region = 1 [../]
+ [./reg2] type = ElementIntegralVariableOverRegion region = 2 [../]
+ [./reg3] type = ElementIntegralVariableOverRegion region = 3 [../]
+ [./reg4] type = ElementIntegralVariableOverRegion region = 4 [../]
+ [./reg5] type = ElementIntegralVariableOverRegion region = 5 [../]
+ [./reg6] type = ElementIntegralVariableOverRegion region = 6 [../]
+ [./reg7] type = ElementIntegralVariableOverRegion region = 7 [../]
+ [./reg8] type = ElementIntegralVariableOverRegion region = 8 [../]
+ [./reg9] type = ElementIntegralVariableOverRegion region = 9 [../]
  []

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # number of processors
-np=2;
+np=4;
 #background elements, THIS NUMBER HAS TO BE DIVISIBLE BY 8
 be=600;
 # element per fracture

@@ -16,5 +16,5 @@ temp=`expr $c - 1`
 mv refinedMesh_${us}_000${c}_mesh.xdr refinedMesh_${us}_000${temp}_mesh.xdr
 done
 
-mpirun -n ${np} ../../parrot-dbg -i 1advection.i adapSteps=${as} unifSteps=${us}
+mpirun -n ${np} ../../parrot-opt -i 1advection.i adapSteps=${as} unifSteps=${us}
 #mpirun -n ${np} ../../parrot-opt -i 1advectionAFC.i adapSteps=${as} unifSteps=${us}

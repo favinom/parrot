@@ -132,7 +132,7 @@ void ParrotProblem::solve()
     }
     
     if (_solve)
-        _nl->update();
+    _nl->update();
     
     // sync solutions in displaced problem
     //if (_displaced_problem)
@@ -164,7 +164,7 @@ ParrotProblem::computeResidualSys(NonlinearImplicitSystem & /*sys*/,
 {
     
     std::cout<<"CIAO sono in Residuo"<<std::endl;
-  
+    
     NonlinearImplicitSystem * a;
     FEProblemBase::computeResidualSys(a[0],soln,residual);
     
@@ -175,7 +175,9 @@ ParrotProblem::computeResidualSys(NonlinearImplicitSystem & /*sys*/,
         //_stab_matrix.vector_mult(ciao,soln);
         _stab_matrix.vector_mult_add(residual,soln);
     }
-
+    
+    std::cout<<"ho finito Residuo"<<std::endl;
+    
 }
 
 
@@ -207,14 +209,21 @@ ParrotProblem::computeStabilizationMatrix(SparseMatrix<Number> & jacobian)
     // initialize stabilization matrix
     _stab_matrix.init(m,n,m_l,n_l,30);
     
+    //m=_stab_matrix.m();
+    //n=_stab_matrix.n();
+    
+    //m_l=_stab_matrix.local_m();
+    //n_l=_stab_matrix.local_n();
+    
+    //rb=_stab_matrix.row_start();
+    //re=_stab_matrix.row_stop();
+    
     for (int row=rb; row<re; ++row)
     {
-        //std::cout<<"row="<<row<<std::endl;
         PetscInt ncols;
         PetscInt const *cols;
         PetscScalar const *val;
         MatGetRow(jac_petsc,row,&ncols,&cols,&val);
-        
         PetscInt ncols_tr;
         PetscInt const *cols_tr;
         PetscScalar const *val_tr;
@@ -225,17 +234,6 @@ ParrotProblem::computeStabilizationMatrix(SparseMatrix<Number> & jacobian)
             std::cout<<"ncols!=ncols_tr\n";
             exit(1);
         }
-        
-//        for (int p=0; p<ncols; ++p)
-//        {
-//            std::cout<<row+1<<" "<<cols[p]+1<<" "<<val[p]<<std::endl;
-//        }
-//
-//        for (int p=0; p<ncols; ++p)
-//        {
-//            std::cout<<row+1<<" "<<cols_tr[p]+1<<" "<<val_tr[p]<<std::endl;
-//        }
-        
         
         for (int p=0; p<ncols; ++p)
         {
@@ -253,23 +251,24 @@ ParrotProblem::computeStabilizationMatrix(SparseMatrix<Number> & jacobian)
                 Real Aji=val_tr[p];
                 
                 Real maxEntry=std::max(Aij,Aji);
+                
                 if (maxEntry>0.0)
                 {
-                    _stab_matrix.set(row,col,-1.0*maxEntry);
+                    Real value=-1.0*maxEntry;
+                    _stab_matrix.set(row,col,value);
                     _stab_matrix.add(row,row,maxEntry);
                 }
             }
         }
-        
+        MatRestoreRow(jac_petsc,row,&ncols,&cols,&val);
+        MatRestoreRow(jac_tr_petsc,row,&ncols_tr,&cols_tr,&val_tr);
     }
     
     std::cout<<"prima della chiusura\n";
     _stab_matrix.close();
     
-//    _stab_matrix.print_matlab("ciao.m");
+    //_stab_matrix.print_matlab("ciao.m");
     
-//    exit(1);
-  
     _is_stab_matrix_assembled=true;
     
 }

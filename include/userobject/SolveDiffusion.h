@@ -65,7 +65,7 @@ public:
     std::vector<Real> _vector_value;
     std::vector<boundary_id_type> _boundary_D_ids;
     std::vector<boundary_id_type> _boundary_N_ids;
-    std::vector<std::string> _string_expr;
+    //std::vector<std::string> _string_expr;
     std::vector<Real> _value_N_bc;
     std::vector<Real> _value_D_bc;
     //NonlinearSystemBase & _nl;
@@ -74,7 +74,7 @@ public:
 
     Real ComputeMaterialProprties(const Elem *elem);
 
-    void add_bc(LinearImplicitSystem & _system);
+    //void add_bc(LinearImplicitSystem & _system);
 
     unsigned int _p_var;
 

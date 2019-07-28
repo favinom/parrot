@@ -1,5 +1,6 @@
 [Problem]
 type = ParrotProblem
+use_AFC = false
 []
 
 [Mesh]
@@ -15,22 +16,13 @@ file = refined_${resolution}_${unifSteps}_000${adaptSteps}_mesh.xdr
 []
  
 [AuxVariables]
-[./P_aux] [../]
+[./pressure] [../]
 []
 
 [Materials]
-[./conductivity0] type = FlowAndTransport k = 1.0 phi=1.0 block = 0 pressure = P_aux [../]
-[./conductivity1] type = FlowAndTransport k = 1e4 phi=1.0 block = 1 pressure = P_aux [../]
-[]
- 
-[AuxKernels]
-[./en]
-type = SolutionAux
-solution = soln
-variable = P_aux
-scale_factor = 1.0
-execute_on = 'initial'
-[../]
+[./conductivity0] type = FlowAndTransport k = 1.0 phi=1.0 block = 0 pressure = pressure [../]
+[./conductivity1] type = FlowAndTransport k = 1e4 phi=1.0 block = 1 pressure = pressure [../]
+[./hhhh] type = RegionMaterial regionMeshModifier = aa2 [../]
 []
 
 [Kernels]
@@ -45,7 +37,7 @@ variable = CM
 type = PorosityTimeDerivative
 variable = CM
 lumping = true
- dim = 2
+dim = 2
 [../]
 
 []
@@ -76,34 +68,26 @@ full = true
  dt = 1.0e-3
  num_steps=500.0
 
- [./Quadrature]
- order=TENTH
- [../]
-
- 
- []
-
- 
+[./Quadrature] order=TENTH [../]
+[]
 
 [Outputs]
- file_base = AdvectionOut_${unifSteps}_${adaptSteps}
+file_base = AdvectionOut_${resolution}_${unifSteps}_${adaptSteps}
 exodus = true
 csv=true
 perf_graph = true
 []
 
-
 [UserObjects]
-[./soln]
-type = SolutionUserObject
-mesh = DiffusionOut_${resolution}_${unifSteps}_${adaptSteps}.e
-timestep = 2
-system_variables = pressure
-execute_on = 'initial'
-[../]
-
-# [./myuo]
-# type = MyUO
-# execute_on = 'linear'
-# [../]
-[]
+[./myuo]
+ type = SolveDiffusion
+ execute_on = 'initial'
+ block_id='0 1'
+ value_p='1.0 1.0e4'
+ boundary_D_bc='1'
+ value_D_bc='1.0'
+ boundary_N_bc='3 '
+ value_N_bc='-1.0 '
+ aux_variable='pressure'
+ [../]
+ []

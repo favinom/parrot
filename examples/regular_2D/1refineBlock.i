@@ -35,24 +35,24 @@ solve = false
 [./pressure]  order = FIRST  family=LAGRANGE [../]
 []
 
-[AuxVariables]
-[./blockID] order=CONSTANT  family=MONOMIAL [../]
-[]
+#[AuxVariables]
+#[./blockID] order=CONSTANT  family=MONOMIAL [../]
+#[]
 
-[AuxKernels]
-[./ciao]
- type = MaterialRealAux
- variable = blockID
- property = RegionIDReal
- [../]
- []
+#[AuxKernels]
+#[./ciao]
+# type = MaterialRealAux
+# variable = blockID
+# property = RegionIDReal
+# [../]
+# []
 
-[Materials]
-[./hhhh]
-type = RegionMaterial
- regionMeshModifier = aa2
-[../]
-[]
+#[Materials]
+#[./hhhh]
+#type = RegionMaterial
+# regionMeshModifier = aa2
+#[../]
+#[]
  
 [Kernels]
 [./StressDivergenceParrot_real_x]

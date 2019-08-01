@@ -209,6 +209,9 @@ ParrotProblem::computeStabilizationMatrix(SparseMatrix<Number> & jacobian)
     // initialize stabilization matrix
     _stab_matrix.init(m,n,m_l,n_l,30);
     
+    Mat _stab_matrix_petsc=_stab_matrix.mat();
+    MatSetOption(_stab_matrix_petsc, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);
+    
     //m=_stab_matrix.m();
     //n=_stab_matrix.n();
     
@@ -255,6 +258,7 @@ ParrotProblem::computeStabilizationMatrix(SparseMatrix<Number> & jacobian)
                 if (maxEntry>0.0)
                 {
                     Real value=-1.0*maxEntry;
+
                     _stab_matrix.set(row,col,value);
                     _stab_matrix.add(row,row,maxEntry);
                 }

@@ -37,9 +37,13 @@ protected:
 
     std::vector<int> _whichFrac;
     
-    MaterialProperty<int> &_regionID;
-    MaterialProperty<Real> &_regionIDReal;
-    
+    MaterialProperty<int> &  _regionID;
+    MaterialProperty<Real> & _regionIDReal;
+    MaterialProperty<Real> & _howManyFractures;
     std::string _meshModifierName;
+    
+    bool _countFractures;
+    
+    int _elem_counter;
     
 };

@@ -14,15 +14,15 @@ solve = false
 
  [./bb_fractures]
  type = FractureUserObject
- fn = 9
- fx_string = '0.5,0.5,0.5,0.75,0.75,0.75,0.625,0.625,0.625'
- fy_string = '0.5,0.5,0.5,0.75,0.75,0.75,0.625,0.625,0.625'
- fz_string = '0.5,0.5,0.5,0.75,0.75,0.75,0.625,0.625,0.625'
+ fn = 6
+ fx_string = '0.5,0.5,0.5,0.749975,0.749975,0.749975,0.625,0.625,0.625'
+ fy_string = '0.5,0.5,0.5,0.749975,0.749975,0.749975,0.625,0.625,0.625'
+ fz_string = '0.5,0.5,0.5,0.749975,0.749975,0.749975,0.625,0.625,0.625'
  fa1_string = '0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0'
  fa2_string = '0.0,90.0,0.0,0.0,90.0,0.0,0.0,90.0,0.0'
  fa3_string = '0.0,0.0,90.0,0.0,0.0,90.0,0.0,0.0,90.0'
- fd1_string = '1.0,1.0,1.0,0.5,0.5,0.5,0.25,0.25,0.25'
- fd2_string = '1.0,1.0,1.0,0.5,0.5,0.5,0.25,0.25,0.25'
+ fd1_string = '1.0,1.0,1.0,0.50005,0.50005,0.50005,0.2501,0.2501,0.2501'
+ fd2_string = '1.0,1.0,1.0,0.50005,0.50005,0.50005,0.2501,0.2501,0.2501'
  fd3_string = '1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4'
  [../]
 
@@ -92,24 +92,21 @@ solve = false
 [./pressure]  order = FIRST  family=LAGRANGE [../]
 []
 
-#[AuxVariables]
-#[./blockID] order=CONSTANT  family=MONOMIAL [../]
-#[]
+[AuxVariables]
+[./howMany] order=CONSTANT  family=MONOMIAL [../]
+[]
 
-#[AuxKernels]
-#[./ciao]
-# type = MaterialRealAux
-# variable = blockID
-# property = RegionIDReal
-# [../]
-# []
+[AuxKernels]
+[./ciao]
+ type = MaterialRealAux
+ variable = howMany
+ property = HowManyFractures
+ [../]
+ []
 
-#[Materials]
-#[./hhhh]
-#type = RegionMaterial
-# regionMeshModifier = aa2
-#[../]
-#[]
+[Materials]
+[./hhhh] type = RegionMaterial regionMeshModifier = bb_fractures countFractures = true [../]
+[]
  
 [Kernels]
 [./StressDivergenceParrot_real_x]
@@ -122,6 +119,7 @@ variable = pressure
 type=Steady
 solve_type=LINEAR
 line_search = 'none'
+ [./Quadrature] order = constant [../]
 []
 
 [Outputs]

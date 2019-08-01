@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # number of processors
-np=2;
+np=4;
 #background elements, THIS NUMBER HAS TO BE DIVISIBLE BY 8
-be=8;
+be=16;
 # element per fracture
 fe=1;
 # starting level
@@ -11,10 +11,10 @@ res=`expr ${be} + 3 \\* ${fe}`
 #echo $res
 
 # number of adaptive steps
-as=0;
+as=3;
 us=0;
 
-cond=1;
+cond=0;
 
 rm -rf uniform*
 
@@ -55,6 +55,6 @@ rm refined_${res}_${us}_000${c}_mesh.xdr
 done
 
 
-# mpirun -n ${np} ../../parrot-opt -i ./cond${cond}/2diffusion.i resolution=${res} unifSteps=${us} adaptSteps=${as}
-mpirun -n ${np} ../../parrot-opt -i ./cond${cond}/2advection.i resolution=${res} unifSteps=${us} adaptSteps=${as}
+mpirun -n ${np} ../../parrot-opt -i ./cond${cond}/2diffusion.i resolution=${res} unifSteps=${us} adaptSteps=${as}
+#mpirun -n ${np} ../../parrot-opt -i ./cond${cond}/2advection.i resolution=${res} unifSteps=${us} adaptSteps=${as}
 # mpirun -n ${np} ../../parrot-opt -i ./cond${cond}/2advection_afc.i resolution=${res} unifSteps=${us} adaptSteps=${as}

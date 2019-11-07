@@ -33,7 +33,7 @@ class SolveDiffusion : public GeneralUserObject
 public:
   SolveDiffusion(const InputParameters & params);
 
-    virtual void execute() override ;
+  virtual void execute() override ;
 
   /**
    * Called before execute() is ever called so that data can be cleared.

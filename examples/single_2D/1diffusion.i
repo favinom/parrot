@@ -3,6 +3,7 @@
   block_id = '1 6 4 7 2'
   boundary_id = '6 7'
   boundary_name = 'inflow outflow'
+# partitioner = linear
 []
 
 [Variables]

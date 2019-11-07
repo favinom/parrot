@@ -69,11 +69,11 @@ type = Transient
 solve_type= LINEAR
 line_search = none
 
- petsc_options_iname=' -ksp_type             '   # -mat_view
- petsc_options_value='  ksp_parrot_preonly    '   # ::ascii_matlab
+petsc_options_iname=' -ksp_type             '   # -mat_view
+petsc_options_value='  ksp_parrot_preonly    '   # ::ascii_matlab
 
 dt = 1e7
-num_steps=100
+num_steps = 2.0 #100
 
 [./Quadrature]
 order=TENTH

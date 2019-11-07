@@ -1,6 +1,9 @@
 [Problem]
 type = ParrotProblem
 use_AFC = true
+change_sol=true
+operator_userobject_problem = operator_userobject_problem
+dc_boundaries = "6"
 []
 
 [Mesh]
@@ -8,6 +11,7 @@ use_AFC = true
  block_id = '1 6 4 7 2'
  boundary_id = '6 7'
  boundary_name = 'inflow outflow'
+#partitioner = linear
  []
 
 [Variables]
@@ -95,6 +99,17 @@ type = SolutionUserObject
 mesh = DiffusionOut_${unifSteps}_${adapSteps}.e
 timestep = LATEST
 system_variables = pressure
+execute_on = 'initial'
+[../]
+[./operator_userobject_problem]
+type = StoreOperators
+#execute_on = 'initial'
+[../]
+[./MassAssembly]
+type = AssembleMassMatrix
+operator_userobject = operator_userobject_problem 
+block_id = '1 6 7 2 4'
+value_p = ' 0.2 0.2 0.2 0.4 0.25'
 execute_on = 'initial'
 [../]
 []

@@ -14,7 +14,7 @@ solve = false
 
  [./bb_fractures]
  type = FractureUserObject
- fn = 6
+ fn = 9
  fx_string = '0.5,0.5,0.5,0.749975,0.749975,0.749975,0.625,0.625,0.625'
  fy_string = '0.5,0.5,0.5,0.749975,0.749975,0.749975,0.625,0.625,0.625'
  fz_string = '0.5,0.5,0.5,0.749975,0.749975,0.749975,0.625,0.625,0.625'
@@ -119,7 +119,7 @@ variable = pressure
 type=Steady
 solve_type=LINEAR
 line_search = 'none'
- [./Quadrature] order = constant [../]
+ [./Quadrature] order = constant [../] # 
 []
 
 [Outputs]

@@ -44,8 +44,8 @@ full = true
  solve_type= LINEAR
  line_search = none
  
- petsc_options_iname=' -ksp_type            ' # -mat_view
- petsc_options_value='  ksp_parrot_preonly  ' # ::ascii_matlab
+ petsc_options_iname=' -ksp_type    -mat_view         ' #
+ petsc_options_value='  ksp_parrot_preonly ::ascii_matlab  ' # 
  
 [./Quadrature] order=TENTH [../]
 []

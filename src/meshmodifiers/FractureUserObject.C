@@ -157,6 +157,15 @@ _fd2_string(getParam<std::string>("fd2_string"))
         
     }
     
+    // for (int i=0; i<_fn; ++i)
+    // {
+    //     std::cout<<_center[i]<<std::endl;
+    //     std::cout<<_dimension[i]<<std::endl;
+    //     std::cout<<_rotation[i]<<std::endl;
+    //     std::cout<<std::endl<<std::endl;
+    // }
+    // exit(1);
+
     for (int i=0; i<_fn; ++i)
     {
         // maybe one day, we write two different functions: 2D and 3D
@@ -177,16 +186,16 @@ _fd2_string(getParam<std::string>("fd2_string"))
     
 }
 
-bool FractureUserObject::isInsideRegion(RealVectorValue const & point, int const i) const
+bool FractureUserObject::isInsideRegion(RealVectorValue const & point, int const i, Real & bound) const
 {
     bool ret;
     if (_dim==2)
     {
-        ret=isInsideRegion2D(point,i);
+        ret=isInsideRegion2D(point,i,bound);
     }
     if (_dim==3)
     {
-        ret=isInsideRegion3D(point,i);
+        ret=isInsideRegion3D(point,i,bound);
     }
     return ret;
 };
@@ -241,13 +250,17 @@ void FractureUserObject::ComputeNormalsFromAngles(RealVectorValue const & angles
 }
 
 
-bool FractureUserObject::isInsideRegion2D(RealVectorValue const & point, int const i) const
+bool FractureUserObject::isInsideRegion2D(RealVectorValue const & point, int const i, Real & bound) const
 {
+    RealVectorValue localbounds;
+    for (int k=0; k<_dim; ++k)
+        localbounds(k)=std::max(_dimension[i](k)/2.0,bound);
+
     Real temp1=std::fabs( _n[i][0]*point-_d[i](0) );
-    if (temp1<_dimension[i](0)/2.0)
+    if (temp1<localbounds(0))
     {
         Real temp2=std::fabs( _n[i][1]*point-_d[i](1) );
-        if (temp2<_dimension[i](1)/2.0)
+        if (temp2<localbounds(1))
         {
             return true;
         }
@@ -255,16 +268,20 @@ bool FractureUserObject::isInsideRegion2D(RealVectorValue const & point, int con
     return false;
 }
 
-bool FractureUserObject::isInsideRegion3D(RealVectorValue const & point, int const i) const
+bool FractureUserObject::isInsideRegion3D(RealVectorValue const & point, int const i, Real & bound) const
 {
+    RealVectorValue localbounds;
+    for (int k=0; k<_dim; ++k)
+        localbounds(k)=std::max(_dimension[i](k)/2.0,bound);
+
     Real temp1=std::fabs( _n[i][0]*point-_d[i](0) );
-    if (temp1<_dimension[i](0)/2.0)
+    if (temp1<localbounds(0))
     {
         Real temp2=std::fabs( _n[i][1]*point-_d[i](1) );
-        if (temp2<_dimension[i](1)/2.0)
+        if (temp2<localbounds(1))
         {
             Real temp3=std::fabs( _n[i][2]*point-_d[i](2) );
-            if (temp3<_dimension[i](2)/2.0)
+            if (temp3<localbounds(2))
             {
                 return true;
             }

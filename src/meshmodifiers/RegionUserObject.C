@@ -29,11 +29,11 @@ void RegionUserObject::modify()
     }
 };
 
-bool RegionUserObject::isInside(RealVectorValue const & point) const
+bool RegionUserObject::isInside(RealVectorValue const & point, Real bound) const
 {
     for (int i=0; i<_fn; ++i)
     {
-        if (isInsideRegion(point,i))
+        if (isInsideRegion(point,i,bound))
             return true;
         
     }
@@ -41,7 +41,7 @@ bool RegionUserObject::isInside(RealVectorValue const & point) const
 };
 
 
-std::vector<int> RegionUserObject::whichIsInside(RealVectorValue const & point) const
+std::vector<int> RegionUserObject::whichIsInside(RealVectorValue const & point, Real bound) const
 {
     std::vector<int> _whichFrac;
     _whichFrac.clear();
@@ -49,7 +49,7 @@ std::vector<int> RegionUserObject::whichIsInside(RealVectorValue const & point) 
     for (int i=0; i<_fn; ++i)
         
     {
-        if (isInsideRegion(point,i))
+        if (isInsideRegion(point,i,bound))
             _whichFrac.push_back(i);
         
     }

@@ -30,7 +30,7 @@ class FractureUserObject : public RegionUserObject
 public:
     FractureUserObject(const InputParameters & parameters);
     
-    virtual bool isInsideRegion(RealVectorValue const & point, int const i) const;
+    virtual bool isInsideRegion(RealVectorValue const & point, int const i, Real & bound) const;
         
 protected:
     
@@ -55,7 +55,7 @@ protected:
                                   RealVectorValue & n2,
                                   RealVectorValue & n3);
     
-    bool isInsideRegion2D(RealVectorValue const & point, int const i) const;
-    bool isInsideRegion3D(RealVectorValue const & point, int const i) const;
+    bool isInsideRegion2D(RealVectorValue const & point, int const i, Real & bound) const;
+    bool isInsideRegion3D(RealVectorValue const & point, int const i, Real & bound) const;
     
 };

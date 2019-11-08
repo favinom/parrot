@@ -30,10 +30,11 @@ public:
     
     void modify() override;
     
-    bool isInside(RealVectorValue const & point) const ;
-    std::vector<int> whichIsInside(RealVectorValue const & point) const ;
+    bool isInside(RealVectorValue const & point, Real bound=0.0) const ;
+
+    std::vector<int> whichIsInside(RealVectorValue const & point,Real bound=0.0) const ;
     
-    virtual bool isInsideRegion(RealVectorValue const & point, int region) const = 0;
+    virtual bool isInsideRegion(RealVectorValue const & point, int region, Real & bound) const = 0;
 
     
 protected:

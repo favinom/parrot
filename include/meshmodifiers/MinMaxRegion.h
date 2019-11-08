@@ -30,13 +30,13 @@ class MinMaxRegion : public RegionUserObject
 public:
     MinMaxRegion(const InputParameters & parameters);
     
-    virtual bool isInsideRegion(RealVectorValue const & point, int const i) const;
+    virtual bool isInsideRegion(RealVectorValue const & point, int const i, Real & bound) const;
         
 protected:
     
     
-    bool isInsideRegion2D(RealVectorValue const & point, int const i) const;
-    bool isInsideRegion3D(RealVectorValue const & point, int const i) const;
+    bool isInsideRegion2D(RealVectorValue const & point, int const i, Real & bound) const;
+    bool isInsideRegion3D(RealVectorValue const & point, int const i, Real & bound) const;
     
     std::vector<RealVectorValue> _regionMin;
     std::vector<RealVectorValue> _regionMax;

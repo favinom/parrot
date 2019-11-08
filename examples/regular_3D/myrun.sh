@@ -3,15 +3,15 @@
 # number of processors
 np=4;
 #background elements, THIS NUMBER HAS TO BE DIVISIBLE BY 8
-be=16;
+be=32;
 # element per fracture
-fe=1;
+fe=2;
 # starting level
 res=`expr ${be} + 3 \\* ${fe}`
 #echo $res
 
 # number of adaptive steps
-as=3;
+as=1;
 us=0;
 
 cond=0;
@@ -57,4 +57,4 @@ done
 
 mpirun -n ${np} ../../parrot-opt -i ./cond${cond}/2diffusion.i resolution=${res} unifSteps=${us} adaptSteps=${as}
 #mpirun -n ${np} ../../parrot-opt -i ./cond${cond}/2advection.i resolution=${res} unifSteps=${us} adaptSteps=${as}
-# mpirun -n ${np} ../../parrot-opt -i ./cond${cond}/2advection_afc.i resolution=${res} unifSteps=${us} adaptSteps=${as}
+#mpirun -n ${np} ../../parrot-opt -i ./cond${cond}/2advection_afc.i resolution=${res} unifSteps=${us} adaptSteps=${as}

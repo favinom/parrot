@@ -24,22 +24,22 @@ MinMaxRegion::MinMaxRegion(const InputParameters & parameters) :
 RegionUserObject(parameters)
 {}
 
-bool MinMaxRegion::isInsideRegion(RealVectorValue const & point, int const i) const
+bool MinMaxRegion::isInsideRegion(RealVectorValue const & point, int const i, Real & bound) const
 {
     bool ret;
     if (_dim==2)
     {
-        ret=isInsideRegion2D(point,i);
+        ret=isInsideRegion2D(point,i,bound);
     }
     if (_dim==3)
     {
-        ret=isInsideRegion3D(point,i);
+        ret=isInsideRegion3D(point,i,bound);
     }
     return ret;
 };
 
 
-bool MinMaxRegion::isInsideRegion2D(RealVectorValue const & point, int const i) const
+bool MinMaxRegion::isInsideRegion2D(RealVectorValue const & point, int const i, Real & bound) const
 {
     bool isIn=true;
     for (int dim=0; dim<2; ++dim)
@@ -57,7 +57,7 @@ bool MinMaxRegion::isInsideRegion2D(RealVectorValue const & point, int const i) 
     return isIn;
 }
     
-bool MinMaxRegion::isInsideRegion3D(RealVectorValue const & point, int const i) const
+bool MinMaxRegion::isInsideRegion3D(RealVectorValue const & point, int const i, Real & bound) const
 {
     bool isIn=true;
     for (int dim=0; dim<3; ++dim)

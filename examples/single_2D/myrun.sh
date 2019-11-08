@@ -2,7 +2,7 @@
 
 as=5;
 us=0;
-np=6;
+np=10;
 #mpirun -n ${np} ../../parrot-opt -i 0refineBlock.i adapSteps=${as} unifSteps=${us}
 
 #for (( c=0; c<=as+1; c++ ))

@@ -124,11 +124,19 @@ void AssembleMassMatrix::assemble_mass_matrix(){
 
     _lump_mass_matrix = const_cast<StoreOperators&>(_operator_storage).LumpMassMatrix();
 
+
+    _poro_lump_mass_matrix = const_cast<StoreOperators&>(_operator_storage).PoroLumpMassMatrix();
+
+
+
+
     _mass_matrix->init(m,n,m_l,n_l,nnz_x_row);
 
     _poro_mass_matrix->init(m,n,m_l,n_l,nnz_x_row);
 
     _lump_mass_matrix->init(m,n,m_l,n_l,nnz_x_row);
+
+    _poro_lump_mass_matrix->init(m,n,m_l,n_l,nnz_x_row);
 
     // The dimension that we are running.
     const unsigned int dim = mesh.mesh_dimension();
@@ -147,6 +155,8 @@ void AssembleMassMatrix::assemble_mass_matrix(){
     DenseMatrix<Number> Me_p;
 
     DenseMatrix<Number> Me_l;
+
+    DenseMatrix<Number> Me_l_p;
 
     QGauss qrule (dim, fe_type.default_quadrature_order());
 
@@ -172,6 +182,8 @@ void AssembleMassMatrix::assemble_mass_matrix(){
 
     _lump_mass_matrix->zero();
 
+    _poro_lump_mass_matrix->zero();
+
     for ( ; el != end_el; ++el)
     {
         const Elem * elem = *el;
@@ -190,17 +202,33 @@ void AssembleMassMatrix::assemble_mass_matrix(){
 
                 for (unsigned int j=0; j<phi.size(); j++){
 
-                    Me(i,j)   += JxW[qp] * phi[i][qp] * phi[j][qp];
+                     Me(i,j) +=  JxW[qp] * phi[i][qp] * phi[j][qp];
+                    //Me_l(i,j) +=  JxW[qp] * phi[i][qp] * phi[j][qp];
 
-                 }
-             }
-         }
+                }
+            }
+        }
 
 
-         dof_map.constrain_element_matrix(Me,dof_indices,true);
 
-        (* _mass_matrix).add_matrix (Me, dof_indices);
+        // for (int i=0; i<Me.m(); ++i)
+        // {
+        //     for (int j=0; j<Me.n(); ++j)
+        //     {
+        //         if (i!=j)
+        //         {
+        //             Me(i,i)+=Me(i,j);
+        //             Me(i,j)=0.0;
+        //         }
+        //     }
+        // }
+                       
 
+
+        dof_map.constrain_element_matrix(Me,dof_indices,true);
+
+        (*_mass_matrix).add_matrix(Me, dof_indices);
+    
 
         dof_map.dof_indices(elem, dof_indices);
 
@@ -238,7 +266,7 @@ void AssembleMassMatrix::assemble_mass_matrix(){
 
                 for (unsigned int j=0; j<phi.size(); j++){
 
-                    Me_l(i,j) += ComputeMaterialProprties(elem) * JxW[qp] * phi[i][qp] * phi[j][qp];
+                    Me_l(i,j) += JxW[qp] * phi[i][qp] * phi[j][qp];
 
                 }
             }
@@ -263,14 +291,53 @@ void AssembleMassMatrix::assemble_mass_matrix(){
         dof_map.constrain_element_matrix(Me_l,dof_indices,true);
 
         (*_lump_mass_matrix).add_matrix (Me_l, dof_indices);
+
+
+        dof_map.dof_indices(elem, dof_indices);
+
+        Me_l_p.resize (dof_indices.size(), dof_indices.size());
+
+        for (unsigned int qp=0; qp<qrule.n_points(); qp++)
+        {
+
+            for (unsigned int i=0; i<phi.size(); i++)
+            {
+
+                for (unsigned int j=0; j<phi.size(); j++){
+
+                    Me_l_p(i,j) += ComputeMaterialProprties(elem) * JxW[qp] * phi[i][qp] * phi[j][qp];
+
+                }
+            }
+        }
+
+
+
+        for (int i=0; i<Me_l_p.m(); ++i)
+        {
+            for (int j=0; j<Me_l_p.n(); ++j)
+            {
+                if (i!=j)
+                {
+                    Me_l_p(i,i)+=Me_l_p(i,j);
+                    Me_l_p(i,j)=0.0;
+                }
+            }
+        }
+                       
+
+
+        dof_map.constrain_element_matrix(Me_l_p,dof_indices,true);
+
+        (*_poro_lump_mass_matrix).add_matrix (Me_l_p, dof_indices);
     }
 
 
     (*_mass_matrix).close();
-   
-    // _mass_matrix->print_matlab("final.m");
 
     (*_poro_mass_matrix).close();
+
+    (*_poro_lump_mass_matrix).close();
 
     (*_lump_mass_matrix).close();
 

@@ -37,7 +37,7 @@ validParams<ParrotProblem>()
 ParrotProblem::ParrotProblem(const InputParameters & parameters) :
 FEProblem(parameters),
 _pp_comm(_mesh.comm()),
-_stab_matrix(_pp_comm),
+// _stab_matrix(_pp_comm),
 _use_afc(getParam<bool>("use_AFC")),
 _change_sol(getParam<bool>("change_sol")),
 _dc_var(getParam<std::string>("dc_variables"))
@@ -169,9 +169,11 @@ void ParrotProblem::solve()
     {
         _nl->update();
 
+        ParrotProblem::updateSolution();
+
     }
 
-    ParrotProblem::updateSolution();
+
     
     // sync solutions in displaced problem
     //if (_displaced_problem)
@@ -192,7 +194,7 @@ ParrotProblem::computeJacobianSys(NonlinearImplicitSystem & /*sys*/,
     if (_use_afc==true && _is_stab_matrix_assembled==false)
     {
         computeStabilizationMatrix(jacobian);
-        jacobian.add(1.0,_stab_matrix);
+        jacobian.add(1.0,*_stab_matrix);
     }
 }
 
@@ -212,7 +214,7 @@ ParrotProblem::computeResidualSys(NonlinearImplicitSystem & /*sys*/,
     if (_use_afc && _is_stab_matrix_assembled)
     {
         //_stab_matrix.vector_mult(ciao,soln);
-        _stab_matrix.vector_mult_add(residual,soln);
+        _stab_matrix->vector_mult_add(residual,soln);
     }
     
     //std::cout<<"ho finito Residuo"<<std::endl;
@@ -225,6 +227,8 @@ ParrotProblem::computeStabilizationMatrix(SparseMatrix<Number> & jacobian)
 {
     // Cast pf the jacobian to a Petsc matrix
     PetscMatrix<Number> & jac_PM=dynamic_cast<PetscMatrix<Number> &> (jacobian);
+
+
     
     // Declare a PetscMatrix that will contain the transpose
     PetscMatrix<Number> jac_tr_PM(_pp_comm);
@@ -244,13 +248,18 @@ ParrotProblem::computeStabilizationMatrix(SparseMatrix<Number> & jacobian)
     
     int rb=jac_PM.row_start();
     int re=jac_PM.row_stop();
+
+    _stab_matrix = const_cast<StoreOperators&>(getUserObjectTempl<StoreOperators>(_userobject_name)).StabMatrix();
     
     // initialize stabilization matrix
-    _stab_matrix.init(m,n,m_l,n_l,30);
+    (*_stab_matrix).init(m,n,m_l,n_l,30);
     
-    Mat _stab_matrix_petsc=_stab_matrix.mat();
-    MatSetOption(_stab_matrix_petsc, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);
+    //Mat _stab_matrix_petsc=_stab_matrix.mat();
+    //MatSetOption(_stab_matrix_petsc, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);
     
+    MatCopy(jac_PM.mat(),  (*_stab_matrix).mat(), DIFFERENT_NONZERO_PATTERN);
+    (*_stab_matrix).zero();
+
     for (int row=rb; row<re; ++row)
     {
         PetscInt ncols;
@@ -292,8 +301,8 @@ ParrotProblem::computeStabilizationMatrix(SparseMatrix<Number> & jacobian)
                 {
                     Real value=-1.0*maxEntry;
 
-                    _stab_matrix.set(row,col,value);
-                    _stab_matrix.add(row,row,maxEntry);
+                    (*_stab_matrix).set(row,col,value);
+                    (*_stab_matrix).add(row,row,maxEntry);
                 }
             }
             // else{
@@ -304,7 +313,7 @@ ParrotProblem::computeStabilizationMatrix(SparseMatrix<Number> & jacobian)
         MatRestoreRow(jac_tr_petsc,row,&ncols_tr,&cols_tr,&val_tr);
     }
     
-    _stab_matrix.close();
+     (*_stab_matrix).close();
         
     _is_stab_matrix_assembled=true;
 
@@ -327,7 +336,7 @@ bool
 bool
  ParrotProblem::updateSolution()
  {
-    ParrotProblem::stabilize_coeffiecient();
+    //ParrotProblem::stabilize_coeffiecient();
 
     return true;
  }
@@ -351,20 +360,21 @@ ParrotProblem::stabilize_coeffiecient(/*NumericVector<Number> & vec_solution,
     
 
     const DofMap & dof_map = this->getNonlinearSystemBase().dofMap();
- 
 
+
+    int m=dof_map.n_dofs();
+    
+    int n=dof_map.n_dofs();
+    
+    int m_l=dof_map.n_local_dofs();
+    
+    int n_l=dof_map.n_local_dofs();
+        
+
+    int nnz_x_row = *std::max_element(dof_map.get_n_nz().begin(), dof_map.get_n_nz().end());
 
     if(this->timeStep()==1){
 
-        int m=dof_map.n_dofs();
-        
-        int n=dof_map.n_dofs();
-        
-        int m_l=dof_map.n_local_dofs();
-        
-        int n_l=dof_map.n_local_dofs();
-        
-        int nnz_x_row = *std::max_element(dof_map.get_n_nz().begin(), dof_map.get_n_nz().end());
 
         PetscMatrix<Number> _jac_mat(_pp_comm);
 
@@ -372,27 +382,34 @@ ParrotProblem::stabilize_coeffiecient(/*NumericVector<Number> & vec_solution,
 
         jmat->init(m,n,m_l,n_l,nnz_x_row);
 
-        jmat->zero();
+        
     
         MatCopy(petsc_mat->mat(), jmat->mat(), DIFFERENT_NONZERO_PATTERN);
 
-        jmat->add(-1.0,_stab_matrix);
+        jmat->zero();
 
-         ParrotProblem::determine_dc_bnd_var_id(ParrotProblem::split_string(_dc_var, ' '));
+        jmat->add(-1.0,*_stab_matrix);
+
+        ParrotProblem::determine_dc_bnd_var_id(ParrotProblem::split_string(_dc_var, ' '));
 
         find_boundary(zero_rows, _dc_boundary_id);
     }
 
-    auto _M =  const_cast<StoreOperators&>(this->getUserObjectTempl<StoreOperators>(_userobject_name)).MassMatrix();
-    auto _L =  const_cast<StoreOperators&>(this->getUserObjectTempl<StoreOperators>(_userobject_name)).LumpMassMatrix();
-    auto _J = const_cast<StoreOperators&>(this->getUserObjectTempl<StoreOperators>(_userobject_name)).JacMatrix();
+    auto _M  = const_cast<StoreOperators&>(this->getUserObjectTempl<StoreOperators>(_userobject_name)).MassMatrix();
+    auto _L  = const_cast<StoreOperators&>(this->getUserObjectTempl<StoreOperators>(_userobject_name)).LumpMassMatrix();
+    auto _J  = const_cast<StoreOperators&>(this->getUserObjectTempl<StoreOperators>(_userobject_name)).JacMatrix();
+    auto _PL = const_cast<StoreOperators&>(this->getUserObjectTempl<StoreOperators>(_userobject_name)).PoroLumpMassMatrix();
+    auto _PM = const_cast<StoreOperators&>(this->getUserObjectTempl<StoreOperators>(_userobject_name)).PoroMassMatrix();
 
 
     PetscVector<Number> _inv(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
     _inv.zero();
 
-    PetscVector<Number> _u_dot(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
-    _u_dot.zero();
+    PetscVector<Number> _inv_p(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
+    _inv_p.zero();
+
+    // PetscVector<Number> _u_dot(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
+    // _u_dot.zero();
 
     PetscVector<Number> _tmp(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
     _tmp.zero();
@@ -400,12 +417,6 @@ ParrotProblem::stabilize_coeffiecient(/*NumericVector<Number> & vec_solution,
     
     NumericVector<Number> &ghosted_solution = *_sys.current_local_solution.get();
     
-
-    //std::vector<numeric_index_type> size_p;
-    //size_p.clear();
-    // for(int kk=0; kk<dof_map.n_dofs(); kk++){
-    //        size_p.push_back(kk);
-    // }
   
     std::vector<double>_vec_localize;
     ghosted_solution.localize(_vec_localize);
@@ -413,243 +424,214 @@ ParrotProblem::stabilize_coeffiecient(/*NumericVector<Number> & vec_solution,
     _L->get_diagonal(_inv);
     _inv.reciprocal();
 
-    _L->vector_mult(_tmp,ghosted_solution);
-    _u_dot.pointwise_mult(_inv,ghosted_solution);
+    _PL->get_diagonal(_inv_p);
+    _inv_p.reciprocal();
+
+    NumericVector<Number> * _u_dot_moose = _nl.solutionUDot();
+
+    PetscVector<Number> &_u_dot = dynamic_cast<libMesh::PetscVector<libMesh::Number>& >(*_u_dot_moose);
 
     std::vector<double>_vec_localize_dot;
-    // _u_dot.localize(_vec_localize_dot);
+    _u_dot.localize(_vec_localize_dot);
+
+
+    NumericVector<Number> * local_vector;
+    std::unique_ptr<NumericVector<Number>> local_vector_built;
+    local_vector_built = NumericVector<Number>::build(dof_map.comm());
+    local_vector = local_vector_built.get();
+    local_vector->init(dof_map.n_dofs(), false, SERIAL);
+    ghosted_solution.localize(*local_vector,dof_map.get_send_list());
+    local_vector->close();
+
+    local_vector->print_matlab("local_vector.m");
     
-    int r_start = _M->row_start();
-    int r_stop = _M->row_stop();
+    int r_start = _PM->row_start();
+    int r_stop  = _PM->row_stop();
 
 
     PetscMatrix<Number> _J_tr(_pp_comm);   
     _J->get_transpose(_J_tr);
 
-    Mat M_petsc    = _M->mat();
-    Mat J_tr_petsc = _J_tr.mat();
-    Mat J_petsc    = _J->mat(); 
-    Mat D_petsc    = _stab_matrix.mat();
+    Mat PM_petsc    = _PM->mat();
+    Mat L_petsc     = _L->mat();
+    Mat D_petsc     = (*_stab_matrix).mat();
 
 
+    PetscVector<Number> _R_p(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
+    _R_p.zero();
+
+    PetscVector<Number> _R_m(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
+    _R_m.zero();
+
+    PetscVector<Number> _a_bar(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
+    _a_bar.zero();
 
     PetscVector<Number> _m_i(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
     _m_i.zero();
 
+    PetscVector<Number> _ones(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
+    _ones.zero();
 
-    PetscVector<Number> ones(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
-    ones.zero();
+
+    _ones.add(1.0);
 
 
-    // PetscVector<Number> f(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
-    // f.zero();
+    PetscMatrix<Number> _f_mat(_pp_comm);
+    _f_mat.init(m,n,m_l,n_l,nnz_x_row);     
+    Mat _f_mat_petsc =_f_mat.mat();
+    MatCopy(petsc_mat->mat(), _f_mat_petsc, DIFFERENT_NONZERO_PATTERN);
+    _f_mat.zero();
+    //MatSetOption(_f_mat_petsc, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);
+   
+
+    PetscMatrix<Number> _alpha_mat(_pp_comm);
+    _alpha_mat.init(m,n,m_l,n_l,nnz_x_row);
+    Mat _alpha_mat_petsc = _alpha_mat.mat();
+    _alpha_mat.zero();
+    MatSetOption(_alpha_mat_petsc, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);
+    
 
     std::unique_ptr<NumericVector<Number>> f = ghosted_solution.zero_clone();
 
-    ones=1.0;
     
-    _M->vector_mult(_m_i,ones);
+    _L->vector_mult(_m_i,_ones);
 
 
+    Real dt = static_cast<Transient*>(this->getMooseApp().getExecutioner())->getDT();
 
-    // ghosted_solution.print_matlab("ghosted_solution.txt");
-
-    // std::ofstream myfile;
-
-    // std::cout<<"_mesh.processor_id()"<<_mesh.processor_id()<<std::endl;
-
-    // std::string a = "example" + std::to_string(_mesh.processor_id());
-
-    // myfile.open (a);
-    // for(int i=0; i<_vec_localize.size(); i++){
-
-    //      //myfile << "Writing this to a file.\n";
-
-    //      myfile << _vec_localize.at(i)<<"\n";
-
-    // }
-   
-    // myfile.close();
-
-    //exit(1);
 
 
     for (int row=r_start; row<r_stop; ++row)
     {
-        PetscInt ncols_m, ncols_d, ncols_j_tr, ncols_j; 
+        PetscInt ncols_m, ncols_d, ncols_l; 
 
         PetscInt const *cols_m; 
         PetscInt const *cols_d; 
-        PetscInt const *cols_j_tr; 
-        PetscInt const *cols_j; 
+        PetscInt const *cols_l; 
+
 
         PetscScalar const *val_m; 
         PetscScalar const *val_d; 
-        PetscScalar const *val_j_tr;
-        PetscScalar const *val_j;
+        PetscScalar const *val_l;
         
 
-
-        std::vector<Real>f_tmp;
-        std::vector<Real>alpha_v;
-        
 
 
         Real _P_p=0.0; 
         Real _Q_p=0.0; 
-        Real _R_p=0.0;
+
         Real _P_m=0.0; 
         Real _Q_m=0.0; 
-        Real _R_m=0.0;
 
-
-
-        MatGetRow(D_petsc,row,&ncols_d,&cols_d,&val_d);
-        Real max_d = std::abs(val_d[0]);
-
-        for (int p=0; p<ncols_d; p++)
-        {
-            if(max_d<std::abs(val_d[p]))
-                 max_d = std::abs(val_d[p]);
-        }
-
-        MatRestoreRow(D_petsc,row,&ncols_d,&cols_d,&val_d);
-
-        MatGetRow(J_tr_petsc,row,&ncols_j_tr,&cols_j_tr,&val_j_tr);
-        Real max_j_tr = std::abs(val_j_tr[0]);
-
-        for (int p=0; p<ncols_j_tr; p++)
-        {
-            if(max_j_tr<std::abs(val_j_tr[p]))
-                 max_j_tr = std::abs(val_j_tr[p]);
-        }
-
-        MatRestoreRow(J_tr_petsc,row,&ncols_j_tr,&cols_j_tr,&val_j_tr);
-
-
+        
 
         Real f_ij = 0.0;
         Real f_ij_sum = 0.0;
-        Real max_p = 0.0;
-        Real min_p = 0.0;
 
 
-        MatGetRow(M_petsc,row,&ncols_m,&cols_m,&val_m);  
-        MatGetRow(J_tr_petsc,row,&ncols_j_tr,&cols_j_tr,&val_j_tr);
+
+        MatGetRow(PM_petsc,row,&ncols_m,&cols_m,&val_m);  
         MatGetRow(D_petsc,row,&ncols_d,&cols_d,&val_d);
-        MatGetRow(J_petsc,row,&ncols_j,&cols_j,&val_j);
 
-        f_tmp.clear();
-        alpha_v.clear();
-        //f_tmp.resize(ncols_m);
 
         
-       for (int p=0; p<ncols_m; p++)
+        for (int p=0; p<ncols_m; p++)
         {
             int col=cols_m[p];
 
             if (row!=col)
             {
                 
-                Real Dij = val_d[p];
+                Real Dij  = val_d[p];
 
-                Real Mij = val_m[p];
+                Real PMij = val_m[p];
                 
-                Real Kij = -1.0 * val_j[p];
-                
-                Real Kji = -1.0 * val_j_tr[p];
+                auto v_i = ghosted_solution(row);
 
-                if(std::abs(Dij)>max_d) Dij=0.0;
+                auto v_d_i = _u_dot(row);
 
-                // if(std::abs(Kji)>max_j_tr) Kji=0.0;
-                
-                f_ij = Dij * std::max(0.0, Kji) * (ghosted_solution(row) - 1.0 * _vec_localize.at(col));
+                if(_vec_localize.at(col)>0.010000001){
+                    std::cout<<"col_p"<<col<<" and value_p "<<_vec_localize.at(col)<<std::endl;
+                }
 
-                //std::cout<<"f_ij_in"<<_vec_localize.at(col)<<std::endl;
+                if(_vec_localize.at(col)<-1.0e-5){
+                    std::cout<<"col_m"<<col<<" and value_m "<<_vec_localize.at(col)<<std::endl;
+                }
 
-                //f_ij = Mij * (_u_dot(row)-_vec_localize_dot.at(col)) - Dij * (ghosted_solution(row) - 1.0 * _vec_localize.at(col));
+                if(_vec_localize_dot.at(col)>0.010000001){
+                    std::cout<<"col_p"<<col<<" and value_p "<<_vec_localize.at(col)<<std::endl;
+                }
 
-                f_tmp.push_back(f_ij);
-                
-                f_ij_sum+=f_ij;
+                if(_vec_localize_dot.at(col)<-1.0e-5){
+                    std::cout<<"col_m"<<col<<" and value_m "<<_vec_localize.at(col)<<std::endl;
+                }
 
-                max_p+=std::max(0.0,f_ij);
+                f_ij = PMij * (v_d_i  -_vec_localize_dot.at(col)) - 1.0 * Dij * (v_i - _vec_localize.at(col));
 
-                min_p+=std::min(0.0,f_ij);             
+
+                double check = (v_i - _vec_localize.at(col)) * f_ij;
+
+                if(check==0) _f_mat.set(row, col,0.0);
+                else _f_mat.set(row, col, f_ij);
+
+                _P_p+=std::max(0.0,f_ij);
+
+                _P_m+=std::min(0.0,f_ij);             
 
             }
 
-            if(p==ncols_m-1) {
-
-                //std::cout<<f_tmp.size()<<ncols_m<<p<<std::endl;
-
-                f_tmp.push_back(f_ij_sum);
-            }
         }
-  
-      
-        // for (int ll=0; ll<f_tmp.size(); ll++)
-        //     std::cout<<f_tmp.at(ll)<<std::endl;
 
-        
 
-        // _P_p = max_p;
-        // _P_m = min_p;
-        MatRestoreRow(M_petsc,row,&ncols_m,&cols_m,&val_m);  
-        MatRestoreRow(J_tr_petsc,row,&ncols_j_tr,&cols_j_tr,&val_j_tr);
+
+        MatRestoreRow(PM_petsc,row,&ncols_m,&cols_m,&val_m);  
         MatRestoreRow(D_petsc,row,&ncols_d,&cols_d,&val_d);
-        MatRestoreRow(J_petsc,row,&ncols_j,&cols_j,&val_j);
+
 
         
         Real u_max = ghosted_solution(row);
+
         Real u_min = ghosted_solution(row);
 
-
-        // MatGetRow(M_petsc,row,&ncols_m,&cols_m,&val_m);
-        // for (int p=0; p<ncols_m; ++p){
-        //         int col=cols_m[p];
-        //         u_max = std::max(u_max,_vec_localize.at(col));
-        //     }
-
-        // MatRestoreRow(M_petsc,row,&ncols_m,&cols_m,&val_m);   
+        std::vector<Real> values;
+        values.clear();
 
 
-        // MatGetRow(M_petsc,row,&ncols_m,&cols_m,&val_m);    
-        // for (int p=0; p<ncols_m; ++p){
-        //         int col=cols_m[p];
-        //         u_min = std::min(u_min,_vec_localize.at(col));
-        // }
+        MatGetRow(PM_petsc,row,&ncols_m,&cols_m,&val_m);
 
-        // MatRestoreRow(M_petsc,row,&ncols_m,&cols_m,&val_m);
+        for (int p=0; p<ncols_m; ++p){
+                int col=cols_m[p];
+                values.push_back(_vec_localize.at(col));
+            }
+
+        MatRestoreRow(PM_petsc,row,&ncols_m,&cols_m,&val_m);   
 
         double v_i = ghosted_solution(row);
 
-        // 
-    
-        Real dt = static_cast<Transient*>(this->getMooseApp().getExecutioner())->getDT();
-        
-        //double inv_dt = 1.0/dt;        
-        
-        //_m_i.scale(inv_dt);
+        double m_i = _m_i(row);
 
-        // Real u_i_max = _m_i(row) * max;
-        // Real u_i_min = _m_i(row) * min;
+        _Q_p = m_i/dt * (*std::max_element(std::begin(values), end(values)) - v_i);
 
-        double max = _m_i(row)/dt * (*std::max_element(std::begin(_vec_localize), end(_vec_localize)) - v_i);
-        double min = _m_i(row)/dt * (*std::min_element(std::begin(_vec_localize), end(_vec_localize)) - v_i);   
+        _Q_m = m_i/dt * (*std::min_element(std::begin(values), end(values)) - v_i);   
             
-        _Q_p = u_max;
-        _Q_m = u_min;
-
         
-        Real p_p_q_p = 0.0;
-        if(std::abs(_P_p)>0) p_p_q_p = _Q_p/_P_p;
+        Real value_p = 0.0;
 
-        Real p_m_q_m = 0.0;
-        if(std::abs(_P_m)>0) p_m_q_m = _Q_m/_P_m;
+        if(std::abs(_P_p)>0.0) {
 
-        Real r_i_p = std::max(1.0,p_p_q_p);
-        Real r_i_m = std::min(1.0,p_m_q_m);
+            value_p = _Q_p/_P_p;
+        }
+
+        Real value_m = 0.0;
+
+        if(std::abs(_P_m)>0.0) {
+
+            value_m = _Q_m/_P_m;
+        }
+
+        Real entry_p = std::min(1.0,value_p);
+
+        Real entry_m = std::min(1.0,value_m);
 
         auto it = std::find(zero_rows.begin(), zero_rows.end(), row);
 
@@ -657,80 +639,209 @@ ParrotProblem::stabilize_coeffiecient(/*NumericVector<Number> & vec_solution,
 
         if(it == zero_rows.end()){
 
-            _R_p = std::min(1.0,r_i_p);
-            _R_m = std::min(1.0,r_i_m);
+            _R_p.set(row,entry_p);
+
+            _R_m.set(row,entry_m);
+         
 
         }
         else
 
         {
-            _R_p = 1.0;
-            _R_m = 1.0;
+            _R_p.set(row,1.0);
+
+            _R_m.set(row,1.0);
             //std::cout<<"ciao"<<std::endl;
         }
+    }
+
+     
+    _f_mat.close();
+   
+    _R_m.close();
+
+    _R_p.close();
+
+    _f_mat.print_matlab("f_d.m");
+
+    std::vector<double>_vec_localize_r_p;
+    _R_p.localize(_vec_localize_r_p);
+
+    if (*std::max_element(std::begin(_vec_localize_r_p), end(_vec_localize_r_p))>1.0) {
+        std::cout<<"max_p="<<*std::max_element(std::begin(_vec_localize_r_p), end(_vec_localize_r_p))<<std::endl;
+        exit(1);
+    }
+
+        if (*std::min_element(std::begin(_vec_localize_r_p), end(_vec_localize_r_p))<0.0) {
+        std::cout<<"minx_p="<<*std::min_element(std::begin(_vec_localize_r_p), end(_vec_localize_r_p))<<std::endl;
+        exit(1);
+    }
+
+
+    std::vector<double>_vec_localize_r_m;
+    _R_m.localize(_vec_localize_r_m);
+
+
+    if (*std::max_element(std::begin(_vec_localize_r_m), end(_vec_localize_r_m))>1.0) {
+        std::cout<<"max_m="<<*std::max_element(std::begin(_vec_localize_r_m), end(_vec_localize_r_m))<<std::endl;
+        exit(1);
+    }
+
+
+    if (*std::min_element(std::begin(_vec_localize_r_m), end(_vec_localize_r_m))<0.0) {
+        std::cout<<"minx_m="<<*std::min_element(std::begin(_vec_localize_r_m), end(_vec_localize_r_m))<<std::endl;
+        exit(1);
+    }
 
 
 
-        //std::cout<<"max_r"<<max_p<<"min_r"<<min_p<<std::endl;
-    
-        //Real alpha_ij = 0.0;
 
-        //alpha.clear();
+    _R_m.print_matlab("R_m.m");
+
+    _R_p.print_matlab("R_p.m");
+
+
+
+    for (int row=r_start; row<r_stop; ++row)
+    {
+        PetscInt ncols_m, ncols_f, ncols_l; 
+
+        PetscInt const *cols_m, *cols_f, *cols_l; 
+     
+        PetscScalar const *val_m, *val_f, *val_l; 
+
+        std::vector<double> values;
+        values.clear();
         
-       
-       MatGetRow(M_petsc,row,&ncols_m,&cols_m,&val_m);  
-        // MatGetRow(J_tr_petsc,row,&ncols_j_tr,&cols_j_tr,&val_j_tr);
-        // MatGetRow(J_petsc,row,&ncols_j,&cols_j,&val_j);            
+
+        MatGetRow(PM_petsc,row,&ncols_m,&cols_m,&val_m); 
+        for (int p=0; p<ncols_m; ++p){
+                int col=cols_m[p];
+                values.push_back(_vec_localize.at(col));
+            }
+        MatRestoreRow(PM_petsc,row,&ncols_m,&cols_m,&val_m);   
+
+        
+        MatGetRow(_f_mat.mat(),row,&ncols_f,&cols_f,&val_f);  
+        MatGetRow(PM_petsc,row,&ncols_m,&cols_m,&val_m); 
+
+        double v_i = ghosted_solution(row);    
+
         for (int p=0; p<ncols_m; ++p)
         {
-            int col=cols_m[p];            
-                
-            if (row!=col)
-            {
-                
-                if(f_tmp.at(p)>=0) alpha_v.push_back(_R_p);
+            int col=cols_m[p];
 
-                else if (f_tmp.at(p)<0) alpha_v.push_back(_R_m);
+            if(row!=col) {
+
+                Real ris = 0.0;
+
+                if(val_f[p]>0.0) {
                 
+                    double entry_p = std::min(_R_p(row),_vec_localize_r_m.at(col));
+
+                    ris = val_f[p] * entry_p;
+
+
+                    if(std::abs(ris)>1.0){
+                        std::cout<<"c_p"<<col<<" and value_p "<<ris<<"  and "<<_R_p(row)<<" and "<<val_f[p]<<std::endl;
+                    }
+
+
+                    // if(std::abs(*std::max_element(std::begin(values), end(values)) - v_i)<1.0e-7){
+                    //     _alpha_mat.set(row, col, 0.0);
+                    // }
+                    // else{
+                        _alpha_mat.set(row, col, ris);
+                    //}
+                 
+                    
+                }
+
+                else if(val_f[p]<0.0) 
+                {
+
+                    double entry_m = std::min(_R_m(row),_vec_localize_r_p.at(col));
+
+                    ris = val_f[p] * entry_m;
+
+                    // if(std::abs(*std::min_element(std::begin(values), end(values)) - v_i)<1.0e-7){
+
+                    //     _alpha_mat.set(row, col, 0.0);
+
+                    // }
+                    // else{
+
+
+                    if(std::abs(ris)>1.0){
+                        std::cout<<"c_m"<<col<<" and value_m "<<ris<<" and "<<_R_m(row)<<" and "<<val_f[p]<<std::endl;
+                    }
+
+
+                        _alpha_mat.set(row, col, ris);
+                    
+                    //}
+                    
+                }
+                
+                else 
+                {
+
+                    _alpha_mat.set(row, col, 0.0);
+                  
+                }
             }
-            if(p==ncols_m-1) 
-            {    
                 
-                if(f_tmp.at(p)>=0) alpha_v.push_back(_R_p);
-
-                else if (f_tmp.at(p)<0) alpha_v.push_back(_R_m);
-                
-            }           
-            
         }
-        MatRestoreRow(M_petsc,row,&ncols_m,&cols_m,&val_m);  
-        // MatRestoreRow(J_tr_petsc,row,&ncols_j_tr,&cols_j_tr,&val_j_tr);
-        // MatRestoreRow(J_petsc,row,&ncols_j,&cols_j,&val_j);
 
+        MatRestoreRow(PM_petsc,row,&ncols_m,&cols_m,&val_m);  
+ 
+        MatRestoreRow(_f_mat.mat(),row,&ncols_f,&cols_f,&val_f); 
 
-      
-       Real ris = 0;
-
-       for (int ll=0; ll<f_tmp.size(); ll++){
-           ris+=f_tmp.at(ll)*alpha_v.at(ll);
-       }
-
-       //std::cout<<ris<<std::endl;
-
-       ris *= _inv(row);
-
-
-       (*f).set(row,ris);
-
-
-       //ghosted_solution(row)+=ris;
 
     }
 
-  
+
+    _alpha_mat.close();
+
+
+    _alpha_mat.print_matlab("alpha.m");
+
+    _alpha_mat.vector_mult(_a_bar,_ones);
+
+
+    for (int row=r_start; row<r_stop; ++row)
+    {
+          
+        auto it = std::find(zero_rows.begin(), zero_rows.end(), row);
+
+        if(it == zero_rows.end()){
+
+            auto f_bar = _a_bar(row) * _inv(row) * dt;
+
+            (*f).set(row,f_bar);
+        }
+        else{
+
+           (*f).set(row,0.0);
+        }
+
+
+    }
+
+
+             
+        
+    (*f).close();
+
+    // (*f).print_matlab("f.m");
+
     ghosted_solution.add(*f);
 
-   // exit(1);
+    // ghosted_solution.print_matlab("sol.m");
+
+    PetscVector<Number> &f_p = dynamic_cast<libMesh::PetscVector<libMesh::Number>& >(ghosted_solution);
+    set_solution(f_p);
+
 }
 
 void
@@ -880,5 +991,113 @@ ParrotProblem::split_string(const std::string & s, char delim)
       return v;
 }
 
+void ParrotProblem::set_solution(PetscVector<Number> &correction)
+{
+    // copy projected solution into target es
+
+   
+
+
+    
+    MooseVariableFEBase  & aux_var = getVariable(0, "correction", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
+
+    MooseVariableFEBase  & sol_var = getVariable(0, "CM", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
+    
+    // solution of the original system
+    System & aux_sys = aux_var.sys().system();
+
+
+
+    NumericVector<Number> * aux_solution = aux_sys.solution.get();
+
+
+    NonlinearSystemBase & _nl = this->getNonlinearSystemBase();
+
+    //NumericVector<Number> & from_solution = *ls.solution;
+    
+  
+    //LinearImplicitSystem & ls = _es.get_system<LinearImplicitSystem>("Diffusion");
+
+  
+    { // loop through our local elements and set the solution from the projection
+        
+        for (const auto & node : es().get_mesh().local_node_ptr_range())
+
+        {
+            for (unsigned int comp = 0; comp < node->n_comp(aux_sys.number(), aux_var.number()); comp++)
+
+            {
+
+            //std::cout<<"uno"<<std::endl;
+
+                const dof_id_type proj_index = node->dof_number(_nl.number(), sol_var.number(), comp);
+            
+            //std::cout<<"due"<<std::endl;
+
+                const dof_id_type to_index = node->dof_number(aux_sys.number(), aux_var.number(), comp);
+
+            //std::cout<<"tre"<<std::endl;
+
+             //
+
+                aux_solution->set(to_index, correction(proj_index));
+            }
+
+        }
+    }
+
+  //auto &aux_sys = _fe_problem.getAuxiliarySystem();
+
+
+
+
+  aux_solution->close();
+  aux_sys.update();
+
+  //ExodusII_IO (_fe_problem.es().get_mesh()).write_equation_systems("matrix_c.e", _fe_problem.es());
+
+    
+}
   
 
+
+    // for (int row=r_start; row<r_stop; ++row)
+    // {
+    //     PetscInt ncols_a, ncols_f; 
+
+    //     PetscInt const *cols_a, *cols_f; 
+     
+    //     PetscScalar const *val_a, *val_f; 
+
+          
+    //     MatGetRow(_alpha_mat.mat(),row,&ncols_a,&cols_a,&val_a); 
+
+    //     MatGetRow(_f_mat.mat(),row,&ncols_f,&cols_f,&val_f);  
+
+    //     double value=0.0;
+
+    //     for (int p=0; p<ncols_a; ++p)
+    //     {
+    //         int col=cols_a[p];
+
+    //         if(row!=col) {
+
+    //             value+=val_a[p]*val_f[p];
+    //         }
+    //     }
+
+    //     auto it = std::find(zero_rows.begin(), zero_rows.end(), row);
+
+    //     if(it == zero_rows.end()){
+
+    //         auto f_bar = value * _inv_p(row);
+
+    //         (*f).set(row,f_bar);
+    //     }
+    //     else{
+    //        (*f).set(row,0.0);
+    //     }
+
+    //     MatRestoreRow(_alpha_mat.mat(),row,&ncols_a,&cols_a,&val_a);  
+    //     MatRestoreRow(_f_mat.mat(),row,&ncols_f,&cols_f,&val_f); 
+    // }

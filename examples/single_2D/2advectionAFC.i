@@ -11,6 +11,7 @@ dc_boundaries = "6"
  block_id = '1 6 4 7 2'
  boundary_id = '6 7'
  boundary_name = 'inflow outflow'
+ uniform_refine = 0
 #partitioner = linear
  []
 
@@ -20,6 +21,7 @@ dc_boundaries = "6"
  
 [AuxVariables]
 [./P_aux] [../]
+[./correction] [../]
 []
 
 [Materials]
@@ -112,4 +114,9 @@ block_id = '1 6 7 2 4'
 value_p = ' 0.2 0.2 0.2 0.4 0.25'
 execute_on = 'initial'
 [../]
+[./PrintAssembly]
+ type = PrintMatrix
+ execute_on = 'timestep_end'
+ dc_boundaries = "6"
+ [../]
 []

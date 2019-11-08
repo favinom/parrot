@@ -3,9 +3,9 @@
 # number of processors
 np=4;
 #background elements, THIS NUMBER HAS TO BE DIVISIBLE BY 8
-be=600;
+be=400;
 # element per fracture
-fe=8;
+fe=4;
 # starting level
 res=`expr ${be} + 3 \\* ${fe}`
 #echo $res
@@ -27,8 +27,8 @@ mv uniform_${res}_0001_mesh.xda uniform_${res}_mesh.xda
 
 commandString='faimesh('${be}','${fe}')'
 
-#/Users/mariagiuseppinanestola/Desktop/MATLAB_R2014b.app/bin/matlab -nodesktop -nosplash -r "faimesh; quit"
-/Applications/MATLAB_R2018b.app/bin/matlab -nodesktop -nosplash -r ${commandString}
+/Users/mariagiuseppinanestola/Desktop/MATLAB_R2014b.app/bin/matlab -nodesktop -nosplash -r "faimesh; quit"
+#/Applications/MATLAB_R2018b.app/bin/matlab -nodesktop -nosplash -r ${commandString}
 
 rm uniform_${res}_mesh.xda
 

@@ -88,6 +88,11 @@ public:
     return _jac_matrix;
   };
 
+  std::shared_ptr<PetscMatrix<Number>> &
+  PoroLumpMassMatrix()
+  {
+    return _poro_lump_mass_matrix;
+  };
 
 
 
@@ -126,6 +131,7 @@ protected:
   std::shared_ptr<PetscMatrix<Number>> _stab_matrix;
   std::shared_ptr<PetscMatrix<Number>> _poro_mass_matrix;
   std::shared_ptr<PetscMatrix<Number>> _lump_mass_matrix;
+  std::shared_ptr<PetscMatrix<Number>> _poro_lump_mass_matrix;
   std::shared_ptr<PetscMatrix<Number>> _jac_matrix;
 
    

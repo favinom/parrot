@@ -47,12 +47,9 @@ StoreOperators::StoreOperators(const InputParameters & parameters) :
     // _lump_mass_matrix = new PetscMatrix<Number>(comm);
 
 	_mass_matrix = std::make_shared<PetscMatrix<Number>>(comm);
-    // std::cout << "[MASSMATRIX-StoreOperators]" << _mass_matrix.get() << std::endl;
-
-    //(*_mass_matrix).init(10,10,10,10,1);
-
     _poro_mass_matrix = std::make_shared<PetscMatrix<Number>>(comm);
     _lump_mass_matrix = std::make_shared<PetscMatrix<Number>>(comm);
+    _poro_lump_mass_matrix = std::make_shared<PetscMatrix<Number>>(comm);
     _jac_matrix = std::make_shared<PetscMatrix<Number>>(comm);
     _stab_matrix = std::make_shared<PetscMatrix<Number>>(comm);
 

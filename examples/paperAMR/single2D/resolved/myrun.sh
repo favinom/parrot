@@ -21,6 +21,6 @@ then
 fi
 
 #mpirun -n ${np} ../../../../parrot-opt -i 1diffusion.i adapSteps=${as} unifSteps=${us}
-mpirun -n ${np} ../../../../parrot-opt -i 2advection.i adapSteps=${as} unifSteps=${us}
-#mpirun -n ${np} ../../parrot-opt -i 2advectionAFC.i adapSteps=${as} unifSteps=${us} 
+#mpirun -n ${np} ../../../../parrot-opt -i 2advection.i adapSteps=${as} unifSteps=${us}
+mpirun -n ${np} ../../../../parrot-opt -i 2advectionCorrection.i adapSteps=${as} unifSteps=${us} 
 #lldb --  ../../parrot-dbg -i 2advectionAFC.i adapSteps=${as} unifSteps=${us}

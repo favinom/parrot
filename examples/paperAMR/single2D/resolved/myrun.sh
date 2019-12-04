@@ -4,6 +4,7 @@ as=5;
 us=0;
 np=4;
 createmesh=1;
+correction=1;
 
 if [ $createmesh -eq 1 ]
 then
@@ -21,6 +22,11 @@ then
 fi
 
 #mpirun -n ${np} ../../../../parrot-opt -i 1diffusion.i adapSteps=${as} unifSteps=${us}
-#mpirun -n ${np} ../../../../parrot-opt -i 2advection.i adapSteps=${as} unifSteps=${us}
-mpirun -n ${np} ../../../../parrot-opt -i 2advectionCorrection.i adapSteps=${as} unifSteps=${us} 
-#lldb --  ../../parrot-dbg -i 2advectionAFC.i adapSteps=${as} unifSteps=${us}
+if [ $correction -eq 0 ]
+then
+	mpirun -n ${np} ../../../../parrot-opt -i 2advection.i adapSteps=${as} unifSteps=${us}
+fi
+if [ $correction -eq 1 ]
+then
+	mpirun -n ${np} ../../../../parrot-opt -i 2advectionCorrection.i adapSteps=${as} unifSteps=${us}
+fi

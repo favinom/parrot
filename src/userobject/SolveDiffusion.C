@@ -9,35 +9,35 @@
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "SolveDiffusion.h"
-#include "libmesh/quadrature_gauss.h"
+#include <iostream>
+#include <string>
 #include "FEProblem.h"
-#include "libmesh/exodusII_io.h"
-#include "libmesh/nonlinear_implicit_system.h"
+#include "MooseVariableFEBase.h"
+#include "NonlinearSystemBase.h"
+
+#include "libmesh/equation_systems.h"
+#include "libmesh/mesh_base.h"
+//#include "libmesh/mesh.h"
+#include "libmesh/linear_implicit_system.h"
+//#include "libmesh/nonlinear_implicit_system.h"
+//#include "libmesh/transient_system.h"
+
+#include "libmesh/sparse_matrix.h"
+#include "libmesh/numeric_vector.h"
 #include "libmesh/petsc_matrix.h"
 #include "libmesh/petsc_vector.h"
-#include "libmesh/sparse_matrix.h"
-#include "libmesh/equation_systems.h"
-#include "libmesh/linear_implicit_system.h"
-#include "libmesh/transient_system.h"
+#include "libmesh/exodusII_io.h"
+
+
+#include "libmesh/quadrature_gauss.h"
 #include "libmesh/dirichlet_boundaries.h"
 #include "libmesh/zero_function.h"
 #include "libmesh/const_function.h"
 #include "libmesh/parsed_function.h"
-#include <iostream>
-#include "MooseVariableFEBase.h"
-#include "NonlinearSystemBase.h"
-#include <string>
+
 using namespace std;
 
 registerMooseObject("parrotApp", SolveDiffusion);
-
-// void
-// assembly_diffusion(EquationSystems & es, const std::string & system_name)
-// {
-//     std::cout<<"CIAO\n";
-//     SolveDiffusion * pippo = es.parameters.get< SolveDiffusion*>("pippo");
-//     pippo->AssembleDiffusionOP(es, system_name);
-// }
 
 
 template <>
@@ -46,27 +46,14 @@ validParams<SolveDiffusion>()
 {
   InputParameters params = validParams<GeneralUserObject>();
   
-  params.addRequiredParam<std::vector<int>>("block_id",
-                                                     "The name of the nodeset to create");
-  params.addRequiredParam<std::vector<Real>>("value_p",
-                                                     "The name of the nodeset to create");
-
-  params.addRequiredParam<std::vector<boundary_id_type>>("boundary_D_bc",
-                                                     "The name of the boundary to create");
-
-  params.addRequiredParam<std::vector<boundary_id_type>>("boundary_N_bc",
-                                                     "The name of the boundary to create");
-
-
+  params.addRequiredParam<std::vector<int>>("block_id","block_id");
+  params.addRequiredParam<std::vector<Real>>("value_p","value_p");
+  params.addRequiredParam<std::vector<boundary_id_type>>("boundary_D_bc","boundary_D_bc");
+  params.addRequiredParam<std::vector<boundary_id_type>>("boundary_N_bc","boundary_N_bc");
   params.addRequiredParam<std::vector<Real>>("value_N_bc", "The value of Neumann");
-
   params.addRequiredParam<std::vector<Real>>("value_D_bc", "The value of Dirichlet");
-
-  params.addRequiredParam<std::vector<AuxVariableName>>(
-      "aux_variable", "The auxiliary variable to store the transferred values in.");
-
-
-
+  params.addRequiredParam<std::vector<AuxVariableName>>("aux_variable", "The auxiliary variable to store the transferred values in.");
+  params.addParam<std::string>("output_file", "the file name of the output");
 
   return params;
 }
@@ -79,264 +66,212 @@ _vector_value(getParam<std::vector<Real>>("value_p")),
 _boundary_D_ids(getParam<std::vector<boundary_id_type>>("boundary_D_bc")),
 _boundary_N_ids(getParam<std::vector<boundary_id_type>>("boundary_N_bc")),
 _value_N_bc(getParam<std::vector<Real>>("value_N_bc")),
-_value_D_bc(getParam<std::vector<Real>>("value_D_bc"))
-
+_value_D_bc(getParam<std::vector<Real>>("value_D_bc")),
+_has_output_file( isParamValid("output_file") )
 {
-  if (_aux_var_names.size() == 0)
-    paramError("variable", "You need to specify at least one variable");
 
-  /* Right now, most of transfers support one variable only */
+  if (_has_output_file)
+    _output_filename=getParam<std::string>("output_file");
+
+  _sys_name="Diffusion";
+  _var_name="pressure";
+
   if (_aux_var_names.size() == 1)
-    _aux_var_name = _aux_var_names[0];
+    _aux_var_name = _aux_var_names.at(0);
+  else
+    paramError("variable", "You need to specify one and only one variable");
+
 }
 
- void SolveDiffusion::execute(){};
 
 
- void SolveDiffusion::initialize()
+void SolveDiffusion::initialize()
 {
-    std::cout<<"initialize\n";
+  _console<<"BEGIN initialize\n";
 
-   // _fe_problem.es().get_mesh().elem_ref(0).set_refinement_flag (Elem::REFINE);
+  EquationSystems & mooseEquationSystems=_fe_problem.es();
+   // get_mesh gives a reference to a meshbase
+  MeshBase & mooseMesh=mooseEquationSystems.get_mesh();
+  EquationSystems equation_systems ( mooseMesh );
+  LinearImplicitSystem & system = equation_systems.add_system<LinearImplicitSystem> (_sys_name.c_str());
+  _p_var = system.add_variable (_var_name.c_str(), FIRST);
+  equation_systems.init();
+  equation_systems.print_info();
 
-   // // Create an equation systems object.
-   EquationSystems equation_systems (_fe_problem.es().get_mesh());
+  solve(equation_systems);
+  mooseEquationSystems.reinit();
+  set_solution(equation_systems);
 
-   LinearImplicitSystem & _system = equation_systems.add_system<LinearImplicitSystem> ("Diffusion");
+  equation_systems.delete_system(_sys_name.c_str());
+  equation_systems.clear();
 
-   _p_var = _system.add_variable ("pressure", FIRST);
-
-   equation_systems.init();
-
-   _fe_problem.es().reinit();
-
-   equation_systems.print_info();
-  
-   solve(equation_systems, _system);
-
-   set_solution(equation_systems);
-
-   std::string sys_name("Diffusion");
-
-   equation_systems.delete_system(sys_name);
-
-   equation_systems.clear();
-
-   //std::cout<<"n_sys"<<equation_systems.n_systems()<<std::endl;
-
-
- 
-    
+  _console<<"END initialize\n";
 }
 
- void SolveDiffusion::finalize()
+
+int SolveDiffusion::solve(EquationSystems & es)
 {
-    std::cout<<"finalize\n";
+  _console<<"BEGIN solve\n";
+
+  LinearImplicitSystem & _system = es.get_system<LinearImplicitSystem> (_sys_name);
+
+  AssembleDiffusionOP(es, _sys_name.c_str() );
+
+  NumericVector<Number> & sol_NV=*_system.solution;
+  NumericVector<Number> & rhs_NV=*_system.rhs;
+  SparseMatrix<Number>  & mat_SM=*_system.matrix;
+
+  PetscVector<Number> & sol_PV= dynamic_cast<PetscVector<Number> &>(sol_NV);
+  PetscVector<Number> & rhs_PV= dynamic_cast<PetscVector<Number> &>(rhs_NV);
+  PetscMatrix<Number> & mat_PM= dynamic_cast<PetscMatrix<Number> &>(mat_SM);
+
+  PetscErrorCode ierr;
+  PC _diff_problem;
+
+  ierr = PCCreate(PETSC_COMM_WORLD, &_diff_problem);
+  CHKERRQ(ierr);
+  ierr = PCSetType(_diff_problem,PCLU);
+  CHKERRQ(ierr);
+  ierr = PCSetOperators(_diff_problem, mat_PM.mat(),mat_PM.mat());
+  CHKERRQ(ierr);  
+  ierr = PCFactorSetMatSolverPackage(_diff_problem,MATSOLVERMUMPS);
+  CHKERRQ(ierr);
+  ierr = PCApply(_diff_problem,rhs_PV.vec(),sol_PV.vec()); CHKERRQ(ierr);
+  CHKERRQ(ierr);
+  PCDestroy(&_diff_problem);
+  //solution->print_matlab();
+
+  if(_has_output_file)
+    ExodusII_IO (es.get_mesh()).write_equation_systems(_output_filename.c_str(), es);
+
+  _console<<"END solve\n";
+
+  return 0 ;
 }
 
- void SolveDiffusion::threadJoin(const UserObject & uo)
+void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, std::string const & system_name)
 {
-    
-};
-
-
-
-int SolveDiffusion::solve(EquationSystems & _es, LinearImplicitSystem & _system){
-
-
-    std::cout<<"solve::begin\n";
-
-         //MeshBase & _mesh_m = _fe_problem.es().get_mesh();
-
-       //LinearImplicitSystem & _system = equation_systems.get_system<LinearImplicitSystem> ("Diffusion");
-    
-       //libMesh::Parallel::Communicator const & comm_in=_mesh_m.comm();
-    
-       AssembleDiffusionOP(_es,"Diffusion");
-
-       NumericVector<Number> & sol_NV=*_system.solution;
-       NumericVector<Number> & rhs_NV=*_system.rhs;
-
-       PetscVector<Number> & sol_PV= dynamic_cast<PetscVector<Number> &>(sol_NV);
-       PetscVector<Number> & rhs_PV= dynamic_cast<PetscVector<Number> &>(rhs_NV);
-
-       libMesh::PetscMatrix<libMesh::Number> *petsc_mat_m = dynamic_cast<libMesh::PetscMatrix<libMesh::Number>* >(_system.matrix);
-
-
-       //_system.solve()
-
-       PetscErrorCode ierr;
-       PC _diff_problem;
-
-       ierr = PCCreate(PETSC_COMM_WORLD, &_diff_problem);
-       CHKERRQ(ierr);
-
-       //std::cout<<"solve::Begin1\n";
-    
-       ierr = PCSetType(_diff_problem,PCLU);
-       CHKERRQ(ierr);
-
-       //std::cout<<"solve::Begin2\n";
-
-       ierr = PCSetOperators(_diff_problem, petsc_mat_m->mat(),petsc_mat_m->mat());
-       CHKERRQ(ierr);
-
-       //std::cout<<"solve::Begin3\n";
-    
-       ierr = PCFactorSetMatSolverPackage(_diff_problem,MATSOLVERMUMPS);
-       CHKERRQ(ierr);
-       //std::cout<<"solve::Begin4\n";
-
-    
-
-
-       ierr = PCApply(_diff_problem,rhs_PV.vec(),sol_PV.vec()); CHKERRQ(ierr);
-
-    PCDestroy(&_diff_problem);
-    
-    std::cout<<"solve::end\n";
-
-    
-
-       //solution->print_matlab();
-
-       //ExodusII_IO (_es.get_mesh()).write_equation_systems("matrix_c.e", _es);
-
-
-        return 0 ;
-    
-       //NumericVector<Number> & sol_ref = solution[0];
-
-}
-
-void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, const std::string & system_name){
-
-    _console << "Assemble_Diffusion::Begin "  << std::endl;
+  _console << "BEGIN Assemble_Diffusion"  << std::endl;
 
     // Get a constant reference to the mesh object.
-    const MeshBase & mesh = _es.get_mesh();
-
+  const MeshBase & mesh = _es.get_mesh();
     // The dimension that we are running.
-    const unsigned int dim = mesh.mesh_dimension();
-
+  const unsigned int dim = mesh.mesh_dimension();
     // Get a reference to our system.
-    LinearImplicitSystem & _system = _es.get_system<LinearImplicitSystem>(system_name);
+  LinearImplicitSystem & _system = _es.get_system<LinearImplicitSystem>(system_name);
+
+  SparseMatrix<Number> & matrix_K = *_system.matrix;
+  matrix_K.zero();
 
     // Get a constant reference to the Finite Element type
     // for the first (and only) variable in the system.
-    FEType fe_type = _system.get_dof_map().variable_type(0);
+  FEType fe_type = _system.get_dof_map().variable_type(0);
 
-    UniquePtr<FEBase> fe (FEBase::build(dim, fe_type));
+  UniquePtr<FEBase> fe (FEBase::build(dim, fe_type));
 
-    SparseMatrix<Number> & matrix_K = *_system.matrix;
- 
-    DenseMatrix<Number> ke;
-
-    DenseVector<Number> re;
-
-    QGauss qrule (dim, fe_type.default_quadrature_order());
-
+  QGauss qrule (dim, TENTH );
+    //QGauss qrule (dim, fe_type.default_quadrature_order() );
     // Tell the finite element object to use our quadrature rule.
-    fe->attach_quadrature_rule (&qrule);
+  fe->attach_quadrature_rule (&qrule);
 
-    std::unique_ptr<FEBase> fe_face (FEBase::build(dim, fe_type));
+  std::unique_ptr<FEBase> fe_face (FEBase::build(dim, fe_type));
 
     // Boundary integration requires another quadrature rule,
     // with dimensionality one less than the dimensionality
     // of the element.
     // In 1D, the Clough and Gauss quadrature rules are identical.
-    std::unique_ptr<QBase> qface(fe_type.default_quadrature_rule(dim-1));
+  std::unique_ptr<QBase> qface(fe_type.default_quadrature_rule(dim-1));
 
     // Tell the finite element object to use our
     // quadrature rule.
-    fe_face->attach_quadrature_rule (qface.get());
+  fe_face->attach_quadrature_rule (qface.get());
 
     // The element Jacobian * quadrature weight at each integration point.
-    const std::vector<Real> & JxW = fe->get_JxW();
+  const std::vector<Real> & JxW = fe->get_JxW();
 
     // The element shape functions evaluated at the quadrature points.
-    const std::vector<std::vector<Real> > & phi = fe->get_phi();
+  const std::vector<std::vector<Real> > & phi = fe->get_phi();
 
-    const std::vector<std::vector<RealGradient> > & dphi = fe->get_dphi();
+  const std::vector<std::vector<RealGradient> > & dphi = fe->get_dphi();
 
-    const DofMap & dof_map = _system.get_dof_map();
+  const DofMap & dof_map = _system.get_dof_map();
 
-    std::vector<dof_id_type> dof_indices;
+  std::vector<dof_id_type> dof_indices;
 
-    MeshBase::const_element_iterator       el     = mesh.active_local_elements_begin();
+  DenseMatrix<Number> ke;
+  DenseVector<Number> re;
 
-    const MeshBase::const_element_iterator end_el = mesh.active_local_elements_end();
+  MeshBase::const_element_iterator           el = mesh.active_local_elements_begin();
+  MeshBase::const_element_iterator const end_el = mesh.active_local_elements_end();
 
-    // first we need to manually zero the matrix
-    matrix_K.zero();
+  for ( ; el != end_el; ++el)
+  {
+    const Elem * elem = *el;
 
-    for ( ; el != end_el; ++el)
-    {
-        const Elem * elem = *el;
+    fe->reinit (elem);
+        //std::cout<<qrule.n_points()<<std::endl;
 
-        Elem * ele = *el;
+    dof_map.dof_indices(elem, dof_indices);
 
-        fe->reinit (elem);
-
-        dof_map.dof_indices(elem, dof_indices);
-
-        const unsigned int n_dofs = cast_int<unsigned int>(dof_indices.size());
+    const unsigned int n_dofs = cast_int<unsigned int>(dof_indices.size());
 
         // With one variable, we should have the same number of degrees
         // of freedom as shape functions.
-        libmesh_assert_equal_to (n_dofs, phi.size());
+    libmesh_assert_equal_to (n_dofs, phi.size());
 
         //std::cout<<"n_dofs "<<n_dofs<<std::endl;
 
-        ke.resize (n_dofs , n_dofs);
-        ke.zero();
+    ke.resize (n_dofs , n_dofs);
+    ke.zero();
+
+    Real permeabiltiy=ComputeMaterialProprties(elem);
+
+    for (unsigned int i=0; i<phi.size(); i++){
+
+      for (unsigned int j=0; j<phi.size(); j++){
 
         for (unsigned int qp=0; qp<qrule.n_points(); qp++){
 
-            for (unsigned int i=0; i<phi.size(); i++){
 
-                for (unsigned int j=0; j<phi.size(); j++){
 
-                    ke(i,j) += ComputeMaterialProprties(elem) * JxW[qp] * dphi[i][qp] * dphi[j][qp];
-                }
-            }
-
+          ke(i,j) +=  JxW[qp] * ( dphi[j][qp] * ( permeabiltiy * dphi[i][qp] ) );
         }
+      }
 
-        re.resize(n_dofs);
-        re.zero();
+    }
+
+    re.resize(n_dofs);
+    re.zero();
 
     
-        for (auto side : elem->side_index_range())
-        {
-          if (elem->neighbor_ptr(side) == nullptr)
-            {
-              const std::vector<std::vector<Real>> & phi_face = fe_face->get_phi();
-              const std::vector<Real> & JxW_face = fe_face->get_JxW();
+    for (auto side : elem->side_index_range())
+    {
+      if (elem->neighbor_ptr(side) == nullptr)
+      {
+        const std::vector<std::vector<Real>> & phi_face = fe_face->get_phi();
+        const std::vector<Real> & JxW_face = fe_face->get_JxW();
 
-              fe_face->reinit(elem, side);
+        fe_face->reinit(elem, side);
 
-              for(int k =0; k < _boundary_N_ids.size(); k++){
-
-                //std::cout<<_boundary_N_ids[k] <<" "<<_value_N_bc.at(k) << std::endl;
+        for(int k =0; k < _boundary_N_ids.size(); k++){
 
                 if (mesh.get_boundary_info().has_boundary_id (elem, side, _boundary_N_ids[k])) // Apply a traction on the right side
-                  {
-                     for (unsigned int qp=0; qp<qface->n_points(); qp++)
-                     for (unsigned int i=0; i != n_dofs; i++)
-                            re(i) += JxW_face[qp] * -1.0 * _value_N_bc.at(k) * phi_face[i][qp];
-                  }
-               }
-             }
+                {
+                 for (unsigned int qp=0; qp<qface->n_points(); qp++)
+                   for (unsigned int i=0; i != n_dofs; i++)
+                    re(i) += JxW_face[qp] * -1.0 * _value_N_bc.at(k) * phi_face[i][qp];
+                }
+              }
+            }
           }
-     
-       const Real penalty = 1.e10;
 
-       for (auto s : elem->side_index_range())
-       {
+          const Real penalty = 1.e15;
 
-        if (elem->neighbor_ptr(s) == nullptr)
-        {
+          for (auto s : elem->side_index_range())
+          {
+
+            if (elem->neighbor_ptr(s) == nullptr)
+            {
               fe_face->reinit(elem, s);
 
               const std::vector<std::vector<Real>> & phi_face = fe_face->get_phi();
@@ -351,23 +286,24 @@ void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, const std::strin
               }
 
               Real boundaryValue=0;
-            
+
               //std::cout<<"BID" <<mesh.get_boundary_info().boundary_id(elem, s)<<std::endl;
 
               for(int k =0; k < _boundary_D_ids.size(); k++)
               {
-                
+
                 if (mesh.get_boundary_info().has_boundary_id (elem, s, _boundary_D_ids[k]))
                 {
-                   boundaryValue=_value_D_bc.at(k);
+                 boundaryValue=_value_D_bc.at(k);
 
 
                    //_console << "Assemble_Diffusion:: Add penalty BC on Id"  << _boundary_D_ids[k] <<std::endl;
-                
 
-                for (int k=0; k<whichOnBoundary.size(); ++k)
+
+                 for (int k=0; k<whichOnBoundary.size(); ++k)
+                 {
+                  if (whichOnBoundary.at(k)>0.5)
                   {
-                    if (whichOnBoundary.at(k)>0.5){
                    re(k) += penalty * boundaryValue;
                    ke(k,k) += penalty;
                  }
@@ -376,64 +312,40 @@ void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, const std::strin
            }
          }
        }
-      
 
+       dof_map.constrain_element_matrix_and_vector (ke, re, dof_indices);
 
-        //std::cout<<ke<<std::endl;
-        dof_map.constrain_element_matrix_and_vector (ke, re, dof_indices,true);
-        //dof_map.constrain_element_matrix_and_vector (ke, re, dof_indices);
-        //std::cout<<ke<<std::endl;
-
-        _system.matrix->add_matrix (ke, dof_indices);
-
-        _system.rhs->add_vector(re, dof_indices);
-
-        //exit(1);
+       _system.matrix->add_matrix (ke, dof_indices);
+       _system.rhs->add_vector(re, dof_indices);
+     }
 
 
 
+     _system.matrix->close();
+     _system.rhs->close();
+     _console << "END Assemble_Diffusion"  << std::endl;    
+   }
+
+
+   Real
+   SolveDiffusion::ComputeMaterialProprties(const Elem *elem)
+   {
+    Real permeability=0.0;
+    for(int ll=0; ll<_vector_p.size(); ll++)
+    {
+      if (elem->subdomain_id()==_vector_p[ll])
+      {
+        permeability = _vector_value[ll];
+      }
     }
-
-
-
-    _system.matrix->close();
-
-    _system.rhs->close();
-
-    //_system.matrix->print_matlab("Diff.m");
-    //_system.rhs->print_matlab("rhs.m");
-
-    _console << "Assemble_Diffusion::end "  << std::endl;
-
-    
-}
-
-
-Real
-SolveDiffusion::ComputeMaterialProprties(const Elem *elem){
-    
-   // _console << "_vector_p.size()"  << _vector_p.size() <<std::endl;
-
-Real permeability=0.0;
-
-    for(int ll=0; ll<_vector_p.size(); ll++){
-        if (elem->subdomain_id()==_vector_p[ll]) {
-
-            permeability = _vector_value[ll];
-        }
-    }
-  
     return permeability;
-}
+  }
 
 
 
 
-void SolveDiffusion::set_solution(EquationSystems & _es)
-{
-    // copy projected solution into target es
-
-    //return;
+  void SolveDiffusion::set_solution(EquationSystems & _es)
+  {
     MeshBase & _mesh = _fe_problem.es().get_mesh();
 
 
@@ -449,46 +361,38 @@ void SolveDiffusion::set_solution(EquationSystems & _es)
 
     //NumericVector<Number> & from_solution = *ls.solution;
     
-  
+
     LinearImplicitSystem & ls = _es.get_system<LinearImplicitSystem>("Diffusion");
 
-  
+
     { // loop through our local elements and set the solution from the projection
-        
-        for (const auto & node : _mesh.local_node_ptr_range())
+
+      for (const auto & node : _mesh.local_node_ptr_range())
+
+      {
+        for (unsigned int comp = 0; comp < node->n_comp(aux_sys.number(), aux_var.number()); comp++)
 
         {
-            for (unsigned int comp = 0; comp < node->n_comp(aux_sys.number(), aux_var.number()); comp++)
-
-            {
 
             //std::cout<<"uno"<<std::endl;
 
-                const dof_id_type proj_index = node->dof_number(ls.number(), _p_var, comp);
-            
+          const dof_id_type proj_index = node->dof_number(ls.number(), _p_var, comp);
+
             //std::cout<<"due"<<std::endl;
 
-                const dof_id_type to_index = node->dof_number(aux_sys.number(), aux_var.number(), comp);
+          const dof_id_type to_index = node->dof_number(aux_sys.number(), aux_var.number(), comp);
 
             //std::cout<<"tre"<<std::endl;
 
              //
 
-                aux_solution->set(to_index, (*ls.solution)(proj_index));
-            }
-
+          aux_solution->set(to_index, (*ls.solution)(proj_index));
         }
+
+      }
     }
 
-  //auto &aux_sys = _fe_problem.getAuxiliarySystem();
+    aux_solution->close();
+    aux_sys.update();
 
-
-
-
-  aux_solution->close();
-  aux_sys.update();
-
-  //ExodusII_IO (_fe_problem.es().get_mesh()).write_equation_systems("matrix_c.e", _fe_problem.es());
-
-    
-}
+  }

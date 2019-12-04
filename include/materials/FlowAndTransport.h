@@ -14,11 +14,19 @@ public:
 
 protected:
   virtual void computeQpProperties();
+  //virtual void computeProperties();
 
 protected:
 
     Real const _condInput;
     Real const _poroInput;
+    Real _dim;
+    RealTensorValue _id;
+    RealVectorValue _u_elem;
+
+    bool const _isPressureValid;
+    bool const _conservativeScheme;
+
     const VariableGradient &_gradP;
   
     MaterialProperty<Real> &_poro;

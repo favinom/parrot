@@ -2,7 +2,6 @@
 type = ParrotProblem
 use_AFC = true
 change_sol=true
-operator_userobject_problem = operator_userobject_problem
 dc_boundaries = "6"
 []
 
@@ -29,32 +28,10 @@ dc_boundaries = "6"
 [./conductivity2] type = FlowAndTransport k = 1e-5 phi=0.25 conservative = true block = 2       pressure = P_aux [../]
 []
 
- 
-[AuxKernels]
-[./en]
-type = SolutionAux
-solution = soln
-variable = P_aux
-scale_factor = 1.0
-execute_on = 'initial'
-[../]
-[]
-
 [Kernels]
 active='time upwind'
-
-[upwind]
-type = Advection
-variable = CM
-[../]
-
-[./time]
-type = PorosityTimeDerivative
-variable = CM
-lumping = true
- dim = 2
-[../]
-
+[upwind] type = Advection variable = CM [../]
+[./time] type = PorosityTimeDerivative variable = CM lumping = true dim = 2 [../]
 []
 
 [BCs]
@@ -74,33 +51,36 @@ type = Transient
 solve_type= LINEAR
 line_search = none
 
- petsc_options_iname=' -ksp_type             '   # -mat_view
- petsc_options_value='  ksp_parrot_preonly    '   # ::ascii_matlab
+ petsc_options_iname=' -ksp_type            '   # -mat_view
+ petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
 
 dt = 1e7
 num_steps=100
 
-[./Quadrature]
-order=TENTH
-[../]
+[./Quadrature] order=TENTH [../]
 
 []
 
 [Outputs]
  file_base = AdvectionOut_${unifSteps}_${adapSteps}
-exodus = true
-csv=true
-perf_graph = true
+ exodus = true
+ csv=true
+ perf_graph = true
 []
 
 
 [UserObjects]
 [./soln]
-type = SolutionUserObject
-mesh = DiffusionOut_${unifSteps}_${adapSteps}.e
-timestep = LATEST
-system_variables = pressure
+type = SolveDiffusion
 execute_on = 'initial'
+block_id='1 6 4 7 2'
+value_p ='1e-6 1e-6 1e-1 1e-6 1e-5'
+boundary_D_bc = '6 7'
+value_D_bc='4.0 1.0'
+boundary_N_bc = ''
+value_N_bc=''
+aux_variable=P_aux
+# output_file=matrix.e
 [../]
 [./operator_userobject_problem]
 type = StoreOperators
@@ -116,6 +96,6 @@ execute_on = 'initial'
 [./PrintAssembly]
  type = PrintMatrix
  execute_on = 'timestep_end'
- dc_boundaries = "6"
+ dc_boundaries = '6 7'
  [../]
 []

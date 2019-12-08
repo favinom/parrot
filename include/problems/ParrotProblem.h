@@ -30,7 +30,6 @@ public:
     
     virtual void initialSetup();
     virtual void timestepSetup();
-    virtual void solve();
     
     void computeStabilizationMatrix(SparseMatrix<Number> & jacobian);
     
@@ -48,46 +47,17 @@ public:
     
     PC _problem_PC;
     int _factorized;
-    
-    
-    
+        
     Parallel::Communicator const & _pp_comm;
-    //PetscMatrix<Number> _stab_matrix;
+    PetscMatrix<Number> _stab_matrix;
     
     bool _use_afc;
-    bool _change_sol;
-    std::string _dc_var;
     bool _is_stab_matrix_assembled;
-    std::shared_ptr<PetscMatrix<Number>> jmat, smat,_stab_matrix;
-
-    std::vector<int> _dc_boundary_id;
-
-    std::vector<std::vector<int> > _dc_variables_id;
 
     std::vector<int> zero_rows;
-    // int stabilize_coeffiecient(NumericVector<Number> & vec_solution,
-    //                            NumericVector<Number> & ghosted_solution);
+    StoreOperators * _storeOperatorsUO;
+    bool _hasStoreOperatorsUO;
 
-    //void outputStep(ExecFlagType type);
-
-    void stabilize_coeffiecient();
-
-    //const StoreOperators & _operator_storage;
-
-    std::string _userobject_name = "operator_userobject_problem";
-
-    bool shouldUpdateSolution();
-
-    bool updateSolution(/*NumericVector<Number> & vec_solution,
-                               NumericVector<Number> & ghosted_solution*/);
-
-    void find_boundary(std::vector<int> &zero_rows, 
-                       std::vector<int> &_dc_boundary_id);
-
-    void determine_dc_bnd_var_id(const std::vector<std::string> & BC_var);
-
-    void set_solution(PetscVector<Number> &correction);
-
-    std::vector<std::string> split_string(const std::string & s, char delim);
+    UserObjectName * userObjectName;
 };
 

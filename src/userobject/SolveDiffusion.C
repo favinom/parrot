@@ -54,6 +54,7 @@ validParams<SolveDiffusion>()
   params.addRequiredParam<std::vector<Real>>("value_D_bc", "The value of Dirichlet");
   params.addRequiredParam<std::vector<AuxVariableName>>("aux_variable", "The auxiliary variable to store the transferred values in.");
   params.addParam<std::string>("output_file", "the file name of the output");
+  params.addParam<std::string>("fractureMeshModifier","fractureMeshModifier");
 
   return params;
 }
@@ -67,11 +68,15 @@ _boundary_D_ids(getParam<std::vector<boundary_id_type>>("boundary_D_bc")),
 _boundary_N_ids(getParam<std::vector<boundary_id_type>>("boundary_N_bc")),
 _value_N_bc(getParam<std::vector<Real>>("value_N_bc")),
 _value_D_bc(getParam<std::vector<Real>>("value_D_bc")),
-_has_output_file( isParamValid("output_file") )
+_has_output_file( isParamValid("output_file") ),
+_hasMeshModifier( isParamValid("fractureMeshModifier") )
 {
 
   if (_has_output_file)
     _output_filename=getParam<std::string>("output_file");
+
+  if (_hasMeshModifier)
+    _meshModifierName=getParam<std::string>("fractureMeshModifier");
 
   _sys_name="Diffusion";
   _var_name="pressure";
@@ -153,6 +158,16 @@ void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, std::string cons
 {
   _console << "BEGIN Assemble_Diffusion"  << std::endl;
 
+  MeshModifier       const * _myMeshModifier_ptr;
+  FractureUserObject const * _fractureUserObject_ptr;
+
+  if (_hasMeshModifier)
+  {
+  MeshModifier const & _myMeshModifier( _app.getMeshModifier( _meshModifierName.c_str()) );
+  _myMeshModifier_ptr=&_myMeshModifier;
+  FractureUserObject const & _fractureUserObject( dynamic_cast<FractureUserObject const &>(_myMeshModifier) );
+  _fractureUserObject_ptr=&_fractureUserObject;
+}
     // Get a constant reference to the mesh object.
   const MeshBase & mesh = _es.get_mesh();
     // The dimension that we are running.
@@ -193,8 +208,10 @@ void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, std::string cons
   const std::vector<std::vector<Real> > & phi = fe->get_phi();
 
   const std::vector<std::vector<RealGradient> > & dphi = fe->get_dphi();
-
+  const std::vector<Point> & q_points = fe->get_xyz();
   const DofMap & dof_map = _system.get_dof_map();
+
+
 
   std::vector<dof_id_type> dof_indices;
 
@@ -224,14 +241,21 @@ void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, std::string cons
     ke.resize (n_dofs , n_dofs);
     ke.zero();
 
-    Real permeabiltiy=ComputeMaterialProprties(elem);
-
     for (unsigned int i=0; i<phi.size(); i++){
 
       for (unsigned int j=0; j<phi.size(); j++){
 
         for (unsigned int qp=0; qp<qrule.n_points(); qp++){
 
+          Real permeabiltiy=ComputeMaterialProprties(elem);
+
+          if(_hasMeshModifier)
+          {
+            if ( _fractureUserObject_ptr[0].isInside(q_points[qp]) )
+            {
+             permeabiltiy=_vector_value.at(_vector_value.size()-1);
+            }
+          }
 
 
           ke(i,j) +=  JxW[qp] * ( dphi[j][qp] * ( permeabiltiy * dphi[i][qp] ) );
@@ -275,7 +299,7 @@ void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, std::string cons
               fe_face->reinit(elem, s);
 
               const std::vector<std::vector<Real>> & phi_face = fe_face->get_phi();
-              const std::vector<Real> & JxW_face = fe_face->get_JxW();
+              //const std::vector<Real> & JxW_face = fe_face->get_JxW();
 
               std::vector<Real> whichOnBoundary(phi_face.size(),0.0);
 

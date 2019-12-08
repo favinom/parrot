@@ -13,52 +13,39 @@
 //#include "UserObject.h"
 
 #include "GeneralUserObject.h"
+#include "libmesh/petsc_matrix.h"
 
 // Forward declarations
-class MyUO;
+class StoreOperators;
 
 template <>
-InputParameters validParams<MyUO>();
+InputParameters validParams<StoreOperators>();
 
-/**
- * Base class for user-specific data
-
- */
 
 class StoreOperators : public GeneralUserObject
 {
-
-    
-    
 public:
   StoreOperators(const InputParameters & params);
-
-  virtual void execute() override ;
-
-  /**
-   * Called before execute() is ever called so that data can be cleared.
-   */
-  virtual void initialize() override ;
-
-  /**
-   * Finalize.  This is called _after_ execute() and _after_ threadJoin()!  This is probably where
-   * you want to do MPI communication!
-   */
-  virtual void finalize() override ;
-
-  /**
-   * Must override.
-   *
-   * @param uo The UserObject to be joined into _this_ object.  Take the data from the uo object and
-   * "add" it into the data for this object.
-   */
-  virtual void threadJoin(const UserObject & uo) override;
+  virtual void initialize() override {};
+  virtual void execute() override
+  {
+//    _mass_matrix->print_matlab("massC.txt");
+//    _interpolator->print_matlab("int.txt");
+//    exit(1);
+  };
+  virtual void finalize() override   {};
+  virtual void threadJoin(const UserObject & ) override {};
  
+  std::shared_ptr<PetscMatrix<Number>> &
+  Interpolator()
+  {
+    return _interpolator;
+  };
+
 
   std::shared_ptr<PetscMatrix<Number>> &
   MassMatrix()
   {
-    //std::cout << "[MASSMATRIX-StoreOperators::MassMatrix()]" << _mass_matrix.get() <<  ") (" << this << std::endl;
     return _mass_matrix;
   };
 
@@ -75,67 +62,32 @@ public:
     return _lump_mass_matrix;
   };
 
-
-  std::shared_ptr<PetscMatrix<Number>> &
-  StabMatrix()
-  {
-    return _stab_matrix;
-  };
-  
-  std::shared_ptr<PetscMatrix<Number>> &
-  JacMatrix()
-  {
-    return _jac_matrix;
-  };
-
   std::shared_ptr<PetscMatrix<Number>> &
   PoroLumpMassMatrix()
   {
     return _poro_lump_mass_matrix;
   };
 
+ std::shared_ptr<PetscMatrix<Number>> &
+  JacMatrix()
+  {
+    return _jac_matrix;
+  };
 
-
-  // std::shared_ptr<PetscMatrix<Number>> &
-  // setStabMatrix()
-  // {
-  //   return _stab_matrix;
-  // };
-
-
-  // std::shared_ptr<PetscMatrix<Number>> &
-  // setPoroMassMatrix()
-  // {
-  //   return _poro_mass_matrix;
-  // };
-    
-  // std::shared_ptr<PetscMatrix<Number>> &
-  // setLumpMassMatrix()
-  // {
-  //   return _lump_mass_matrix;
-  // };
-
-  // std::shared_ptr<PetscMatrix<Number>> &
-  // setJacMatrix()
-  // {
-  //   return _jac_matrix;
-  // };
-
-
-//   void execute(){};
-//   void initialize(){};
-//   void finalize(){};
+  PetscMatrix<Number> * &
+  StabMatrix()
+  {
+    return _stab_matrix;
+  };
 
 protected:
+  std::shared_ptr<PetscMatrix<Number>> _interpolator;
   std::shared_ptr<PetscMatrix<Number>> _mass_matrix;
-  std::shared_ptr<PetscMatrix<Number>> _stab_matrix;
   std::shared_ptr<PetscMatrix<Number>> _poro_mass_matrix;
   std::shared_ptr<PetscMatrix<Number>> _lump_mass_matrix;
-  std::shared_ptr<PetscMatrix<Number>> _poro_lump_mass_matrix;
-  std::shared_ptr<PetscMatrix<Number>> _jac_matrix;
-
-   
-    
+  std::shared_ptr<PetscMatrix<Number>>  _poro_lump_mass_matrix;
+  std::shared_ptr<PetscMatrix<Number>>  _jac_matrix;
+  PetscMatrix<Number> * _stab_matrix;
 
 };
 

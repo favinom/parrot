@@ -45,11 +45,8 @@ public:
     PrintMatrix(const InputParameters & parameters);
     
     virtual void initialize() override;
-    
     virtual void execute() override;
-    
     virtual void finalize() override;
-
     void constraint_matrix(EquationSystems & _es, const std::string & system_name) ;
 
     Parallel::Communicator const & _pp_comm;
@@ -67,7 +64,9 @@ public:
     void stabilize_coeffiecient();
 
 
-    std::string _userobject_name = "operator_userobject_problem";
+    UserObjectName const _userObjectName;
+    StoreOperators * _storeOperatorsUO;
+
 
 
     void find_boundary(std::vector<int> &zero_rows, 

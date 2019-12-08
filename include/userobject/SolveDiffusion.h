@@ -13,6 +13,8 @@
 //#include "UserObject.h"
 
 #include "GeneralUserObject.h"
+#include "MeshModifier.h"
+#include "FractureUserObject.h"
 
 // Forward declarations
 class SolveDiffusion;
@@ -83,6 +85,9 @@ public:
 
     bool _has_output_file;
     std::string _output_filename;
+
+    bool _hasMeshModifier;
+    std::string _meshModifierName;
 
 };
 

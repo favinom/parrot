@@ -47,7 +47,7 @@ _equationSystems(_fe_problem[0].es())
     
     LinearImplicitSystem & lis0=_equationSystems.get_system<LinearImplicitSystem> (0);
 
-    LinearImplicitSystem & lis1=_equationSystems.get_system<LinearImplicitSystem> (1);
+    //LinearImplicitSystem & lis1=_equationSystems.get_system<LinearImplicitSystem> (1);
 
     std::cout<<"System lis0 has "<<lis0.n_matrices ()<<" matrices\n";
     
@@ -83,5 +83,5 @@ _equationSystems(_fe_problem[0].es())
     std::cout<<"finalize\n";
 }
 
- void MyUO::threadJoin(const UserObject & uo)
+ void MyUO::threadJoin(const UserObject &)
 {};

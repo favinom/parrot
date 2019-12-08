@@ -15,15 +15,12 @@
 
 
 #include "StoreOperators.h"
-#include "MooseVariable.h"
 
 #include "libmesh/petsc_matrix.h"
 #include "libmesh/petsc_vector.h"
 #include "libmesh/sparse_matrix.h"
 
-#include <string>
 using namespace std;
-
 
 registerMooseObject("parrotApp", StoreOperators);
 
@@ -41,30 +38,12 @@ StoreOperators::StoreOperators(const InputParameters & parameters) :
 	auto &comm = _fe_problem.es().get_mesh().comm();
 
     // _mass_matrix = new PetscMatrix<Number>(comm);
-
     // _poro_mass_matrix = new PetscMatrix<Number>(comm);
-
     // _lump_mass_matrix = new PetscMatrix<Number>(comm);
-
+    _interpolator = std::make_shared<PetscMatrix<Number>>(comm);
 	_mass_matrix = std::make_shared<PetscMatrix<Number>>(comm);
     _poro_mass_matrix = std::make_shared<PetscMatrix<Number>>(comm);
     _lump_mass_matrix = std::make_shared<PetscMatrix<Number>>(comm);
     _poro_lump_mass_matrix = std::make_shared<PetscMatrix<Number>>(comm);
     _jac_matrix = std::make_shared<PetscMatrix<Number>>(comm);
-    _stab_matrix = std::make_shared<PetscMatrix<Number>>(comm);
-
-
-    // _stab_matrix           = std::make_shared<PetscMatrix<Number>*>();
-    // _poro_mass_matrix      = std::make_shared<PetscMatrix<Number>*>();
-    // _lump_mass_matrix      = std::make_shared<PetscMatrix<Number>*>();
 }
-
-
-void StoreOperators::execute(){};
-
-
-void StoreOperators::initialize(){};
-
-void StoreOperators::finalize(){};
-
-void StoreOperators::threadJoin(const UserObject & uo){};

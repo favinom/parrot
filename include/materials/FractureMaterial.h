@@ -53,10 +53,10 @@ protected:
     MaterialProperty<RealVectorValue> &_U;
 
 
-    Real _poroMatrix;
-    Real _poroFracture;
-    Real _kappaMatrix;
-    Real _kappaFracture;
+    Real const _poroMatrix;
+    Real const _poroFracture;
+    Real const _kappaMatrix;
+    Real const _kappaFracture;
     //bool _countFractures;
     
     //int _elem_counter;

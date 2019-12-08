@@ -21,6 +21,10 @@ InputParameters validParams<FractureMaterial>()
 {
     InputParameters params = validParams<Material>();
     params.addRequiredParam<std::string>("fractureMeshModifier","fractureMeshModifier");
+    params.addRequiredParam<Real>("matrixPorosity","matrixPorosity");
+    params.addRequiredParam<Real>("fracturePorosity","fracturePorosity");
+    params.addRequiredParam<Real>("matrixPermeability","matrixPermeability");
+    params.addRequiredParam<Real>("fracturePermeability","fracturePermeability");
     params.addCoupledVar("pressure",
                                  "The gradient of this variable will be used as "
                                  "the velocity vector.");
@@ -36,12 +40,16 @@ _meshModifierName(getParam<std::string>("fractureMeshModifier")),
 _gradP(parameters.isParamValid("pressure") ? coupledGradient("pressure"): _grad_zero),
 _poro(declareProperty<Real>("Porosity")),
 _K(declareProperty<RealTensorValue>("PermeabilityTensor")),
-_U(declareProperty<RealVectorValue>("VelocityVector"))
+_U(declareProperty<RealVectorValue>("VelocityVector")),
+_poroMatrix(getParam<Real>("matrixPorosity")),
+_poroFracture(getParam<Real>("fracturePorosity")),
+_kappaMatrix(getParam<Real>("matrixPermeability")),
+_kappaFracture(getParam<Real>("fracturePermeability"))
 {
-    _poroMatrix=1.0;
-    _poroFracture=1.0;
-    _kappaMatrix=1e-8;
-    _kappaFracture=1e-6;
+    //_poroMatrix=1.0;
+    //_poroFracture=1.0;
+    //_kappaMatrix=1e-8;
+    //_kappaFracture=1e-6;
 }
 
 void

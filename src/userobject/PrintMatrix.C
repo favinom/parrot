@@ -21,13 +21,12 @@
 /****************************************************************/
 
 
+#include "PrintMatrix.h"
+
 #include <algorithm>    // std::max
 
-
 #include "libmesh/fe_interface.h"
-
 #include "libmesh/petsc_vector.h"
-#include "PrintMatrix.h"
 #include "FEProblem.h"
 #include "AddVariableAction.h"
 #include "NonlinearSystemBase.h"
@@ -65,6 +64,7 @@ validParams<PrintMatrix>()
     InputParameters params = validParams<GeneralUserObject>();
     params.addParam<std::string>("dc_boundaries", "-1", "Dirichlet Boundary ID");
     params.addParam<std::string>("dc_variables" , "-1", "Variable to which given BC_id applies");
+    params.addRequiredParam<UserObjectName>("operator_userobject","The userobject that stores our operators");
 
     return params;
     
@@ -73,11 +73,10 @@ validParams<PrintMatrix>()
 PrintMatrix::PrintMatrix(const InputParameters & parameters):
 GeneralUserObject(parameters),
 _pp_comm(_fe_problem.es().get_mesh().comm()),
-_dc_var(getParam<std::string>("dc_variables"))
-
+_dc_var(getParam<std::string>("dc_variables")),
+_userObjectName(getParam<UserObjectName>("operator_userobject"))
 {
  
-
     std::vector<std::string> tmp = split_string(parameters.get<std::string>("dc_boundaries"), ' ');
     for(auto str_tmp=tmp.begin(); str_tmp != tmp.end(); str_tmp++)
     {
@@ -107,12 +106,11 @@ PrintMatrix::execute()
 void
 PrintMatrix::finalize()
 {
-  //stabilize_coeffiecient();
 }
 
 void
-PrintMatrix::stabilize_coeffiecient(/*NumericVector<Number> & vec_solution,
-                                      NumericVector<Number> & ghosted_solution*/){
+PrintMatrix::stabilize_coeffiecient()
+{
 
 
 
@@ -122,7 +120,7 @@ PrintMatrix::stabilize_coeffiecient(/*NumericVector<Number> & vec_solution,
 
     NonlinearSystemBase & _nl = _fe_problem.getNonlinearSystemBase();
     
-    PetscMatrix<Number> *petsc_mat = dynamic_cast<libMesh::PetscMatrix<libMesh::Number>* >(_sys.matrix);
+    PetscMatrix<Number> *petsc_mat = dynamic_cast<libMesh::PetscMatrix<Number>* >(_sys.matrix);
 
     //petsc_mat->print_matlab("petsc_mat.txt");
     
@@ -141,20 +139,21 @@ PrintMatrix::stabilize_coeffiecient(/*NumericVector<Number> & vec_solution,
 
     int nnz_x_row = *std::max_element(dof_map.get_n_nz().begin(), dof_map.get_n_nz().end());
 
+    StoreOperators & storeOperatorsUO=_fe_problem.getUserObjectTempl<StoreOperators>(_userObjectName);
 
-    auto _M  = const_cast<StoreOperators&>(_fe_problem.getUserObjectTempl<StoreOperators>(_userobject_name)).MassMatrix();
-    auto _L  = const_cast<StoreOperators&>(_fe_problem.getUserObjectTempl<StoreOperators>(_userobject_name)).LumpMassMatrix();
-    auto _J  = const_cast<StoreOperators&>(_fe_problem.getUserObjectTempl<StoreOperators>(_userobject_name)).JacMatrix();
-    auto _PL = const_cast<StoreOperators&>(_fe_problem.getUserObjectTempl<StoreOperators>(_userobject_name)).PoroLumpMassMatrix();
-    auto _PM = const_cast<StoreOperators&>(_fe_problem.getUserObjectTempl<StoreOperators>(_userobject_name)).PoroMassMatrix();
-    auto _D = const_cast<StoreOperators&>(_fe_problem.getUserObjectTempl<StoreOperators>(_userobject_name)).StabMatrix();
+    auto _M  = storeOperatorsUO.MassMatrix();
+    auto _L  = storeOperatorsUO.LumpMassMatrix();
+    auto _J  = storeOperatorsUO.JacMatrix();
+    auto _PL = storeOperatorsUO.PoroLumpMassMatrix();
+    auto _PM = storeOperatorsUO.PoroMassMatrix();
+    auto _D  = storeOperatorsUO.StabMatrix();
 
     if(_fe_problem.timeStep()==1){
 
 
         PetscMatrix<Number> _jac_mat(_pp_comm);
 
-        jmat = const_cast<StoreOperators&>(_fe_problem.getUserObjectTempl<StoreOperators>(_userobject_name)).JacMatrix();
+        jmat = const_cast<StoreOperators&>(_fe_problem.getUserObjectTempl<StoreOperators>(_userObjectName)).JacMatrix();
 
         jmat->init(m,n,m_l,n_l,nnz_x_row);
 

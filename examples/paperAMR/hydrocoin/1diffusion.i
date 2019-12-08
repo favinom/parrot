@@ -26,7 +26,14 @@
 []
 
 [Materials]
-[./conductivity1] type = FractureMaterial fractureMeshModifier =  fractureUserObject [../]
+[./conductivity1]
+type = FractureMaterial
+fractureMeshModifier = fractureUserObject
+matrixPorosity = 0.0
+fracturePorosity = 0.0
+matrixPermeability = 1e-6
+fracturePermeability = 1e-1
+[../]
 []
 
 # observe that with the second BCs the stiffness matrix is SDP and we can use choleski factorization

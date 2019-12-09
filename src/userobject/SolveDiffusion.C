@@ -309,7 +309,7 @@ void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, std::string cons
                   whichOnBoundary.at(i)+=phi_face.at(i).at(qp);
               }
 
-              Real boundaryValue=0;
+              Real boundaryValue=0.0;
 
               //std::cout<<"BID" <<mesh.get_boundary_info().boundary_id(elem, s)<<std::endl;
 
@@ -318,6 +318,7 @@ void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, std::string cons
 
                 if (mesh.get_boundary_info().has_boundary_id (elem, s, _boundary_D_ids[k]))
                 {
+                  //std::cout<<"_boundary_D_ids[k]="<<_boundary_D_ids[k]<<" _value_D_bc.at(k)"<<_value_D_bc.at(k)<<std::endl;
                  boundaryValue=_value_D_bc.at(k);
 
 

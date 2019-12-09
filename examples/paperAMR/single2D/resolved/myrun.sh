@@ -8,6 +8,7 @@ correction=1;
 
 if [ $createmesh -eq 1 ]
 then
+	./myclean.sh
 	mpirun -n ${np} ../../../../parrot-opt -i 0refineBlock.i adapSteps=${as} unifSteps=${us}
 	for (( c=0; c<=as+1; c++ ))
 	do
@@ -21,6 +22,7 @@ then
 	done
 fi
 
+echo $as
 #mpirun -n ${np} ../../../../parrot-opt -i 1diffusion.i adapSteps=${as} unifSteps=${us}
 if [ $correction -eq 0 ]
 then

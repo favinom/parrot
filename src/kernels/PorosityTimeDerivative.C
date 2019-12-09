@@ -20,14 +20,14 @@ InputParameters
 validParams<PorosityTimeDerivative>()
 {
     InputParameters params = validParams<TimeDerivative>();
-    params.addParam<unsigned int>("dim","dim");
+    //params.addParam<unsigned int>("dim","dim");
     return params;
 }
 
 PorosityTimeDerivative::PorosityTimeDerivative(const InputParameters & parameters) :
 TimeDerivative(parameters),
 _poro(getMaterialProperty<Real>("Porosity")),
-_dim(getParam<unsigned int>("dim")),
+//_dim(getParam<unsigned int>("dim")),
 _u_dot_nodal( _var.dofValuesDot() )
 {}
 

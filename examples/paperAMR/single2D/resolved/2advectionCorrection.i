@@ -1,8 +1,7 @@
 [Problem]
 type = ParrotProblem
 use_AFC = true
-change_sol=true
-dc_boundaries = "6"
+operator_userobject = storeOperatorsUO
 []
 
 [Mesh]
@@ -31,7 +30,7 @@ dc_boundaries = "6"
 [Kernels]
 active='time upwind'
 [upwind] type = Advection variable = CM [../]
-[./time] type = PorosityTimeDerivative variable = CM lumping = true dim = 2 [../]
+[./time] type = PorosityTimeDerivative variable = CM lumping = true [../]
 []
 
 [BCs]
@@ -82,20 +81,21 @@ value_N_bc=''
 aux_variable=P_aux
 # output_file=matrix.e
 [../]
-[./operator_userobject_problem]
+[./storeOperatorsUO]
 type = StoreOperators
-#execute_on = 'initial'
 [../]
 [./MassAssembly]
 type = AssembleMassMatrix
-operator_userobject = operator_userobject_problem 
+operator_userobject = storeOperatorsUO 
 block_id = '1 6 7 2 4'
 value_p = ' 0.2 0.2 0.2 0.4 0.25'
 execute_on = 'initial'
+constrain_matrix = true
 [../]
-[./PrintAssembly]
- type = PrintMatrix
+[./antidiffusiveFluxes]
+ type = AntidiffusiveFluxes
  execute_on = 'timestep_end'
  dc_boundaries = '6 7'
+operator_userobject = storeOperatorsUO
  [../]
 []

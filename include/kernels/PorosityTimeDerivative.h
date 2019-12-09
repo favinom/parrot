@@ -39,7 +39,7 @@ protected:
    */
     const MaterialProperty<Real> &_poro;
     
-    const unsigned int _dim;
+    //const unsigned int _dim;
     
     const VariableValue & _u_dot_nodal;
     

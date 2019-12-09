@@ -1,8 +1,6 @@
 [Problem]
 type = ParrotProblem
 use_AFC = true
-change_sol=true
-dc_boundaries = "6"
 []
 
 [Mesh]

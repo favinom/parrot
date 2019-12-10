@@ -23,6 +23,25 @@ validParams<ParrotProblem>()
     return params;
 }
 
+
+static void getRow(PetscMatrix<Number> & matrix, int const & row, std::vector<Real> & values, std::vector<int> & columns)
+{
+    Mat const & mat=matrix.mat();
+    PetscInt ncol;
+    PetscInt const *col;
+    PetscScalar const *val;
+    MatGetRow(mat,row,&ncol,&col,&val);
+    values.resize(ncol);
+    columns.resize(ncol);
+    for (int i=0; i<ncol; ++i)
+    {
+        values[i] =val[i];
+        columns[i]=col[i];
+    }
+    MatRestoreRow(mat,row,&ncol,&col,&val);
+}
+
+
 ParrotProblem::ParrotProblem(const InputParameters & parameters) :
 FEProblem(parameters),
 _pp_comm(_mesh.comm()),
@@ -165,66 +184,58 @@ ParrotProblem::computeStabilizationMatrix(SparseMatrix<Number> & jacobian)
     PetscMatrix<Number> jac_tr_PM(_pp_comm);
     // Transpose of the Jacobian
     jacobian.get_transpose (jac_tr_PM);
-    
-    // Get the petsc matrix (Mat) to call MatGetRow,
-    //the only function missing in the wrapper
-    Mat jac_petsc=jac_PM.mat();
-    Mat jac_tr_petsc=jac_tr_PM.mat();
-    
-    int m=jac_PM.m();
-    int n=jac_PM.n();
-    
-    int m_l=jac_PM.local_m();
-    int n_l=jac_PM.local_n();
-    
+        
     int rb=jac_PM.row_start();
     int re=jac_PM.row_stop();
 
-    //_stab_matrix = const_cast<StoreOperators&>(getUserObjectTempl<StoreOperators>(_userobject_name)).StabMatrix();
-    
-    // initialize stabilization matrix
-    _stab_matrix.init(m,n,m_l,n_l,30);
-    
-    Mat _stab_matrix_petsc=_stab_matrix.mat();
-    MatSetOption(_stab_matrix_petsc, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);
-    
-    MatCopy(jac_PM.mat(),  _stab_matrix.mat(), DIFFERENT_NONZERO_PATTERN);
-    _stab_matrix.zero();
+    std::cout<<"get dof map\n";
+    DofMap const & dof_map = this->getNonlinearSystemBase().dofMap();
+    std::cout<<"done\n";
 
+    std::cout<<"attach dofmap\n";
+    _stab_matrix.attach_dof_map(dof_map);
+    std::cout<<"done\n";
+
+    std::cout<<"init matrix\n";
+    _stab_matrix.init();//m,n,m_l,n_l,30);
+    std::cout<<"done\n";
+
+    std::cout<<"zeroing\n";
+    _stab_matrix.zero();
+    std::cout<<"done\n";
+    //MatSetOption(_stab_matrix_petsc, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);
+    
+    std::vector<Real> values;
+    std::vector<Real> values_tr;
+    std::vector<int> columns;
+    std::vector<int> columns_tr;
+
+    std::cout<<"looping\n";
     for (int row=rb; row<re; ++row)
     {
-        PetscInt ncols;
-        PetscInt const *cols;
-        PetscScalar const *val;
-        MatGetRow(jac_petsc,row,&ncols,&cols,&val);
-        PetscInt ncols_tr;
-        PetscInt const *cols_tr;
-        PetscScalar const *val_tr;
-        MatGetRow(jac_tr_petsc,row,&ncols_tr,&cols_tr,&val_tr);
+        getRow(jac_PM,row,values,columns);
+        getRow(jac_tr_PM,row,values_tr,columns_tr);
         
-        if (ncols!=ncols_tr)
+        if (columns.size()!=columns_tr.size())
         {
             std::cout<<"ncols!=ncols_tr\n";
             exit(1);
         }
         
-        for (int p=0; p<ncols; ++p)
+        for (int p=0; p<columns.size(); ++p)
         {
-            if (cols[p]!=cols_tr[p])
+            if (columns[p]!=columns_tr[p])
             {
                 std::cout<<"cols[p]!=cols_tr[p]"<<std::endl;
                 exit(1);
             }
             
-            int col=cols[p];
-            
-
-            
+            int col=columns[p];
             if (row!=col)
             {
                 // we are in a extradiagonal
-                Real Aij=val[p];
-                Real Aji=val_tr[p];
+                Real Aij=values[p];
+                Real Aji=values_tr[p];
                 
                 Real maxEntry=std::max(Aij,Aji);
                 
@@ -237,13 +248,15 @@ ParrotProblem::computeStabilizationMatrix(SparseMatrix<Number> & jacobian)
                 }
             }
         }
-        MatRestoreRow(jac_petsc,row,&ncols,&cols,&val);
-        MatRestoreRow(jac_tr_petsc,row,&ncols_tr,&cols_tr,&val_tr);
     }
-    
+    std::cout<<"done\n";
+
+    std::cout<<"closing\n";
      _stab_matrix.close();
-        
+    std::cout<<"done\n";
+
     _is_stab_matrix_assembled=true;
 
     std::cout<<"STOP ParrotProblem::computeStabilizationMatrix\n";
 }
+

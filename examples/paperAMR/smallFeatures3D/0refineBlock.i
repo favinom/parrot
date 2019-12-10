@@ -31,7 +31,7 @@ type = AddSideSetsFromBoundingBox
 boundary_id_old = 'top'
 boundary_id_new = 22
 top_right =   ' 1.1 2.5 1.1'
-bottom_left = '-0.1 1.8 0.6'
+bottom_left = '-0.1 1.8 0.665'
 [../]
 
 [./createNewSidesetOutflow2]

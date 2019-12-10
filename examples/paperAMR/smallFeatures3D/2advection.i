@@ -37,7 +37,7 @@ fd3_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01'
 [Materials]
 [./conductivity1] type = FractureMaterial fractureMeshModifier =  fractureUserObject
 matrixPorosity = 0.2 fracturePorosity = 0.2
-matrixPermeability = 1 fracturePermeability = 1e2
+matrixPermeability = 1 fracturePermeability = 1e4
 [../]
 []
 
@@ -87,7 +87,7 @@ num_steps=100
 type = SolveDiffusion
 execute_on = 'initial'
 block_id='0'
-value_p ='1 1e2'
+value_p ='1 1e4'
 boundary_D_bc = '22 23'
 value_D_bc='0.0 0.0'
 boundary_N_bc = '11'

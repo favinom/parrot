@@ -33,13 +33,13 @@ fd3_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01'
 [Materials]
 [./conductivity1] type = FractureMaterial fractureMeshModifier =  fractureUserObject
 matrixPorosity = 0.0 fracturePorosity = 0.0
-matrixPermeability = 1 fracturePermeability = 1e2
+matrixPermeability = 1.0 fracturePermeability = 1e4
 [../]
 []
 
 # observe that with the second BCs the stiffness matrix is SDP and we can use choleski factorization
 [BCs]
-[./inflowBC]  type = NeumannBC variable = pressure value = 1.0  boundary = inflow  [../]
+[./inflowBC]   type = NeumannBC   variable = pressure value = 1.0  boundary = inflow  [../]
 [./outflowBC1] type = DirichletBC variable = pressure value = 0.0  boundary = outflow1 [../]
 [./outflowBC2] type = DirichletBC variable = pressure value = 0.0  boundary = outflow2 [../]
 []

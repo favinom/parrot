@@ -64,6 +64,24 @@ validParams<AntidiffusiveFluxes>()
     
 }
 
+static void getRow(PetscMatrix<Number> & matrix, int const & row, std::vector<Real> & values, std::vector<int> & columns)
+{
+    Mat const & mat=matrix.mat();
+    PetscInt ncol;
+    PetscInt const *col;
+    PetscScalar const *val;
+    MatGetRow(mat,row,&ncol,&col,&val);
+    values.resize(ncol);
+    columns.resize(ncol);
+    for (int i=0; i<ncol; ++i)
+    {
+        values[i] =val[i];
+        columns[i]=col[i];
+    }
+    MatRestoreRow(mat,row,&ncol,&col,&val);
+}
+
+
 AntidiffusiveFluxes::AntidiffusiveFluxes(const InputParameters & parameters):
 GeneralUserObject(parameters),
 _pp_comm(_fe_problem.es().get_mesh().comm()),
@@ -105,21 +123,15 @@ AntidiffusiveFluxes::finalize()
 void
 AntidiffusiveFluxes::stabilize_coeffiecient()
 {
-
-
-
     auto &_sys = _fe_problem.es().get_system<TransientNonlinearImplicitSystem>("nl0");
-
-    //_stab_matrix.print_matlab("original.txt");
-
     NonlinearSystemBase & _nl = _fe_problem.getNonlinearSystemBase();
-    
+    const DofMap & dof_map = _nl.dofMap();    
     PetscMatrix<Number> *petsc_mat = dynamic_cast<libMesh::PetscMatrix<Number>* >(_sys.matrix);
 
     //petsc_mat->print_matlab("petsc_mat.txt");
-    
+    //_stab_matrix.print_matlab("original.txt");    
 
-    const DofMap & dof_map = _fe_problem.getNonlinearSystemBase().dofMap();
+
 
 
     int m=dof_map.n_dofs();
@@ -142,25 +154,72 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
     auto _PM = storeOperatorsUO.PoroMassMatrix();
     auto _D  = storeOperatorsUO.StabMatrix();
 
-    if(_fe_problem.timeStep()==1){
+    if(_fe_problem.timeStep()==1)
+    {
+        _J->attach_dof_map(dof_map);
+        _J->init();
 
+        std::vector<Real> v1;
+        std::vector<int> c1;
 
-        PetscMatrix<Number> _jac_mat(_pp_comm);
+        int rb1=petsc_mat->row_start();
+        int rb2=_J->row_start();
+        int re1=petsc_mat->row_stop();
+        int re2=_J->row_stop();
 
-        jmat = const_cast<StoreOperators&>(_fe_problem.getUserObjectTempl<StoreOperators>(_userObjectName)).JacMatrix();
+        if (rb1!=rb2)
+        {
+            std::cout<<"rb\n";
+            exit(1);
+        }
+        if (re1!=re2)
+        {
+            std::cout<<"re\n";
+            exit(1);
+        }
 
-        jmat->init(m,n,m_l,n_l,nnz_x_row);
+        for (int row=rb1; row<re1; ++row)
+        {
+            getRow(*petsc_mat,row,v1,c1);
+            
+            for (int ii=0; ii<v1.size(); ++ii)
+            {
+                int col=c1.at(ii);
+                Real v=v1.at(ii);
+                _J->set(row,col,v);
+            }
+        }
+        _J->close();
 
-        
-    
-        MatCopy(petsc_mat->mat(), jmat->mat(), DIFFERENT_NONZERO_PATTERN);
+        rb1=_D->row_start();
+        rb2=_J->row_start();
+        re1=_D->row_stop();
+        re2=_J->row_stop();
 
-        jmat->zero();
+        // if (rb1!=rb2)
+        // {
+        //     std::cout<<"rb\n";
+        //     exit(1);
+        // }
+        // if (re1!=re2)
+        // {
+        //     std::cout<<"re\n";
+        //     exit(1);
+        // }
 
-        jmat->add(-1.0,*_D);
-
+        // for (int row=rb1; row<re1; ++row)
+        // {
+        //     getRow(*_D,row,v1,c1);
+        //     getRow(*_J,row,v2,c2);
+        //     if (v1.size()!=v2.size())
+        //     {
+        //         std::cout<<"v1.size()!=v2.size()"<<std::endl;
+        //         exit(1);
+        //     }
+        //     //std::cout<<row<<" "<<v1.size()<<" "<<v2.size()<<std::endl;
+        // }
+        _J->add(-1.0,*_D);
         AntidiffusiveFluxes::determine_dc_bnd_var_id(AntidiffusiveFluxes::split_string(_dc_var, ' '));
-
         find_boundary(zero_rows, _dc_boundary_id);
     }
 
@@ -243,16 +302,54 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 
     
     PetscMatrix<Number> _f_mat(_pp_comm);
-    _f_mat.init(m,n,m_l,n_l,nnz_x_row);     
-    Mat _f_mat_petsc =_f_mat.mat();
-    MatCopy(petsc_mat->mat(), _f_mat_petsc, DIFFERENT_NONZERO_PATTERN);
-    _f_mat.zero();
-
     PetscMatrix<Number> _alpha_mat(_pp_comm);
-    _alpha_mat.init(m,n,m_l,n_l,nnz_x_row);
-    Mat _alpha_mat_petsc = _alpha_mat.mat();
-    MatSetOption(_alpha_mat_petsc, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);
-    _alpha_mat.zero();
+    _f_mat.attach_dof_map(dof_map);
+    _alpha_mat.attach_dof_map(dof_map);
+    _f_mat.init();
+    _alpha_mat.init();
+    {
+        std::vector<Real> v1;
+        std::vector<int> c1;
+        int rb=petsc_mat->row_start();
+        int re=petsc_mat->row_stop();
+        int rb1=_f_mat.row_start();
+        int re1=_f_mat.row_stop();
+        int rb2=_alpha_mat.row_start();
+        int re2=_alpha_mat.row_stop();
+
+        if (rb!=rb1)
+        {
+            std::cout<<"rb\n";
+            exit(1);
+        }
+        if (re!=re2)
+        {
+            std::cout<<"re\n";
+            exit(1);
+        }
+        if (rb!=rb1)
+        {
+            std::cout<<"rb\n";
+            exit(1);
+        }
+        if (re!=re2)
+        {
+            std::cout<<"re\n";
+            exit(1);
+        }
+        for (int row=rb; row<re; ++row)
+        {
+            getRow(*petsc_mat,row,v1,c1);
+            for (int ii=0; ii<v1.size(); ++ii)
+            {
+                int col=c1.at(ii);
+                _f_mat.set(row,col,0.0);
+                _alpha_mat.set(row,col,0.0);
+            }
+        }
+    }
+    _f_mat.close();
+    _alpha_mat.close();
 
     std::unique_ptr<NumericVector<Number>> f = ghosted_solution.zero_clone();
 

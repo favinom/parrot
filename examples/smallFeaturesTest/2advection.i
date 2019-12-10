@@ -1,13 +1,12 @@
 [Problem]
 type = ParrotProblem
 use_AFC = true
-operator_userobject = storeOperatorsUO
 []
 
 [Mesh]
- file = refinedMesh_00${adapSteps}_mesh.xdr
-  boundary_id = '11 22 23'
-  boundary_name = 'inflow outflow1 outflow2'
+ file = mesh_2_0.e
+  boundary_id = '21 22'
+  boundary_name = 'inflow outflow'
 # partitioner = linear
 []
 
@@ -33,7 +32,6 @@ fd3_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01'
  
 [AuxVariables]
 [./P_aux] [../]
-[./correction] [../]
 []
 
 [Materials]
@@ -51,7 +49,7 @@ active='time upwind'
 []
 
 [BCs]
-[./u_injection_left] type = DirichletBC boundary = 11 variable = CM value='1' [../]
+[./u_injection_left] type = DirichletBC boundary = 21 variable = CM value='1' [../]
 []
 
 [Preconditioning]
@@ -89,32 +87,14 @@ num_steps=100
 [./soln]
 type = SolveDiffusion
 execute_on = 'initial'
-block_id='0'
-value_p ='1 1e4'
-boundary_D_bc = '22 23'
-value_D_bc='0.0 0.0'
-boundary_N_bc = '11'
+block_id='1 2 3 4 5 6 7 11 12 13     '
+value_p ='1 1 1 1 1 1 1 1  1  1  1e4 '
+boundary_D_bc = '22'
+value_D_bc='0.0'
+boundary_N_bc = '21'
 value_N_bc='-1.0'
 aux_variable=P_aux
 fractureMeshModifier = fractureUserObject
-#output_file=matrix.e
-[../]
-[./storeOperatorsUO]
-type = StoreOperators
-[../]
-[./MassAssembly]
-type = AssembleMassMatrix
-operator_userobject = storeOperatorsUO 
-block_id = '0'
-value_p = ' 0.2 0.2'
-execute_on = 'initial'
-constrain_matrix = true
-fractureMeshModifier = fractureUserObject
-[../]
-[./antidiffusiveFluxes]
- type = AntidiffusiveFluxes
-operator_userobject = storeOperatorsUO
- execute_on = 'timestep_end'
- dc_boundaries = '11'
+output_file=matrix.e
 [../]
 []

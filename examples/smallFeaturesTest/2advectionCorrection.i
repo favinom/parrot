@@ -6,24 +6,19 @@ operator_userobject = storeOperatorsUO
 
 [Mesh]
  file = refinedMesh_00${adapSteps}_mesh.xdr
-  boundary_id = '11 22 23'
-  boundary_name = 'inflow outflow1 outflow2'
-# partitioner = linear
+ boundary_id = '11 22'
+ boundary_name = 'inflow outflow'
 []
 
 [MeshModifiers]
 [./fractureUserObject]
 type = FractureUserObject
-fn = 8
-fx_string = '0.5  ,0.5  ,0.77,0.83, 0.2,0.2  , 0.5,0.5'
-fy_string = '1.125,0.175,2.05,2.05, 2.05,2.05 , 1.6,1.6'
-fz_string = '0.5  ,0.5  ,0.5 ,0.5, 0.5,0.5 , 0.675,0.31'
-fa1_string = '0,90,90,90,78.6901,-78.6901,0,0'
-fa2_string = '0, 0, 0, 0,0,0,0,0'
-fa3_string = '0,90,90,90,90,90,16.2602,-15.8192'
-fd1_string = '0.9,0.25,0.3,0.3,0.3059,0.3059,0.9,0.9'
-fd2_string = '1.75,0.9,0.4,0.4,0.4,0.4,1.25,1.2472'
-fd3_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01'
+fn = 1
+fx_string = '0.0'
+fy_string = '0.0'
+fa1_string = '-30.963756532073525'
+fd1_string = '2000.0'
+fd2_string = '0.01'
 [../]
 []
 
@@ -37,9 +32,14 @@ fd3_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01'
 []
 
 [Materials]
-[./conductivity1] type = FractureMaterial fractureMeshModifier =  fractureUserObject
-matrixPorosity = 0.2 fracturePorosity = 0.2
-matrixPermeability = 1 fracturePermeability = 1e4
+[./conductivity1] type = FractureMaterial fractureMeshModifier =  fractureUserObject block = 0
+matrixPorosity = 0.2 fracturePorosity = 0.4
+matrixPermeability = 1e-6 fracturePermeability = 1e-1
+pressure = P_aux
+[../]
+[./conductivity2] type = FractureMaterial fractureMeshModifier =  fractureUserObject block = 2
+matrixPorosity = 0.25 fracturePorosity = 0.4
+matrixPermeability = 1e-5 fracturePermeability = 1e-1
 pressure = P_aux
 [../]
 []
@@ -47,11 +47,11 @@ pressure = P_aux
 [Kernels]
 active='time upwind'
 [upwind] type = Advection variable = CM [../]
-[./time] type = PorosityTimeDerivative variable = CM lumping = true [../]
+[./time] type = PorosityTimeDerivative variable = CM lumping = true dim = 2 [../]
 []
 
 [BCs]
-[./u_injection_left] type = DirichletBC boundary = 11 variable = CM value='1' [../]
+[./u_injection_left] type = DirichletBC boundary = 11 variable = CM value='0.01' [../]
 []
 
 [Preconditioning]
@@ -70,7 +70,7 @@ line_search = none
  petsc_options_iname=' -ksp_type            '   # -mat_view
  petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
 
-dt = 0.01
+dt = 1e7
 num_steps=100
 
 [./Quadrature] order=TENTH [../]
@@ -89,12 +89,12 @@ num_steps=100
 [./soln]
 type = SolveDiffusion
 execute_on = 'initial'
-block_id='0'
-value_p ='1 1e4'
-boundary_D_bc = '22 23'
-value_D_bc='0.0 0.0'
-boundary_N_bc = '11'
-value_N_bc='-1.0'
+block_id='0 2'
+value_p ='1e-6 1e-5 1e-1'
+boundary_D_bc = '11 22'
+value_D_bc='4.0 1.0'
+boundary_N_bc = ''
+value_N_bc=''
 aux_variable=P_aux
 fractureMeshModifier = fractureUserObject
 #output_file=matrix.e
@@ -105,8 +105,8 @@ type = StoreOperators
 [./MassAssembly]
 type = AssembleMassMatrix
 operator_userobject = storeOperatorsUO 
-block_id = '0'
-value_p = ' 0.2 0.2'
+block_id = '0   2'
+value_p = ' 0.2 0.25 0.4'
 execute_on = 'initial'
 constrain_matrix = true
 fractureMeshModifier = fractureUserObject
@@ -115,6 +115,6 @@ fractureMeshModifier = fractureUserObject
  type = AntidiffusiveFluxes
 operator_userobject = storeOperatorsUO
  execute_on = 'timestep_end'
- dc_boundaries = '11'
+ dc_boundaries = '11 22'
 [../]
 []

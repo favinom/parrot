@@ -12,9 +12,9 @@ ymin = 0.0
 ymax = 2.25
 zmin = 0.0
 zmax = 1.0
-nx = 12
-ny = 24
-nz = 12
+nx = 9
+ny = 19
+nz = 9
 []
 
 [MeshModifiers]

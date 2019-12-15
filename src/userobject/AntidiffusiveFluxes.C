@@ -355,6 +355,10 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 
     
     _PL->vector_mult(_m_i,_ones);
+    
+    Real volume = _m_i.dot(_ones);
+    
+    std::cout<<"domian_sum"<<volume<<std::endl;
 
 
     Real dt = static_cast<Transient*>(_fe_problem.getMooseApp().getExecutioner())->getDT();
@@ -410,12 +414,13 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 
                 auto v_d_i = _u_dot(row);
 
-                f_ij = PMij * (v_d_i - _vec_localize_dot.at(col)) + 1.0 * Dij * (v_i - _vec_localize.at(col));
+                f_ij = PMij * (v_d_i - _vec_localize_dot.at(col)) - 1.0 * Dij * (v_i - _vec_localize.at(col));
 
 
                 double check = (v_i - _vec_localize.at(col)) * f_ij;
 
                 if(check==0) _f_mat.set(row, col,0.0);
+               
                 else _f_mat.set(row, col, f_ij);
 
                 _P_p+=std::max(0.0,f_ij);
@@ -461,14 +466,14 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
         
         Real value_p = 0.0;
 
-        if(std::abs(_P_p)>0.0) {
-
+        if(std::abs(_P_p)>1e-15) {
+            
             value_p = _Q_p/_P_p;
         }
 
         Real value_m = 0.0;
 
-        if(std::abs(_P_m)>0.0) {
+        if(std::abs(_P_m)>1e-15) {
 
             value_m = _Q_m/_P_m;
         }
@@ -506,7 +511,7 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 
     _R_p.close();
 
-    // _f_mat.print_matlab("f_d.m");
+//  _f_mat.print_matlab("f_d.m");
 
     std::vector<double>_vec_localize_r_p;
     _R_p.localize(_vec_localize_r_p);
@@ -517,9 +522,9 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
     _R_m.localize(_vec_localize_r_m);
 
 
-    // _R_m.print_matlab("R_m.m");
-
-    // _R_p.print_matlab("R_p.m");
+//    _R_m.print_matlab("R_m.m");
+//
+//    _R_p.print_matlab("R_p.m");
 
 
 
@@ -624,6 +629,9 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
         auto it = std::find(zero_rows.begin(), zero_rows.end(), row);
 
         if(it == zero_rows.end()){
+//            std::cout<<"_a_bar(row)"<<_a_bar(row)<<std::endl;
+//           
+//            std::cout<<"_inv(row)"<<_inv(row)<<std::endl;
 
             auto f_bar = _a_bar(row) * _inv(row) * dt;
 

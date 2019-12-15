@@ -86,6 +86,7 @@ num_steps=100
 
 
 [UserObjects]
+#active='soln storeOperatorsUO'
 [./soln]
 type = SolveDiffusion
 execute_on = 'initial'
@@ -94,7 +95,7 @@ value_p ='1 1e4'
 boundary_D_bc = '22 23'
 value_D_bc='0.0 0.0'
 boundary_N_bc = '11'
-value_N_bc='-1.0'
+value_N_bc='-1.3'
 aux_variable=P_aux
 fractureMeshModifier = fractureUserObject
 #output_file=matrix.e
@@ -105,7 +106,7 @@ type = StoreOperators
 [./MassAssembly]
 type = AssembleMassMatrix
 operator_userobject = storeOperatorsUO 
-block_id = '0'
+block_id = '0 0'
 value_p = ' 0.2 0.2'
 execute_on = 'initial'
 constrain_matrix = true

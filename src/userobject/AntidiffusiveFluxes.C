@@ -410,7 +410,7 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 
                 auto v_d_i = _u_dot(row);
 
-                f_ij = PMij * (v_d_i - _vec_localize_dot.at(col)) - 1.0 * Dij * (v_i - _vec_localize.at(col));
+                f_ij = PMij * (v_d_i - _vec_localize_dot.at(col)) + 1.0 * Dij * (v_i - _vec_localize.at(col));
 
 
                 double check = (v_i - _vec_localize.at(col)) * f_ij;

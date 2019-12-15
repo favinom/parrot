@@ -1,3 +1,7 @@
+[Problem]
+ type = FEProblem
+ solve = false
+[]
 
 [Mesh]
  type = GeneratedMesh
@@ -24,11 +28,6 @@
  type=Steady
  solve_type=LINEAR
  line_search = 'none'
-[]
-
-[Problem]
- type = FEProblem
- solve = false
 []
 
 [Outputs]

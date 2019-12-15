@@ -1,6 +1,6 @@
 [Problem]
 type = ParrotProblem
-use_AFC = false
+use_AFC = true
 []
 
 [Mesh]
@@ -20,32 +20,20 @@ file = refined_${resolution}_${unifSteps}_000${adaptSteps}_mesh.xdr
 []
 
 [Materials]
-[./conductivity0] type = FlowAndTransport k = 1.0 phi=1.0 block = 0 pressure = pressure [../]
-[./conductivity1] type = FlowAndTransport k = 1e4 phi=1.0 block = 1 pressure = pressure [../]
+[./conductivity0] type = FlowAndTransport k = 1.0 phi=1.0 block = 0 pressure = pressure conservative = true [../]
+[./conductivity1] type = FlowAndTransport k = 1e4 phi=1.0 block = 1 pressure = pressure conservative = true [../]
 [./hhhh] type = RegionMaterial regionMeshModifier = aa2 [../]
 []
 
 [Kernels]
 active='time upwind'
-
-[upwind]
-type = AlgebraicDiffusion
-variable = CM
+[upwind] type = AlgebraicDiffusion variable = CM [../]
+[./time] type = PorosityTimeDerivative variable = CM lumping = true
 [../]
-
-[./time]
-type = PorosityTimeDerivative
-variable = CM
-lumping = true
-dim = 2
-[../]
-
 []
 
 [BCs]
-[./u_injection_left]
- type = DirichletBC boundary = 'left' variable = CM value = 1.0
-[../]
+[./u_injection_left] type = DirichletBC boundary = 'left' variable = CM value = 1.0 [../]
 []
 
 [Preconditioning]
@@ -79,7 +67,7 @@ perf_graph = true
 []
 
 [UserObjects]
-[./myuo]
+[./soln]
  type = SolveDiffusion
  execute_on = 'initial'
  block_id='0 1'
@@ -89,6 +77,7 @@ perf_graph = true
  boundary_N_bc='3 '
  value_N_bc='-1.0 '
  aux_variable='pressure'
+# output_file=matrix.e
  [../]
  []
 

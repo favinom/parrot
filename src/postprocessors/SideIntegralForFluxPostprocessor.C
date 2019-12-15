@@ -16,7 +16,7 @@
 #include "MooseMesh.h"
 
 
-registerMooseObject("parrot_realApp",SideIntegralForFluxPostprocessor);
+registerMooseObject("parrotApp",SideIntegralForFluxPostprocessor);
 
 template <>
 InputParameters

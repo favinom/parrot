@@ -119,3 +119,25 @@ operator_userobject = storeOperatorsUO
  dc_boundaries = '11'
 [../]
 []
+
+[Postprocessors]
+[./fluxBoundary]
+  type = SideIntegralForFluxPostprocessor
+  variable = P_aux
+  boundary   = '11'
+  execute_on = 'linear'
+[../]
+ 
+[./integral]
+  type = SideIntegralVariablePostprocessor
+  variable = P_aux
+  boundary = '11'
+  execute_on = 'linear'
+[../]
+ 
+[./average]
+  type = SideAverageValue
+  variable = P_aux
+  boundary = 11
+[../]
+[]

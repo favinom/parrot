@@ -1,14 +1,24 @@
-#!/bin/bash
-
-as=1;
-np=1;
-createmesh=1;
+#!/bin/bash -l
+#SBATCH --ntasks=16
+#SBATCH --ntasks-per-node=16
+#SBATCH --ntasks-per-core=1
+#SBATCH --cpus-per-task=1
+#SBATCH --constraint=mc
+#SBATCH --job-name=test2
+#SBATCH --time=0-24:00:00
+#SBATCH --error=whale-opt_error.log
+#SBATCH --account=u0
+#SBATCH --partition=normal
+#SBATCH --dependency=afterany:13036137
+as=4;
+np=4;
+createmesh=0;
 correction=1;
 
 if [ $createmesh -eq 1 ]
 then
 	./myclean.sh
-	mpirun -n ${np} ../../../parrot-opt -i 0refineBlock.i adapSteps=${as}
+        srun -n $SLURM_NTASKS --ntasks-per-node=12 -c $SLURM_CPUS_PER_TASK ../../../parrot-opt -i 0refineBlock.i adapSteps=${as}
 	for (( c=0; c<=as+1; c++ ))
 	do
 		if [ $c -le 9 ]
@@ -52,9 +62,9 @@ echo $as
 
 if [ $correction -eq 0 ]
 then
-	mpirun -n ${np} ../../../parrot-opt -i 2advection.i adapSteps=${as}
+        srun -n $SLURM_NTASKS --ntasks-per-node=12 -c $SLURM_CPUS_PER_TASK ../../../parrot-opt -i 2advection.i adapSteps=${as}
 fi
 if [ $correction -eq 1 ]
 then
-	mpirun -n ${np} ../../../parrot-opt -i 2advectionCorrection.i adapSteps=${as}
+        srun -n $SLURM_NTASKS --ntasks-per-node=12 -c $SLURM_CPUS_PER_TASK ../../../parrot-opt -i 2advectionCorrection.i adapSteps=${as}
 fi

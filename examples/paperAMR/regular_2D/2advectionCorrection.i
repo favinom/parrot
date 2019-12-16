@@ -1,6 +1,7 @@
 [Problem]
 type = ParrotProblem
 use_AFC = true
+operator_userobject = storeOperatorsUO
 []
 
 [Mesh]
@@ -17,35 +18,24 @@ file = refined_${resolution}_${unifSteps}_000${adaptSteps}_mesh.xdr
  
 [AuxVariables]
 [./pressure] [../]
+[./correction] [../]
 []
 
 [Materials]
-[./conductivity0] type = FlowAndTransport k = 1.0 phi=1.0 block = 0 pressure = pressure [../]
-[./conductivity1] type = FlowAndTransport k = 1e4 phi=1.0 block = 1 pressure = pressure [../]
+[./conductivity0] type = FlowAndTransport k = 1.0 phi=1.0 block = 0 pressure = pressure conservative = true [../]
+[./conductivity1] type = FlowAndTransport k = 1e4 phi=1.0 block = 1 pressure = pressure conservative = true [../]
 [./hhhh] type = RegionMaterial regionMeshModifier = aa2 [../]
 []
 
 [Kernels]
 active='time upwind'
-
-[upwind]
-type = Advection
-variable = CM
+[upwind] type = AlgebraicDiffusion variable = CM [../]
+[./time] type = PorosityTimeDerivative variable = CM lumping = true
 [../]
-
-[./time]
-type = PorosityTimeDerivative
-variable = CM
-lumping = true
-dim = 2
-[../]
-
 []
 
 [BCs]
-[./u_injection_left]
- type = DirichletBC boundary = 'left' variable = CM value = 1.0
-[../]
+[./u_injection_left] type = DirichletBC boundary = 'left' variable = CM value = 1.0 [../]
 []
 
 [Preconditioning]
@@ -66,20 +56,20 @@ full = true
  petsc_options_value='  ksp_parrot_preonly  ' # ::ascii_matlab
  
  dt = 1.0e-3
- num_steps=500 # 500
+ num_steps=500.0
 
 [./Quadrature] order=TENTH [../]
 []
 
 [Outputs]
 file_base = AdvectionOut_${resolution}_${unifSteps}_${adaptSteps}
-# exodus = true
+exodus = true
 csv=true
 perf_graph = true
 []
 
 [UserObjects]
-[./myuo]
+[./soln]
  type = SolveDiffusion
  execute_on = 'initial'
  block_id='0 1'
@@ -89,6 +79,24 @@ perf_graph = true
  boundary_N_bc='3 '
  value_N_bc='-1.0 '
  aux_variable='pressure'
+# output_file=matrix.e
+ [../]
+[./storeOperatorsUO]
+type = StoreOperators
+[../]
+[./MassAssembly]
+type = AssembleMassMatrix
+operator_userobject = storeOperatorsUO 
+block_id = '0 1'
+value_p = ' 1.0 1.0'
+execute_on = 'initial'
+constrain_matrix = true
+[../]
+[./antidiffusiveFluxes]
+ type = AntidiffusiveFluxes
+ execute_on = 'timestep_end'
+ dc_boundaries = '1./'
+operator_userobject = storeOperatorsUO
  [../]
  []
 
@@ -103,7 +111,7 @@ perf_graph = true
  [./int7] type = ElementIntegralVariableOverRegion variable = CM region = 7 [../]
  [./int8] type = ElementIntegralVariableOverRegion variable = CM region = 8 [../]
  [./int9] type = ElementIntegralVariableOverRegion variable = CM region = 9 [../]
-
+ 
  [./reg0] type = ElementIntegralVariableOverRegion region = 0 [../]
  [./reg1] type = ElementIntegralVariableOverRegion region = 1 [../]
  [./reg2] type = ElementIntegralVariableOverRegion region = 2 [../]
@@ -115,3 +123,4 @@ perf_graph = true
  [./reg8] type = ElementIntegralVariableOverRegion region = 8 [../]
  [./reg9] type = ElementIntegralVariableOverRegion region = 9 [../]
  []
+

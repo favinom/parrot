@@ -15,7 +15,7 @@ as=0;
 us=0;
 
 createmesh=1;
-correction=0;
+correction=1;
 
 if [ $createmesh -eq 1 ]
 then

@@ -54,8 +54,10 @@ ElementIntegralVolumePostprocessor::computeQpIntegral()
    Real bound = 0.0;
    bool check = _fractureUserObject.isInsideRegion(_q_point[_qp], _regionId, bound);
 
-   if(check==true)
-         1.0;
+   if(check==true){
+         std::cout<<"value"<<1<<std::endl;
+       return 1.0;
+   }    
    else
        return 0.0;
 }

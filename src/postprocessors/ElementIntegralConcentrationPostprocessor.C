@@ -55,7 +55,7 @@ ElementIntegralConcentrationPostprocessor::computeQpIntegral()
    bool check = _fractureUserObject.isInsideRegion(_q_point[_qp], _regionId, bound);
 
    if(check==true)
-        _u[_qp];
+       return  _u[_qp];
    else
        return 0.0;
 }

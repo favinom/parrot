@@ -34,6 +34,9 @@ fd3_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01'
 [AuxVariables]
 [./P_aux] [../]
 [./correction] [../]
+[./vol] 
+initial_condition = 1.0
+[../]
 []
 
 [Materials]
@@ -73,7 +76,10 @@ line_search = none
 dt = 0.01
 num_steps=100
 
-[./Quadrature] order=TENTH [../]
+[./Quadrature] 
+type = GRID
+order = TENTH #FIFTEENTH
+[../]
 
 []
 
@@ -95,7 +101,7 @@ value_p ='1 1e4'
 boundary_D_bc = '22 23'
 value_D_bc='0.0 0.0'
 boundary_N_bc = '11'
-value_N_bc='-1.3'
+value_N_bc='-1.3793251106'
 aux_variable=P_aux
 fractureMeshModifier = fractureUserObject
 #output_file=matrix.e
@@ -125,19 +131,36 @@ operator_userobject = storeOperatorsUO
   type = SideIntegralForFluxPostprocessor
   variable = P_aux
   boundary   = '11'
-  execute_on = 'linear'
+  execute_on=timestep_end
 [../]
  
 [./integral]
   type = SideIntegralVariablePostprocessor
   variable = P_aux
   boundary = '11'
-  execute_on = 'linear'
+  execute_on=timestep_end
 [../]
  
 [./average]
   type = SideAverageValue
   variable = P_aux
-  boundary = 11
+  execute_on=timestep_end
+  boundary = '11'
+[../]
+
+[./Conc]
+  type = ElementIntegralVolumePostprocessor
+  variable = CM
+  fractureRegionId = 1
+  fractureMeshModifier =  fractureUserObject
+  execute_on=timestep_end
+[../]
+
+[./vol]  
+  type = ElementIntegralVolumePostprocessor
+  variable = vol
+  fractureRegionId = 1
+  fractureMeshModifier =  fractureUserObject
+  execute_on=timestep_end
 [../]
 []

@@ -31,8 +31,8 @@ type = FractureMaterial
 fractureMeshModifier = fractureUserObject
 matrixPorosity = 0.0
 fracturePorosity = 0.0
-matrixPermeability = 1e-6
-fracturePermeability = 1e-1
+matrixPermeability = 1e-8
+fracturePermeability = 1e-6
 [../]
 []
 

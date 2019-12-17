@@ -12,7 +12,6 @@
 #pragma once
 
 #include "ElementIntegralPostprocessor.h"
-#include "MooseVariableInterface.h"
 
 // Forward Declarations
 class ElementIntegralVolumePostprocessor;
@@ -26,22 +25,16 @@ InputParameters validParams<ElementIntegralVolumePostprocessor>();
  * Note that specializations of this integral are possible by deriving from this
  * class and overriding computeQpIntegral().
  */
-class ElementIntegralVolumePostprocessor : public ElementIntegralPostprocessor,
-                                             public MooseVariableInterface<Real>
+class ElementIntegralVolumePostprocessor : public ElementIntegralPostprocessor
 {
 public:
   ElementIntegralVolumePostprocessor(const InputParameters & parameters);
 
 protected:
   virtual Real computeQpIntegral() override;
-
-  /// Holds the solution at current quadrature points
  
    std::string _meshModifierName;
    int  _regionId;
-   const VariableValue & _u;
-  /// Holds the solution gradient at the current quadrature points
-//  const VariableGradient & _grad_u;
 };
 
 

@@ -8,7 +8,6 @@ operator_userobject = storeOperatorsUO
  file = refinedMesh_00${adapSteps}_mesh.xdr
   boundary_id = '11 22 23'
   boundary_name = 'inflow outflow1 outflow2'
-# partitioner = linear
 []
 
 [MeshModifiers]
@@ -34,9 +33,6 @@ fd3_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01'
 [AuxVariables]
 [./P_aux] [../]
 [./correction] [../]
-[./vol] 
-initial_condition = 1.0
-[../]
 []
 
 [Materials]
@@ -76,11 +72,9 @@ line_search = none
 dt = 0.01
 num_steps=100
 
-[./Quadrature] 
-type = GRID
-order = TENTH #FIFTEENTH
+[./Quadrature]
+order = TENTH type = GRID
 [../]
-
 []
 
 [Outputs]
@@ -101,7 +95,7 @@ value_p ='1 1e4'
 boundary_D_bc = '22 23'
 value_D_bc='0.0 0.0'
 boundary_N_bc = '11'
-value_N_bc='-1.3793251106'
+value_N_bc='-1.356070292717265' # '-1.3793251106'
 aux_variable=P_aux
 fractureMeshModifier = fractureUserObject
 #output_file=matrix.e
@@ -131,36 +125,22 @@ operator_userobject = storeOperatorsUO
   type = SideIntegralForFluxPostprocessor
   variable = P_aux
   boundary   = '11'
-  execute_on=timestep_end
-[../]
- 
-[./integral]
-  type = SideIntegralVariablePostprocessor
-  variable = P_aux
-  boundary = '11'
-  execute_on=timestep_end
-[../]
- 
-[./average]
-  type = SideAverageValue
-  variable = P_aux
-  execute_on=timestep_end
-  boundary = '11'
+#  execute_on = 'initial'
 [../]
 
-[./Conc]
-  type = ElementIntegralVolumePostprocessor
+[./Concentration]
+  type = ElementIntegralConcentrationPostprocessor
   variable = CM
   fractureRegionId = 1
   fractureMeshModifier =  fractureUserObject
-  execute_on=timestep_end
+#  execute_on = 'timestep_end'
 [../]
 
-[./vol]  
+[./volume]
   type = ElementIntegralVolumePostprocessor
-  variable = vol
   fractureRegionId = 1
   fractureMeshModifier =  fractureUserObject
-  execute_on=timestep_end
+#  execute_on = 'initial'
 [../]
+
 []

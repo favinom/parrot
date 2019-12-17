@@ -1,8 +1,8 @@
 #!/bin/bash
 
-as=1;
-np=1;
-createmesh=1;
+as=2;
+np=4;
+createmesh=0;
 correction=1;
 
 if [ $createmesh -eq 1 ]

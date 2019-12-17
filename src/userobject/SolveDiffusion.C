@@ -221,6 +221,8 @@ void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, std::string cons
   MeshBase::const_element_iterator           el = mesh.active_local_elements_begin();
   MeshBase::const_element_iterator const end_el = mesh.active_local_elements_end();
 
+  std::vector<Real> permeability;
+
   for ( ; el != end_el; ++el)
   {
     const Elem * elem = *el;
@@ -241,28 +243,24 @@ void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, std::string cons
     ke.resize (n_dofs , n_dofs);
     ke.zero();
 
-    for (unsigned int i=0; i<phi.size(); i++){
-
-      for (unsigned int j=0; j<phi.size(); j++){
-
-        for (unsigned int qp=0; qp<qrule.n_points(); qp++){
-
-          Real permeabiltiy=ComputeMaterialProprties(elem);
-
-          if(_hasMeshModifier)
-          {
-            if ( _fractureUserObject_ptr[0].isInside(q_points[qp]) )
-            {
-             permeabiltiy=_vector_value.at(_vector_value.size()-1);
-            }
-          }
-
-
-          ke(i,j) +=  JxW[qp] * ( dphi[j][qp] * ( permeabiltiy * dphi[i][qp] ) );
+    Real localPermeability=ComputeMaterialProprties(elem);
+    permeability.resize( qrule.n_points());
+    for (unsigned int qp=0; qp<qrule.n_points(); qp++)
+    {
+      permeability.at(qp)=localPermeability;
+      if(_hasMeshModifier)
+      {
+        if ( _fractureUserObject_ptr[0].isInside(q_points[qp]) )
+        {
+          permeability.at(qp)=_vector_value.at(_vector_value.size()-1);
         }
       }
+    }        
 
-    }
+    for (unsigned int i=0; i<phi.size(); i++)
+      for (unsigned int j=0; j<phi.size(); j++)
+        for (unsigned int qp=0; qp<qrule.n_points(); qp++)
+          ke(i,j) +=  JxW[qp] * ( dphi[j][qp] * ( permeability.at(qp) * dphi[i][qp] ) );
 
     re.resize(n_dofs);
     re.zero();

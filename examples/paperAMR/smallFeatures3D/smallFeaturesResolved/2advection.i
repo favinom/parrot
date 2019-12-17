@@ -7,7 +7,6 @@ use_AFC = true
  file = mesh_2_0.e
   boundary_id = '21 22'
   boundary_name = 'inflow outflow'
-# partitioner = linear
 []
 
 [MeshModifiers]
@@ -76,7 +75,7 @@ num_steps=100
 []
 
 [Outputs]
- file_base = AdvectionOut_${adapSteps}
+ file_base = AdvectionOut
  exodus = true
  csv=true
  perf_graph = true
@@ -92,9 +91,34 @@ value_p ='1 1 1 1 1 1 1 1  1  1  1e4 '
 boundary_D_bc = '22'
 value_D_bc='0.0'
 boundary_N_bc = '21'
-value_N_bc='-1.0'
+value_N_bc='-1.371218453748253'
 aux_variable=P_aux
 fractureMeshModifier = fractureUserObject
-output_file=matrix.e
+#output_file=matrix.e
 [../]
+[]
+
+[Postprocessors]
+[./fluxBoundary]
+  type = SideIntegralForFluxPostprocessor
+  variable = P_aux
+  boundary   = '21'
+#  execute_on = 'initial'
+[../]
+
+[./Concentration]
+  type = ElementIntegralConcentrationPostprocessor
+  variable = CM
+  fractureRegionId = 1
+  fractureMeshModifier =  fractureUserObject
+#  execute_on = 'timestep_end'
+[../]
+
+[./volume]
+  type = ElementIntegralVolumePostprocessor
+  fractureRegionId = 1
+  fractureMeshModifier =  fractureUserObject
+#  execute_on = 'initial'
+[../]
+
 []

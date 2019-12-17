@@ -4,7 +4,7 @@ as=5;
 us=0;
 np=4;
 createmesh=1;
-correction=1;
+correction=0;
 
 if [ $createmesh -eq 1 ]
 then

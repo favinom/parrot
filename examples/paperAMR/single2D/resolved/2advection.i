@@ -17,7 +17,6 @@ use_AFC = true
  
 [AuxVariables]
 [./P_aux] [../]
-[./correction] [../]
 []
 
 [Materials]

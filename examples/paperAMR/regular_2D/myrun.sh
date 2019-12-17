@@ -3,9 +3,9 @@
 # number of processors
 np=4;
 #background elements, THIS NUMBER HAS TO BE DIVISIBLE BY 8
-be=400;
+be=800;
 # element per fracture
-fe=4;
+fe=16;
 # starting level
 res=`expr ${be} + 3 \\* ${fe}`
 #echo $res
@@ -15,7 +15,7 @@ as=0;
 us=0;
 
 createmesh=1;
-correction=1;
+correction=2;
 
 if [ $createmesh -eq 1 ]
 then

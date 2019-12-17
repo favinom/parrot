@@ -22,7 +22,7 @@ use_AFC = true
 [Materials]
 [./conductivity1] type = FlowAndTransport k = 1e-6 phi=0.2  conservative = true block = '1 6 7' pressure = P_aux [../]
 [./conductivity4] type = FlowAndTransport k = 1e-1 phi=0.4  conservative = true block = 4       pressure = P_aux [../]
-[./conductivity2] type = FlowAndTransport k = 1e-5 phi=0.25 conservative = true block = 2       pressure = P_aux [../]
+[./conductivity2] type = FlowAndTransport k = 1e-6 phi=0.2 conservative = true block = 2       pressure = P_aux [../]
 []
 
 [Kernels]
@@ -71,7 +71,7 @@ num_steps=100
 type = SolveDiffusion
 execute_on = 'initial'
 block_id='1 6 4 7 2'
-value_p ='1e-6 1e-6 1e-1 1e-6 1e-5'
+value_p ='1e-6 1e-6 1e-1 1e-6 1e-6'
 boundary_D_bc = '6 7'
 value_D_bc='4.0 1.0'
 boundary_N_bc = ''

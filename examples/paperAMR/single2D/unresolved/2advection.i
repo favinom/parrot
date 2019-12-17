@@ -36,8 +36,8 @@ matrixPermeability = 1e-6 fracturePermeability = 1e-1
 pressure = P_aux
 [../]
 [./conductivity2] type = FractureMaterial fractureMeshModifier =  fractureUserObject block = 2
-matrixPorosity = 0.25 fracturePorosity = 0.4
-matrixPermeability = 1e-5 fracturePermeability = 1e-1
+matrixPorosity = 0.2 fracturePorosity = 0.4
+matrixPermeability = 1e-6 fracturePermeability = 1e-1
 pressure = P_aux
 [../]
 []
@@ -45,7 +45,7 @@ pressure = P_aux
 [Kernels]
 active='time upwind'
 [upwind] type = Advection variable = CM [../]
-[./time] type = PorosityTimeDerivative variable = CM lumping = true dim = 2 [../]
+[./time] type = PorosityTimeDerivative variable = CM lumping = true [../]
 []
 
 [BCs]
@@ -88,7 +88,7 @@ num_steps=100
 type = SolveDiffusion
 execute_on = 'initial'
 block_id='0 2'
-value_p ='1e-6 1e-5 1e-1'
+value_p ='1e-6 1e-6 1e-1'
 boundary_D_bc = '11 22'
 value_D_bc='4.0 1.0'
 boundary_N_bc = ''

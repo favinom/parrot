@@ -1,9 +1,9 @@
 #!/bin/bash
 
-as=6;
+as=12;
 np=4;
 createmesh=1;
-correction=1;
+correction=0;
 
 if [ $createmesh -eq 1 ]
 then

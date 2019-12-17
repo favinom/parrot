@@ -34,7 +34,7 @@ top_right =   '51.0 -39.0 0.0'
 [./subdomains]
 type = SubdomainBoundingBox
 bottom_left = '-51.0 -51.0 0.0'
-top_right =   ' 51.0 -30.0 0.0'
+top_right =   ' 51.0 -39.0 0.0'
 block_id = 2
 [../]
 

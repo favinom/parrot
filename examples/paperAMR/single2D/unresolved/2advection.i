@@ -36,8 +36,8 @@ matrixPermeability = 1e-6 fracturePermeability = 1e-1
 pressure = P_aux
 [../]
 [./conductivity2] type = FractureMaterial fractureMeshModifier =  fractureUserObject block = 2
-matrixPorosity = 0.2 fracturePorosity = 0.4
-matrixPermeability = 1e-6 fracturePermeability = 1e-1
+matrixPorosity = 0.25 fracturePorosity = 0.4
+matrixPermeability = 1e-5 fracturePermeability = 1e-1
 pressure = P_aux
 [../]
 []

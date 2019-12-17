@@ -2,13 +2,13 @@
 
 as=2;
 np=4;
-createmesh=0;
+createmesh=1;
 correction=1;
 
 if [ $createmesh -eq 1 ]
 then
 	./myclean.sh
-	mpirun -n ${np} ../../../parrot-opt -i 0refineBlock.i adapSteps=${as}
+	mpirun -n ${np} ../../../../parrot-opt -i 0refineBlock.i adapSteps=${as}
 	for (( c=0; c<=as+1; c++ ))
 	do
 		if [ $c -le 9 ]
@@ -47,15 +47,15 @@ else
 fi
 echo $as
 
-#mpirun -n ${np} ../../../parrot-opt -i 1diffusion.i adapSteps=${as}
+#mpirun -n ${np} ../../../../parrot-opt -i 1diffusion.i adapSteps=${as}
 #exit 1
 
 if [ $correction -eq 0 ]
 then
-	mpirun -n ${np} ../../../parrot-opt -i 2advection.i adapSteps=${as}
+	mpirun -n ${np} ../../../../parrot-opt -i 2advection.i adapSteps=${as}
 fi
 if [ $correction -eq 1 ]
 then
-	mpirun -n ${np} ../../../parrot-opt -i 2advectionCorrection.i adapSteps=${as}
+	mpirun -n ${np} ../../../../parrot-opt -i 2advectionCorrection.i adapSteps=${as}
 fi
 

@@ -16,6 +16,8 @@
 #include "MeshModifier.h"
 #include "FractureUserObject.h"
 
+#include "libmesh/quadrature.h"
+
 // Forward declarations
 class SolveDiffusion;
 
@@ -88,6 +90,10 @@ public:
 
     bool _hasMeshModifier;
     std::string _meshModifierName;
+
+    bool const _conservativeScheme;
+
+    QBase const * const & _qrule;
 
 };
 

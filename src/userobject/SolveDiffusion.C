@@ -14,6 +14,7 @@
 #include "FEProblem.h"
 #include "MooseVariableFEBase.h"
 #include "NonlinearSystemBase.h"
+#include "Assembly.h"
 
 #include "libmesh/equation_systems.h"
 #include "libmesh/mesh_base.h"
@@ -55,6 +56,7 @@ validParams<SolveDiffusion>()
   params.addRequiredParam<std::vector<AuxVariableName>>("aux_variable", "The auxiliary variable to store the transferred values in.");
   params.addParam<std::string>("output_file", "the file name of the output");
   params.addParam<std::string>("fractureMeshModifier","fractureMeshModifier");
+  params.addRequiredParam<bool>("conservative","use a conservative scheme?");
 
   return params;
 }
@@ -69,14 +71,19 @@ _boundary_N_ids(getParam<std::vector<boundary_id_type>>("boundary_N_bc")),
 _value_N_bc(getParam<std::vector<Real>>("value_N_bc")),
 _value_D_bc(getParam<std::vector<Real>>("value_D_bc")),
 _has_output_file( isParamValid("output_file") ),
-_hasMeshModifier( isParamValid("fractureMeshModifier") )
+_hasMeshModifier( isParamValid("fractureMeshModifier") ),
+_conservativeScheme( getParam<bool>("conservative") ),
+_qrule(_assembly.qRule())
 {
 
   if (_has_output_file)
     _output_filename=getParam<std::string>("output_file");
 
   if (_hasMeshModifier)
+  {
     _meshModifierName=getParam<std::string>("fractureMeshModifier");
+    //exit(1);
+  }
 
   _sys_name="Diffusion";
   _var_name="pressure";
@@ -188,6 +195,7 @@ void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, std::string cons
     //QGauss qrule (dim, fe_type.default_quadrature_order() );
     // Tell the finite element object to use our quadrature rule.
   fe->attach_quadrature_rule (&qrule);
+  //fe->attach_quadrature_rule(_qrule);
 
   std::unique_ptr<FEBase> fe_face (FEBase::build(dim, fe_type));
 
@@ -221,7 +229,7 @@ void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, std::string cons
   MeshBase::const_element_iterator           el = mesh.active_local_elements_begin();
   MeshBase::const_element_iterator const end_el = mesh.active_local_elements_end();
 
-  std::vector<Real> permeability;
+  std::vector<Number> permeability;
 
   for ( ; el != end_el; ++el)
   {
@@ -255,12 +263,31 @@ void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, std::string cons
           permeability.at(qp)=_vector_value.at(_vector_value.size()-1);
         }
       }
-    }        
+    }
+
+    if(_conservativeScheme)
+    {
+      Real ook=0.0;
+      Real vol=0.0;
+      for (unsigned int qp=0; qp<qrule.n_points(); qp++)
+      {
+        ook+=(JxW[qp]/permeability.at(qp));
+        vol+=JxW[qp];
+      }
+      Real conservativePermeability=vol/ook;
+      for (unsigned int qp=0; qp<qrule.n_points(); qp++)
+      {
+        permeability.at(qp)=conservativePermeability;
+      }
+    }    
 
     for (unsigned int i=0; i<phi.size(); i++)
       for (unsigned int j=0; j<phi.size(); j++)
         for (unsigned int qp=0; qp<qrule.n_points(); qp++)
-          ke(i,j) +=  JxW[qp] * ( dphi[j][qp] * ( permeability.at(qp) * dphi[i][qp] ) );
+        {
+          //std::cout<<permeability.at(qp)<<std::endl;
+          ke(i,j) +=  JxW[qp] * ( dphi[j][qp] * ( permeability.at(qp) *  dphi[i][qp] ) );
+        }
 
     re.resize(n_dofs);
     re.zero();

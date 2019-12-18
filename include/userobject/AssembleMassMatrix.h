@@ -52,6 +52,6 @@ public:
     bool _hasMeshModifier;
     std::string _meshModifierName;
 
-
+    QBase const * const & _qrule;
 };
 

@@ -14,6 +14,7 @@
 #include "FEProblemBase.h"
 #include "NonlinearSystemBase.h"
 #include "FractureUserObject.h"
+#include "Assembly.h"
 // #include "MooseVariableFEBase.h"
 
 #include "libmesh/quadrature_gauss.h"
@@ -56,7 +57,8 @@ _vector_value(getParam<std::vector<Real>>("value_p")),
 userObjectName(getParam<UserObjectName>("operator_userobject")),
 _constrainMatrices(getParam<bool>("constrain_matrix")),
 _code_dof_map(true),
-_hasMeshModifier( isParamValid("fractureMeshModifier") )
+_hasMeshModifier( isParamValid("fractureMeshModifier") ),
+_qrule(_assembly.qRule())
 {
 	if (_hasMeshModifier)
 		_meshModifierName=getParam<std::string>("fractureMeshModifier");
@@ -81,13 +83,6 @@ void AssembleMassMatrix::assemble_mass_matrix(){
   	FractureUserObject const & _fractureUserObject( dynamic_cast<FractureUserObject const &>(_myMeshModifier) );
   	_fractureUserObject_ptr=&_fractureUserObject;
   }
-
-
-   //StoreOperators const & storeOperatorsUO(getUserObject<StoreOperators>(userObjectName));
-   //_mass_matrix           = const_cast<StoreOperators&>(storeOperatorsUO).MassMatrix();
-   //_poro_mass_matrix      = const_cast<StoreOperators&>(storeOperatorsUO).PoroMassMatrix();
-   //_lump_mass_matrix      = const_cast<StoreOperators&>(storeOperatorsUO).LumpMassMatrix();
-   //_poro_lump_mass_matrix = const_cast<StoreOperators&>(storeOperatorsUO).PoroLumpMassMatrix();
 
    DofMap   const & dof_map = _fe_problem.getNonlinearSystemBase().dofMap();
 
@@ -140,9 +135,10 @@ void AssembleMassMatrix::assemble_mass_matrix(){
 	//FEType fe_type = system.variable_type(0);
 	UniquePtr<FEBase> fe (FEBase::build(dim, fe_type));
     //QGauss qrule (dim, fe_type.default_quadrature_order());
-	QGauss qrule (dim, TENTH);
+  std::unique_ptr<QBase> qrule( QBase::build (_qrule->type(),dim,_qrule->get_order()));
+	//QGauss qrule (dim, TENTH);
     // Tell the finite element object to use our quadrature rule.
-    fe->attach_quadrature_rule (&qrule);
+    fe->attach_quadrature_rule (qrule.get());
 
     const std::vector<Real>& JxW      = fe->get_JxW();    
     const std::vector<std::vector<Real> >& phi = fe->get_phi();
@@ -192,7 +188,7 @@ void AssembleMassMatrix::assemble_mass_matrix(){
     	{
     		for (unsigned int j=0; j<phi.size(); j++)
     		{
-    			for (unsigned int qp=0; qp<qrule.n_points(); qp++)
+    			for (unsigned int qp=0; qp<qrule->n_points(); qp++)
     			{
     				Real poro=ComputeMaterialProprties(elem);
     				if(_hasMeshModifier)

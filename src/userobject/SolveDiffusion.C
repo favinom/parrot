@@ -35,6 +35,8 @@
 #include "libmesh/zero_function.h"
 #include "libmesh/const_function.h"
 #include "libmesh/parsed_function.h"
+#include "libmesh/quadrature_grid.h"
+#include "libmesh/quadrature.h"
 
 using namespace std;
 
@@ -191,11 +193,13 @@ void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, std::string cons
 
   UniquePtr<FEBase> fe (FEBase::build(dim, fe_type));
 
-  QGauss qrule (dim, TENTH );
-    //QGauss qrule (dim, fe_type.default_quadrature_order() );
-    // Tell the finite element object to use our quadrature rule.
-  fe->attach_quadrature_rule (&qrule);
-  //fe->attach_quadrature_rule(_qrule);
+  //QGauss qrule (dim, NINTH );
+  //QGrid qrule (dim, NINTH  ); //TENTH
+  std::unique_ptr<QBase> qrule( QBase::build (_qrule->type(),dim,_qrule->get_order()));
+
+  // Tell the finite element object to use our quadrature rule.
+  fe->attach_quadrature_rule (qrule.get());
+
 
   std::unique_ptr<FEBase> fe_face (FEBase::build(dim, fe_type));
 
@@ -234,26 +238,22 @@ void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, std::string cons
   for ( ; el != end_el; ++el)
   {
     const Elem * elem = *el;
-
     fe->reinit (elem);
-        //std::cout<<qrule.n_points()<<std::endl;
 
     dof_map.dof_indices(elem, dof_indices);
-
     const unsigned int n_dofs = cast_int<unsigned int>(dof_indices.size());
 
         // With one variable, we should have the same number of degrees
         // of freedom as shape functions.
     libmesh_assert_equal_to (n_dofs, phi.size());
 
-        //std::cout<<"n_dofs "<<n_dofs<<std::endl;
-
     ke.resize (n_dofs , n_dofs);
     ke.zero();
 
     Real localPermeability=ComputeMaterialProprties(elem);
-    permeability.resize( qrule.n_points());
-    for (unsigned int qp=0; qp<qrule.n_points(); qp++)
+    permeability.resize( qrule->n_points());
+
+    for (unsigned int qp=0; qp<qrule->n_points(); qp++)
     {
       permeability.at(qp)=localPermeability;
       if(_hasMeshModifier)
@@ -267,23 +267,40 @@ void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, std::string cons
 
     if(_conservativeScheme)
     {
-      Real ook=0.0;
-      Real vol=0.0;
-      for (unsigned int qp=0; qp<qrule.n_points(); qp++)
+      if (1)
       {
-        ook+=(JxW[qp]/permeability.at(qp));
-        vol+=JxW[qp];
+        Real ook=0.0;
+        Real vol=0.0;
+        for (unsigned int qp=0; qp<qrule->n_points(); qp++)
+        {
+          ook+=(JxW[qp]/permeability.at(qp));
+          vol+=JxW[qp];
+        }
+        Real conservativePermeability=vol/ook;
+        for (unsigned int qp=0; qp<qrule->n_points(); qp++)
+        {
+          permeability.at(qp)=conservativePermeability;
+        }
       }
-      Real conservativePermeability=vol/ook;
-      for (unsigned int qp=0; qp<qrule.n_points(); qp++)
+      else
       {
-        permeability.at(qp)=conservativePermeability;
+        Real myk=0.0;
+        for (unsigned int qp=0; qp<qrule->n_points(); qp++)
+        {
+          myk+=permeability.at(qp);
+        }
+        Real conservativePermeability=myk/qrule->n_points();
+        for (unsigned int qp=0; qp<qrule->n_points(); qp++)
+        {
+          permeability.at(qp)=conservativePermeability;
+        }
       }
-    }    
+    }  
+
 
     for (unsigned int i=0; i<phi.size(); i++)
       for (unsigned int j=0; j<phi.size(); j++)
-        for (unsigned int qp=0; qp<qrule.n_points(); qp++)
+        for (unsigned int qp=0; qp<qrule->n_points(); qp++)
         {
           //std::cout<<permeability.at(qp)<<std::endl;
           ke(i,j) +=  JxW[qp] * ( dphi[j][qp] * ( permeability.at(qp) *  dphi[i][qp] ) );

@@ -1,0 +1,72 @@
+real mu=1;
+real g=0;
+real lambda=g-mu;
+real k=0.1;
+
+int n=10;
+int ref=2;
+mesh Th=square(10,10);
+
+// Finite-element space definition
+fespace Vh(Th,[P0,P0]);
+fespace Qh(Th,P1);
+
+
+varf a([u,v],[uu,vv])=int2d(Th)(
+	u*uu+v*vv
+	);
+
+varf bt([p],[uu,vv])=int2d(Th)( dx(p)*uu+dy(p)*vv );
+
+varf c(p,q)=int2d(Th)( 10.0*( dx( p )*dx(q) + dy( p )*dy(q) ) )+on(1,p=0);
+
+varf F(p,q)=int1d(Th,3)( 100.0*x*(1.0-x)*q );
+
+
+matrix A=a(Vh,Vh);
+matrix BT=bt(Qh,Vh);
+matrix B=BT';
+matrix C=c(Qh,Qh);
+C=-1.0*C;
+
+matrix M=[[A,BT],[B,C]];
+set(M,solver=UMFPACK);
+
+
+Qh ff;
+ff[]=F(0,Qh);
+
+real[int] f(Vh.ndof+Qh.ndof);
+for (int i=Vh.ndof; i<Vh.ndof+Qh.ndof; ++i)
+{
+	f(i)=ff[][i-Vh.ndof];
+}
+//for (int i=Vh.ndof; i<Vh.ndof+Qh.ndof; ++i)
+//{
+//	f(i)=0.0;
+//}
+
+
+
+real[int] sol(Vh.ndof+Qh.ndof);
+sol=M^-1*f;
+
+Qh p;
+
+for (int i=Vh.ndof; i<Vh.ndof+Qh.ndof; ++i)
+{
+	p[][i-Vh.ndof]=sol(i);
+//	cout<<sol(i)<<endl;
+}
+
+
+Vh [vx,vy];
+
+for (int i=0; i<Vh.ndof; ++i)
+{
+	vx[][i]=sol(i);
+}
+
+plot([vx,vy],fill=1,value=1,wait=1);
+//plot(p,fill=1,value=1,wait=1);
+//cout<<"max="<<p[].max<<"  min="<<p[].min<<endl;

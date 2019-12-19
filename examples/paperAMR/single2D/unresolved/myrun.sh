@@ -1,13 +1,13 @@
 #!/bin/bash
 
-as=12;
+as=9;
 np=4;
 createmesh=1;
 correction=0;
 
 if [ $createmesh -eq 1 ]
 then
-	./myclean
+	./myclean.sh
 	mpirun -n ${np} ../../../../parrot-opt -i 0refineBlock.i adapSteps=${as}
 	for (( c=0; c<=as+1; c++ ))
 	do

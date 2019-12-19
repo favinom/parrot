@@ -20,6 +20,10 @@ protected:
 
     Real const _condInput;
     Real const _poroInput;
+
+    Real _condFracture;
+    Real _poroFracture;
+
     Real _dim;
     RealTensorValue _id;
     RealVectorValue _u_elem;
@@ -31,6 +35,10 @@ protected:
   
     MaterialProperty<Real> &_poro;
     MaterialProperty<RealTensorValue> &_K;
+    MaterialProperty<Real> &_Kscalar;
     MaterialProperty<RealVectorValue> &_U;
+
+    std::string _meshModifierName;
+    bool const _hasMeshModifier;
 
 };

@@ -30,15 +30,23 @@ fd2_string = '0.01'
 []
 
 [Materials]
-[./conductivity1] type = FractureMaterial fractureMeshModifier =  fractureUserObject block = 0
-matrixPorosity = 0.2 fracturePorosity = 0.4
-matrixPermeability = 1e-6 fracturePermeability = 1e-1
+[./conductivity1]
+type = FlowAndTransport
+block = 0
+k = 1e-6 phi =0.2
 pressure = P_aux
+conservative = true
+fractureMeshModifier =  fractureUserObject 
+kFrac=1e-1	phiFrac=0.4
 [../]
-[./conductivity2] type = FractureMaterial fractureMeshModifier =  fractureUserObject block = 2
-matrixPorosity = 0.25 fracturePorosity = 0.4
-matrixPermeability = 1e-5 fracturePermeability = 1e-1
+[./conductivity2]
+type = FlowAndTransport
+block = 2
+k = 1e-5 phi =0.25
 pressure = P_aux
+conservative = true
+fractureMeshModifier =  fractureUserObject 
+kFrac=1e-1	phiFrac=0.4
 [../]
 []
 
@@ -71,7 +79,7 @@ line_search = none
 dt = 1e7
 num_steps=100
 
-[./Quadrature] order=TENTH [../]
+[./Quadrature] order=NINTH type=GRID [../] # 
 
 []
 
@@ -96,5 +104,6 @@ value_N_bc=''
 aux_variable=P_aux
 fractureMeshModifier = fractureUserObject
 #output_file=matrix.e
+conservative=false
 [../]
 []

@@ -109,6 +109,7 @@ value_D_bc='0.0'
 boundary_N_bc = '21'
 value_N_bc='-1.309827939415' #'-1.371218453748253'
 aux_variable=P_aux
+conservative = true
 [../]
 
 [./storeOperatorsUO]

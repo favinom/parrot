@@ -36,10 +36,11 @@ fd3_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01'
 []
 
 [Materials]
-[./conductivity1] type = FractureMaterial 
+[./conductivity1] 
+type = FlowAndTransport
 fractureMeshModifier =  fractureUserObject
-matrixPorosity = 0.2 fracturePorosity = 0.2
-matrixPermeability = 1 fracturePermeability = 1e4
+phi = 0.2 phiFrac= 0.2
+k = 1 kFrac = 1e4
 pressure = P_aux
 [../]
 []
@@ -100,6 +101,7 @@ value_N_bc='-1.356070292717265' # '-1.3793251106'
 aux_variable=P_aux
 fractureMeshModifier = fractureUserObject
 #output_file=matrix.e
+conservative=true
 [../]
 [./storeOperatorsUO]
 type = StoreOperators

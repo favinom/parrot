@@ -57,5 +57,7 @@ fi
 if [ $correction -eq 1 ]
 then
 	mpirun -n ${np} ../../../../parrot-opt -i 2advectionCorrection.i adapSteps=${as}
+	mpirun -n ${np} ../../../../parrot-opt -i plotLine_master_P.i    adapSteps=${as}
+    mpirun -n ${np} ../../../../parrot-opt -i plotLine_master_P_2.i  adapSteps=${as}
 fi
 

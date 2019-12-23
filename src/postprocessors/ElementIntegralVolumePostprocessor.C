@@ -8,7 +8,7 @@
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "ElementIntegralVolumePostprocessor.h"
-#include "FractureUserObject.h"
+#include "RegionUserObject.h"
 
 registerMooseObject("parrotApp", ElementIntegralVolumePostprocessor);
 
@@ -31,11 +31,11 @@ _regionId(getParam<int>("fractureRegionId"))
 Real
 ElementIntegralVolumePostprocessor::computeQpIntegral()
 {
-  MeshModifier const & _myMeshModifier( _app.getMeshModifier( _meshModifierName.c_str()) );
-  FractureUserObject const & _fractureUserObject( dynamic_cast<FractureUserObject const &>(_myMeshModifier) );
+   MeshModifier const & _myMeshModifier( _app.getMeshModifier( _meshModifierName.c_str()) );
+   RegionUserObject const & _regionUserObject( dynamic_cast<RegionUserObject const &>(_myMeshModifier) );
 
   Real bound = 0.0;
-  bool check = _fractureUserObject.isInsideRegion(_q_point[_qp], _regionId, bound);
+  bool check = _regionUserObject.isInsideRegion(_q_point[_qp], _regionId, bound);
   if(check)
     return 1.0;
   else

@@ -8,7 +8,7 @@
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "ElementIntegralConcentrationPostprocessor.h"
-#include "FractureUserObject.h"
+#include "RegionUserObject.h"
 
 registerMooseObject("parrotApp", ElementIntegralConcentrationPostprocessor);
 
@@ -41,18 +41,12 @@ ElementIntegralConcentrationPostprocessor::ElementIntegralConcentrationPostproce
 Real
 ElementIntegralConcentrationPostprocessor::computeQpIntegral()
 {
-  // std::string _meshModifierName;
-
   // params.addRequiredParam<std::string>("fractureMeshModifier","fractureMeshModifier");
-
   // _meshModifierName(getParam<std::string>("fractureMeshModifier")),
-
    MeshModifier const & _myMeshModifier( _app.getMeshModifier( _meshModifierName.c_str()) );
-
-   FractureUserObject const & _fractureUserObject( dynamic_cast<FractureUserObject const &>(_myMeshModifier) );
-  
+   RegionUserObject const & _regionUserObject( dynamic_cast<RegionUserObject const &>(_myMeshModifier) );
    Real bound = 0.0;
-   bool check = _fractureUserObject.isInsideRegion(_q_point[_qp], _regionId, bound);
+   bool check = _regionUserObject.isInsideRegion(_q_point[_qp], _regionId, bound);
 
    if(check==true)
        return  _u[_qp];

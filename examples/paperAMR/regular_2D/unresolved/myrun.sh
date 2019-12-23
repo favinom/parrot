@@ -1,10 +1,10 @@
 #!/bin/bash
 
-as=8;
+as=6;
 np=4;
 res=80;
-createmesh=0;
-correction=0;
+createmesh=1;
+correction=1;
 
 if [ $createmesh -eq 1 ]
 then
@@ -54,7 +54,7 @@ then
 fi
 if [ $correction -eq 1 ]
 then
-	mpirun -n ${np} ../../../../parrot-opt -i 2advectionCorrection.i adapSteps=${as}
+	mpirun -n ${np} ../../../../parrot-opt -i 2advection.i adapSteps=${as} Problem/operator_userobject='storeOperatorsUO'
 fi
 if [ $correction -eq 2 ]
 then

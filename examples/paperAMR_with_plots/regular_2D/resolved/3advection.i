@@ -1,7 +1,11 @@
+[GlobalParams]
+conservative = true
+[]
+
 [Problem]
 type = ParrotProblem
 use_AFC = true
-operator_userobject = storeOperatorsUO
+#operator_userobject = storeOperatorsUO
 []
 
 [Mesh]
@@ -22,8 +26,8 @@ file = refined_${resolution}_${unifSteps}_000${adaptSteps}_mesh.xdr
 []
 
 [Materials]
-[./conductivity0] type = FlowAndTransport k = 1.0 phi=1.0 block = 0 pressure = pressure conservative = true [../]
-[./conductivity1] type = FlowAndTransport k = 1e4 phi=1.0 block = 1 pressure = pressure conservative = true [../]
+[./conductivity0] type = FlowAndTransport k = 1.0 phi=1.0 block = 0 pressure = pressure [../] # conservative = true
+[./conductivity1] type = FlowAndTransport k = 1e4 phi=1.0 block = 1 pressure = pressure [../] # conservative = true
 [./hhhh] type = RegionMaterial regionMeshModifier = aa2 [../]
 []
 
@@ -55,8 +59,8 @@ full = true
  petsc_options_iname=' -ksp_type            ' # -mat_view
  petsc_options_value='  ksp_parrot_preonly  ' # ::ascii_matlab
  
- dt = 1.0e-3
- num_steps=500.0
+ dt = 0.0025
+ num_steps=100.0
 
 [./Quadrature] order=TENTH [../]
 []
@@ -69,6 +73,7 @@ perf_graph = true
 []
 
 [UserObjects]
+#active = 'soln'
 [./soln]
  type = SolveDiffusion
  execute_on = 'initial'
@@ -80,6 +85,7 @@ perf_graph = true
  value_N_bc='-1.0 '
  aux_variable='pressure'
 # output_file=matrix.e
+#conservative = true
  [../]
 [./storeOperatorsUO]
 type = StoreOperators

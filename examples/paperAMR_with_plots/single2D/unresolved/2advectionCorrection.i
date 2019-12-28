@@ -32,29 +32,29 @@ fd2_string = '0.01'
 []
 
 [Materials]
-[./conductivity1] 
-type = FlowAndTransport 
-fractureMeshModifier =  fractureUserObject 
-block = 0
-phi = 0.2 
-phiFrac = 0.4
-k = 1e-6 
-kFrac = 1e-1
-pressure = P_aux
-conservative=true
-[../]
-[./conductivity2] 
-type = FlowAndTransport 
-fractureMeshModifier =  fractureUserObject 
-block = 2
-phi = 0.25 
-phiFrac = 0.4
-k = 1e-5 
-kFrac = 1e-1
-pressure = P_aux
-conservative=true
-[../]
-[]
+[./conductivity1]
+ type = FractureMaterial
+ fractureMeshModifier = fractureUserObject
+ block = 0
+ matrixPorosity = 0.2
+ fracturePorosity = 0.4
+ matrixPermeability = 1e-6
+ fracturePermeability = 1e-1
+ pressure = P_aux
+ conservative = true
+ [../]
+[./conductivity2]
+ type = FractureMaterial
+ fractureMeshModifier =  fractureUserObject
+ block = 2
+ matrixPorosity = 0.25
+ fracturePorosity = 0.4
+ matrixPermeability = 1e-5
+ fracturePermeability = 1e-1
+ pressure = P_aux
+ conservative = true
+ [../]
+ []
 
 [Kernels]
 active='time upwind'

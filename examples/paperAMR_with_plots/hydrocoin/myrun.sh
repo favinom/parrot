@@ -18,7 +18,7 @@ done
 
 mpirun -n ${np} ../../../parrot-opt -i 1diffusion.i adapSteps=${as} unifSteps=${us}
 mpirun -n ${np} ../../../parrot-opt -i plotLine_master.i adapSteps=${as} unifSteps=${us}
-#$pvpath readlinesource_2D.py
+$pvpath readlinesource_2D.py
 
 #$pvpath compare_lineplots_2D.py
 #mpirun -n ${np} ../../parrot-opt -i 2advection.i adapSteps=${as} unifSteps=${us}

@@ -1,5 +1,5 @@
 [Mesh]
- file=AdvectionOut_${typeMesh}_${origLevel}.e
+ file=AdvectionOut_${typeMesh}_${origLevel}_${adapSteps}.e
 []
 
 [Problem]
@@ -17,7 +17,7 @@ kernel_coverage_check = false
 #active='soln'
 [./soln]
 type = SolutionUserObject
-mesh = AdvectionOut_${typeMesh}_${origLevel}.e
+mesh = AdvectionOut_${typeMesh}_${origLevel}_${adapSteps}.e
 system_variables = P_aux
 execute_on = 'initial'
 timestep = 'LATEST'

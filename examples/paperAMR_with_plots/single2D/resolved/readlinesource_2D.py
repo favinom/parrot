@@ -27,7 +27,7 @@ paraview.simple._DisableFirstRenderCameraReset()
 # create a new 'ExodusIIReader'
 mastere1 = ExodusIIReader(FileName=sorted(masterfiles))
 
-writer = CreateWriter("%s/results_line_1_cm.csv"%folder, mastere1)
+writer = CreateWriter("%s/output.csv"%folder, mastere1)
 writer.UpdatePipeline()
 
 

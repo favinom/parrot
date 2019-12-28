@@ -5,7 +5,7 @@ operator_userobject = storeOperatorsUO
 []
 
 [Mesh]
-file = mesh_${typeMesh}_${origLevel}.e
+ file = refinedMesh_${typeMesh}_${origLevel}_000${adapSteps}_mesh.xdr
 boundary_id = '11 22'
 boundary_name = 'inflow outflow'
 []
@@ -91,7 +91,7 @@ num_steps=100
 []
 
 [Outputs]
-file_base = AdvectionOut_${typeMesh}_${origLevel}
+file_base = AdvectionOut_${typeMesh}_${origLevel}_${adapSteps}
 exodus = true
 csv=true
 perf_graph = true

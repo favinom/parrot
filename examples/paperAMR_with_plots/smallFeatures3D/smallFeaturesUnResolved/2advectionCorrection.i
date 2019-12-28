@@ -38,7 +38,8 @@ fd3_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01'
 [Materials]
 [./conductivity1]
  type = FractureMaterial
- fractureMeshModifier = fractureUserObject
+ fractureMeshModifier =
+ fractureUserObject
  matrixPorosity = 0.2
  fracturePorosity = 0.2
  matrixPermeability = 1

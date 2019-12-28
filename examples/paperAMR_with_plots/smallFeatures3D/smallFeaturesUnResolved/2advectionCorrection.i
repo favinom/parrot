@@ -35,6 +35,7 @@ fd3_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01'
 [./correction] [../]
 []
 
+ 
 [Materials]
 [./conductivity1]
  type = FractureMaterial

@@ -17,6 +17,7 @@ ny = 40
 nz = 18
 []
 
+ 
 [MeshModifiers]
 [./createNewSidesetInflow]
 type = AddSideSetsFromBoundingBox

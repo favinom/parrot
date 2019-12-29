@@ -1,7 +1,7 @@
 [Mesh]
   type = GeneratedMesh
   dim = 1
-  nx = 1000
+  nx = 2800
   xmin=-70.7106781187
   xmax=70.7106781187
 []

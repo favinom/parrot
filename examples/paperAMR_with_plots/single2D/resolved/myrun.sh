@@ -1,7 +1,7 @@
 #!/bin/bash
 
 as=0;
-us=2;
+us=4;
 or=3;
 np=4;
 createmesh=1;

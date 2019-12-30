@@ -9,8 +9,8 @@ solve = false
  xmax= 50.0
  ymin=-50.0
  ymax= 50.0
- nx = 200
- ny = 200
+ nx = 400
+ ny = 400
  dim = 2
 []
 

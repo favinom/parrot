@@ -1,6 +1,6 @@
 #!/bin/bash
 
-as=8;
+as=7;
 np=4;
 createmesh=1;
 correction=1;

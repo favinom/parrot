@@ -3,8 +3,9 @@ type = ParrotProblem
 use_AFC = true
 []
 
+
 [Mesh]
-  file = mesh_1_2.e #refinedMesh_1_2_0001_mesh.xdr #refinedMesh_1_0001_mesh.xdr
+ file = refinedMesh_${typeMesh}_${origLevel}_000${adapSteps}_mesh.xdr
   boundary_id = '21 22'
   boundary_name = 'inflow outflow'
 []
@@ -38,7 +39,7 @@ fd3_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01'
 
 [./porosity_1]
  type = FlowAndTransport
- conservative=false
+ conservative=true
  block = '11 12 13'
  k = 1.0
  phi = 0.2
@@ -47,7 +48,7 @@ fd3_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01'
 
 [./porosity_2]
  type = FlowAndTransport
- conservative=false
+ conservative=true
  block = '1 2 3 4 5 6 7 8'
  k = 1.0e4
  phi = 0.2
@@ -95,7 +96,7 @@ num_steps=100
 []
 
 [Outputs]
- file_base = AdvectionOut
+ file_base = AdvectionOut_${typeMesh}_${origLevel}_${adapSteps}
  exodus = true
  csv=true
  perf_graph = true
@@ -111,8 +112,10 @@ value_p ='1e4 1e4 1e4 1e4 1e4 1e4 1e4 1e4 1 1 1'
 boundary_D_bc = '22'
 value_D_bc='0.0'
 boundary_N_bc = '21'
-value_N_bc='-1.309827939415' #'-1.371218453748253'
+value_N_bc='-1.1629356736'
+#'-1.309827939415' #'-1.371218453748253'
 aux_variable=P_aux
+conservative=true
 #fractureMeshModifier = fractureUserObject
 #output_file=matrix.e
 [../]

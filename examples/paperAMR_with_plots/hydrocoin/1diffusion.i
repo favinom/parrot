@@ -1,4 +1,4 @@
-[Mesh]
+i[Mesh]
  file = refinedMesh_${unifSteps}_000${adapSteps}_mesh.xdr
   block_id = '1 6 4 7 2'
   boundary_id = '6 7'

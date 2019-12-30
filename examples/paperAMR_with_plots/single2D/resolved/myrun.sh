@@ -1,9 +1,9 @@
 #!/bin/bash
 
 as=0;
-us=4;
-or=3;
-np=4;
+us=2;
+or=5v;
+np=6;
 createmesh=1;
 correction=1;
 

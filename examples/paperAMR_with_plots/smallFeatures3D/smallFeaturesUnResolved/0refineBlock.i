@@ -13,7 +13,7 @@ ymax = 2.25
 zmin = 0.0
 zmax = 1.0
 nx = 18
-ny = 40
+ny = 20
 nz = 18
 []
 

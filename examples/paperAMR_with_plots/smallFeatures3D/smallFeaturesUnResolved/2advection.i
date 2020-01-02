@@ -4,9 +4,9 @@ use_AFC = true
 []
 
 [Mesh]
- file = refinedMesh_00${adapSteps}_mesh.xdr
-  boundary_id = '11 22 23'
-  boundary_name = 'inflow outflow1 outflow2'
+file = refinedMesh_00${adapSteps}_mesh.xdr
+boundary_id = '11 22 23'
+boundary_name = 'inflow outflow1 outflow2'
 []
 
 [MeshModifiers]
@@ -28,16 +28,21 @@ fd3_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01'
 [Variables]
 [./CM] [../]
 []
- 
+
 [AuxVariables]
 [./P_aux] [../]
 []
 
 [Materials]
-[./conductivity1] type = FractureMaterial fractureMeshModifier =  fractureUserObject
-matrixPorosity = 0.2 fracturePorosity = 0.2
-matrixPermeability = 1 fracturePermeability = 1e4
+[./conductivity1]
+type = FractureMaterial
+fractureMeshModifier =  fractureUserObject
+matrixPorosity = 0.2
+fracturePorosity = 0.2
+matrixPermeability = 1
+fracturePermeability = 1e4
 pressure = P_aux
+conservative = false
 [../]
 []
 
@@ -64,8 +69,8 @@ type = Transient
 solve_type= LINEAR
 line_search = none
 
- petsc_options_iname=' -ksp_type            '   # -mat_view
- petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
+petsc_options_iname=' -ksp_type            '   # -mat_view
+petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
 
 dt = 0.01
 num_steps=100
@@ -76,10 +81,10 @@ order = TENTH type = GRID
 []
 
 [Outputs]
- file_base = AdvectionOut_${adapSteps}
- exodus = true
- csv=true
- perf_graph = true
+file_base = AdvectionOut_${adapSteps}
+exodus = true
+csv=true
+perf_graph = true
 []
 
 
@@ -92,35 +97,146 @@ value_p ='1 1e4'
 boundary_D_bc = '22 23'
 value_D_bc='0.0 0.0'
 boundary_N_bc = '11'
-value_N_bc='-1.356070292717265'
+value_N_bc='-1.3793251106'
+#'-1.3492491344'
+#'-1.3379067369'
 aux_variable=P_aux
 fractureMeshModifier = fractureUserObject
-#output_file=matrix.e
+conservative=false
 [../]
 []
 
 
 [Postprocessors]
 [./fluxBoundary]
-  type = SideIntegralForFluxPostprocessor
-  variable = P_aux
-  boundary   = '11'
+type = SideIntegralForFluxPostprocessor
+variable = P_aux
+boundary   = '11'
 #  execute_on = 'initial'
 [../]
 
-[./Concentration]
-  type = ElementIntegralConcentrationPostprocessor
-  variable = CM
-  fractureRegionId = 1
-  fractureMeshModifier =  fractureUserObject
+
+[./Concentration0]
+type = ElementIntegralConcentrationPostprocessor
+variable = CM
+fractureRegionId = 0
+fractureMeshModifier =  fractureUserObject
 #  execute_on = 'timestep_end'
 [../]
 
-[./volume]
-  type = ElementIntegralVolumePostprocessor
-  fractureRegionId = 1
-  fractureMeshModifier =  fractureUserObject
+[./volume0]
+type = ElementIntegralVolumePostprocessor
+fractureRegionId = 0
+fractureMeshModifier =  fractureUserObject
 #  execute_on = 'initial'
 [../]
 
+
+[./Concentration1]
+type = ElementIntegralConcentrationPostprocessor
+variable = CM
+fractureRegionId = 1
+fractureMeshModifier =  fractureUserObject
+#  execute_on = 'timestep_end'
+[../]
+
+[./volume1]
+type = ElementIntegralVolumePostprocessor
+fractureRegionId = 1
+fractureMeshModifier =  fractureUserObject
+#  execute_on = 'initial'
+[../]
+
+[./Concentration2]
+type = ElementIntegralConcentrationPostprocessor
+variable = CM
+fractureRegionId = 2
+fractureMeshModifier =  fractureUserObject
+#  execute_on = 'timestep_end'
+[../]
+
+[./volume2]
+type = ElementIntegralVolumePostprocessor
+fractureRegionId = 2
+fractureMeshModifier =  fractureUserObject
+#  execute_on = 'initial'
+[../]
+
+[./Concentration3]
+type = ElementIntegralConcentrationPostprocessor
+variable = CM
+fractureRegionId = 3
+fractureMeshModifier =  fractureUserObject
+#  execute_on = 'timestep_end'
+[../]
+
+[./volume3]
+type = ElementIntegralVolumePostprocessor
+fractureRegionId = 3
+fractureMeshModifier =  fractureUserObject
+#  execute_on = 'initial'
+[../]
+
+[./Concentration4]
+type = ElementIntegralConcentrationPostprocessor
+variable = CM
+fractureRegionId = 4
+fractureMeshModifier =  fractureUserObject
+#  execute_on = 'timestep_end'
+[../]
+
+[./volume4]
+type = ElementIntegralVolumePostprocessor
+fractureRegionId = 4
+fractureMeshModifier =  fractureUserObject
+#  execute_on = 'initial'
+[../]
+
+[./Concentration5]
+type = ElementIntegralConcentrationPostprocessor
+variable = CM
+fractureRegionId = 5
+fractureMeshModifier =  fractureUserObject
+#  execute_on = 'timestep_end'
+[../]
+
+[./volume5]
+type = ElementIntegralVolumePostprocessor
+fractureRegionId = 5
+fractureMeshModifier =  fractureUserObject
+#  execute_on = 'initial'
+[../]
+
+[./Concentration6]
+type = ElementIntegralConcentrationPostprocessor
+variable = CM
+fractureRegionId = 6
+fractureMeshModifier =  fractureUserObject
+#  execute_on = 'timestep_end'
+[../]
+
+[./volume6]
+type = ElementIntegralVolumePostprocessor
+fractureRegionId = 6
+fractureMeshModifier =  fractureUserObject
+#  execute_on = 'initial'
+[../]
+
+[./Concentration7]
+type = ElementIntegralConcentrationPostprocessor
+variable = CM
+fractureRegionId = 7
+fractureMeshModifier =  fractureUserObject
+#  execute_on = 'timestep_end'
+[../]
+
+[./volume7]
+type = ElementIntegralVolumePostprocessor
+fractureRegionId = 7
+fractureMeshModifier =  fractureUserObject
+#  execute_on = 'initial'
+[../]
+
+
 []
+

@@ -8,7 +8,7 @@ file =mesh_${typeMesh}_${origLevel}.e
 block_id = '1 2 3 4 5 6 7 8 11 12 13'
 boundary_id = '21 22'
 boundary_name = 'inflow outflow'
-uniform_refine=2
+uniform_refine=0
 #second_order=true
 []
 

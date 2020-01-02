@@ -2,7 +2,7 @@
 
 as=0;
 us=2;
-or=5v;
+or=5;
 np=6;
 createmesh=1;
 correction=1;

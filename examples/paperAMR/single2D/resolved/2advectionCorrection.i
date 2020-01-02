@@ -79,6 +79,7 @@ value_D_bc='4.0 1.0'
 boundary_N_bc = ''
 value_N_bc=''
 aux_variable=P_aux
+conservative = true
 # output_file=matrix.e
 [../]
 [./storeOperatorsUO]

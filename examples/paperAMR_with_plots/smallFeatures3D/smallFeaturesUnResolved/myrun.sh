@@ -4,7 +4,7 @@ as=4;
 
 np=4;
 
-createmesh=1;
+createmesh=0;
 
 correction=0;
 
@@ -55,15 +55,7 @@ echo $as
 #mpirun -n ${np} ../../../../parrot-opt -i 1diffusion.i adapSteps=${as}
 #exit 1
 
-if [ $correction -eq 0 ]
-then
-	mpirun -n ${np} ../../../../parrot-opt -i 2advection.i adapSteps=${as}
-fi
 
-if [ $correction -eq 1 ]
-then
-	mpirun -n ${np} ../../../../parrot-opt -i 2advectionCorrection.i adapSteps=${as}
-fi
 
 if [ $postprocessors -eq 1 ]
 then

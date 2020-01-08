@@ -1,16 +1,16 @@
-typem=0;
+typem=1;
 
 ol=2;
 
 np=4;
 
-as=0;
+as=2;
 
-us=1;
+us=0;
 
 correction=0;
 
-createmesh=1;
+createmesh=0;
 
 postprocessor=0;
 

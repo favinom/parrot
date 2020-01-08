@@ -48,7 +48,7 @@ pressure=P_aux
 
 [./porosity_2]
 type = FlowAndTransport
-conservative=true
+conservative=false
 block = '1 2 3 4 5 6 7 8'
 k = 1.0e4
 phi = 0.2
@@ -104,15 +104,18 @@ perf_graph = true
 
 
 [UserObjects]
+active='soln'
 [./soln]
 type = SolveDiffusion
 execute_on = 'initial'
 block_id='1 2 3 4 5 6 7 8 11 12 13'
 value_p ='1e4 1e4 1e4 1e4 1e4 1e4 1e4 1e4 1 1 1'
-boundary_D_bc = '22'
-value_D_bc='0.0'
+boundary_D_bc = '22 23'
+value_D_bc='0.0 0.0'
 boundary_N_bc = '21'
-value_N_bc='-1.1271638853'
+value_N_bc='-1.0'
+#'-1.3777384127' mesh_3_0
+#'-1.1271638853'
 #'-1.1271638853' mesh_0_2 with_1_Uref
 #'-1.2501939362' mesh_0_2
 #'-1.5289597863' mesh_0_0
@@ -122,6 +125,20 @@ value_N_bc='-1.1271638853'
 #'-1.0883646525' mesh_1_2 with_2_Uref
 aux_variable=P_aux
 conservative=true
+#fractureMeshModifier = fractureUserObject
+#output_file=matrix.e
+[../]
+
+ 
+[./Flux]
+type = ComputeConservativeFlux
+execute_on = 'timestep_end'
+block_id='1 2 3 4 5 6 7 8 11 12 13'
+value_p ='1e4 1e4 1e4 1e4 1e4 1e4 1e4 1e4 1 1 1'
+aux_variable=P_aux
+conservative=true
+boundary_N_bc = '21'
+value_N_bc='-1.0'
 #fractureMeshModifier = fractureUserObject
 #output_file=matrix.e
 [../]
@@ -198,4 +215,17 @@ block = 8
 [./volume6] type = VolumePostprocessor block = 6 [../] # execute_on = 'final'
 [./volume7] type = VolumePostprocessor block = 7 [../] # execute_on = 'final'
 [./volume8] type = VolumePostprocessor block = 8 [../] # execute_on = 'final'
+
+[./fluxBoundaryOut23]
+type = SideIntegralForFluxPostprocessor
+variable = P_aux
+boundary   = '23'
+execute_on = 'timestep_end'
+[../]
+ 
+[./average]
+ type = SideAverageValue
+ variable = P_aux
+ boundary = 21
+[../]
 []

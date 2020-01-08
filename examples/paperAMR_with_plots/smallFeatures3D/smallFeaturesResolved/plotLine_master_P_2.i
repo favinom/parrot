@@ -1,5 +1,5 @@
 [Mesh]
- file=AdvectionOut_${typeMesh}_${origLevel}_${adapSteps}.e
+file = refinedMesh_${typeMesh}_${origLevel}_${Uref}_000${adapSteps}_mesh.xdr
 []
 
 [Problem]
@@ -17,7 +17,7 @@ kernel_coverage_check = false
 #active='soln'
 [./soln]
 type = SolutionUserObject
-mesh = AdvectionOut_${typeMesh}_${origLevel}_${adapSteps}.e
+mesh = AdvectionOut_${typeMesh}_${origLevel}_${Uref}_${adapSteps}.e
 system_variables = P_aux
 execute_on = 'initial'
 timestep = 'LATEST'

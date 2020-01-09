@@ -226,8 +226,6 @@ void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, std::string cons
 
 
   std::vector<dof_id_type> dof_indices;
-    
-    std::cout<<"nnz"<< dof_map.get_n_nz()<<std::endl;
 
   DenseMatrix<Number> ke;
   DenseVector<Number> re;

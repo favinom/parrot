@@ -1,3 +1,7 @@
+[Problem]
+ type = FEProblem
+ solve = false
+[]
 
 [Mesh]
  type = GeneratedMesh
@@ -11,8 +15,6 @@
  ymax = 1
  zmin = 0
  zmax = 1
-# elem_type = QUAD9
-# partitioner = parmetis
 []
 
 [Variables]
@@ -27,11 +29,6 @@
  type=Steady
  solve_type=LINEAR
  line_search = 'none'
-[]
-
-[Problem]
- type = FEProblem
- solve = false
 []
 
 [Outputs]

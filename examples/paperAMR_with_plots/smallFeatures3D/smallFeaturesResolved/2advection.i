@@ -11,7 +11,7 @@ boundary_name = 'inflow outflow'
 []
 
 [MeshModifiers]
-active=''
+#active=''
 [./fractureUserObject]
 type = FractureUserObject
 fn = 8
@@ -89,14 +89,14 @@ petsc_options_iname=' -ksp_type            '   # -mat_view
 petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
 
 dt = 0.01
-num_steps=100
+num_steps=1
 
 [./Quadrature] order=SIXTH [../]
 
 []
 
 [Outputs]
-file_base = AdvectionOut_${typeMesh}_${origLevel}_${Uref}_${adapSteps}
+file_base = AdvectionOutNew_${typeMesh}_${origLevel}_${Uref}_${adapSteps}
 exodus = true
 csv=true
 perf_graph = true
@@ -104,7 +104,14 @@ perf_graph = true
 
 
 [UserObjects]
-active='soln'
+active='ComputeStatistics'
+ 
+[./ComputeStatistics]
+ type = ComputeStatistics
+ execute_on = 'initial'
+ fractureMeshModifier = fractureUserObject
+[../]
+ 
 [./soln]
 type = SolveDiffusion
 execute_on = 'initial'
@@ -228,4 +235,6 @@ execute_on = 'timestep_end'
  variable = P_aux
  boundary = 21
 [../]
+
+
 []

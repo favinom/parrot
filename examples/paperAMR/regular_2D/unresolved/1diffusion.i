@@ -3,7 +3,7 @@ conservative = true
 []
 
 [Mesh]
- file = refinedMesh_00${adapSteps}_mesh.xdr
+ file = refinedMesh_${resolution}_00${adapSteps}_mesh.xdr
 []
 
 [MeshModifiers]
@@ -37,6 +37,7 @@ k = 1 kFrac = 1e4
 # observe that with the second BCs the stiffness matrix is SDP and we can use choleski factorization
 [BCs]
 [./inflowBC]  type = DirichletBC variable = pressure value = 1.0  boundary = right [../]
+[./ouflowBC]  type = NeumannBC   variable = pressure value = 1.0  boundary = left  [../]
 []
  
 [Preconditioning]
@@ -56,7 +57,7 @@ k = 1 kFrac = 1e4
 
 
 [Outputs]
- file_base  = DiffusionOut_${adapSteps}
+ file_base  = DiffusionOut_${resolution}_${adapSteps}
  exodus     = true
  perf_graph = true
 []

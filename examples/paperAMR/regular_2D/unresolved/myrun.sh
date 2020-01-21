@@ -1,15 +1,16 @@
 #!/bin/bash
 
-as=6;
+as=8;
 np=4;
 res=80;
-createmesh=1;
-correction=1;
+createmesh=0;
+correction=0;
 
 if [ $createmesh -eq 1 ]
 then
 	./myclean.sh
 	mpirun -n ${np} ../../../../parrot-opt -i 0refineBlock.i resolution=${res} adapSteps=${as}
+
 	for (( c=0; c<=as+1; c++ ))
 	do
 		if [ $c -le 9 ]
@@ -18,7 +19,7 @@ then
 		else
 			v=$c
 		fi
-		rm refinedMesh_00$v.xdr
+		rm refinedMesh_${res}_00$v.xdr
 	done
 
 	for (( c=1; c<=as+1; c++ ))
@@ -36,7 +37,7 @@ then
 		else
 			v2=$temp
 		fi
-		mv refinedMesh_00${v1}_mesh.xdr refinedMesh_00${v2}_mesh.xdr
+		mv refinedMesh_${res}_00${v1}_mesh.xdr refinedMesh_${res}_00${v2}_mesh.xdr
 	done
 fi
 
@@ -50,13 +51,13 @@ echo $as
 
 if [ $correction -eq 0 ]
 then
-	mpirun -n ${np} ../../../../parrot-opt -i 2advection.i adapSteps=${as} UserObjects/active='soln'
+	mpirun -n ${np} ../../../../parrot-opt -i 2advection.i resolution=${res} adapSteps=${as} UserObjects/active='soln'
 fi
 if [ $correction -eq 1 ]
 then
-	mpirun -n ${np} ../../../../parrot-opt -i 2advection.i adapSteps=${as} Problem/operator_userobject='storeOperatorsUO'
+	mpirun -n ${np} ../../../../parrot-opt -i 2advection.i resolution=${res} adapSteps=${as} Problem/operator_userobject='storeOperatorsUO'
 fi
 if [ $correction -eq 2 ]
 then
-	mpirun -n ${np} ../../../../parrot-opt -i 1diffusion.i adapSteps=${as}
+	mpirun -n ${np} ../../../../parrot-opt -i 1diffusion.i resolution=${res} adapSteps=${as}
 fi

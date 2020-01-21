@@ -42,7 +42,7 @@ solve = false
  []
 
 [Outputs]
- file_base = refinedMesh
+ file_base = refinedMesh_${resolution}
  #exodus = true
  perf_graph = true
  xdr = true

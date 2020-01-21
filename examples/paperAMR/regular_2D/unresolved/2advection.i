@@ -9,7 +9,7 @@ use_AFC = true
 []
 
 [Mesh]
- file = refinedMesh_00${adapSteps}_mesh.xdr
+ file = refinedMesh_${resolution}_00${adapSteps}_mesh.xdr
 []
 
 [MeshModifiers]
@@ -76,7 +76,7 @@ line_search = none
 []
 
 [Outputs]
- file_base = AdvectionOut_${adapSteps}
+ file_base = AdvectionOut_${resolution}_${adapSteps}
  exodus = true
  csv=true
  perf_graph = true

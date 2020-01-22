@@ -72,7 +72,7 @@
 #include "libmesh/boundary_info.h"
 #include "libmesh/boundary_mesh.h"
 
-
+#include "utopia_LibMeshBackend.hpp"
 
 
 using namespace std;
@@ -91,6 +91,8 @@ InputParameters
 validParams<HybridModel>()
 {
     InputParameters params = validParams<GeneralUserObject>();
+    params.addParam<std::string>("dc_boundaries_m", "-1", "Dirichlet Boundary ID");
+    params.addParam<std::string>("dc_variables_m" , "-1", "Variable to which given BC_id applies");
     
     // // params.addRequiredParam<std::vector<int>>("block_id",
     // //                                                  "The name of the nodeset to create");
@@ -102,22 +104,23 @@ validParams<HybridModel>()
                                           "The variable to transfer from.");
     params.addRequiredParam<VariableName>("fracture_variable",
                                           "The variable to transfer from.");
-    // params.addRequiredParam<UserObjectName>("operator_userobject","The userobject that stores our operators");
+    params.addRequiredParam<UserObjectName>("operator_userobject","The userobject that stores our operators");
     // // params.addParam<bool>("pressure","false","put true if you solve pressure system");
     // // params.addParam<bool>("transport","false","put true if you transport system");
     // params.addParam<bool>("biorth","false","put true for biorth bases");
     // // params.addParam<bool>("stabilize","false","put true for FCT stabilizing");
     // // params.addParam<bool>("constraint_m","false","put true if matrix has Dirichlet BC");
     // // params.addParam<bool>("constraint_f","false","put true if fibres has Dirichlet BC");
-    // params.addRequiredParam<MultiAppName>("multi_app", "The MultiApp's name in your input file!");
+    params.addRequiredParam<MultiAppName>("multi_app", "The MultiApp's name in your input file!");
     
     return params;
 }
 
 HybridModel::HybridModel(const InputParameters & parameters) :
 GeneralUserObject(parameters),
- _f_var_name(getParam<VariableName>("fracture_variable")),
- _m_var_name(getParam<VariableName>("matrix_variable")),
+_dc_var_m(getParam<std::string>("dc_variables_m")),
+_f_var_name(getParam<VariableName>("fracture_variable")),
+_m_var_name(getParam<VariableName>("matrix_variable")),
 _operator_storage(getUserObject<StoreOperators>("operator_userobject")),
 // //_pressure(getParam<bool>("pressure")),
 // //_transport(getParam<bool>("transport")),
@@ -125,8 +128,15 @@ _operator_storage(getUserObject<StoreOperators>("operator_userobject")),
 // // _vector_p(getParam<std::vector<int>>("block_id")),
 // // _vector_value(getParam<std::vector<Real>>("value_p")),
 _multiapp_name(getParam<MultiAppName>("multi_app"))
+
+
 {
-    
+    std::vector<std::string> tmp = split_string(parameters.get<std::string>("dc_boundaries_m"), ' ');
+    for(auto str_tmp=tmp.begin(); str_tmp != tmp.end(); str_tmp++)
+    {
+        _dc_boundary_id_m.push_back(atoi(str_tmp->c_str()));
+    }
+
 }
 
 
@@ -154,6 +164,7 @@ HybridModel::initialize()
     
     MooseVariable & _m_var = m_problem.getStandardVariable(0, _m_var_name);
 
+
     // if(!m_problem.hasUserObject(_userobject_name_S)){
 
     //         std::string class_name = "StoreTransferOperators";
@@ -175,6 +186,9 @@ HybridModel::initialize()
     // }
 
     
+    // using LagrangeMultiplier      = utopia::LagrangeMultiplier<utopia::USparseMatrix, utopia::UVector>;
+
+    // auto lm = std::make_shared<LagrangeMultiplier>(_m_mesh->comm());
 
         if  (m_problem.timeStep()==1){
 
@@ -204,7 +218,7 @@ HybridModel::initialize()
             
                 T_ = op->matrix();
 
-                utopia::set_zero_at_constraint_rows(_m_var.sys().system().get_dof_map(), *T_);
+                set_zero_at_constraint_rows(_m_var.sys().system().get_dof_map(), *T_);
         }
 
 
@@ -243,9 +257,9 @@ HybridModel::execute()
         
     if (ok){
         
-        // CopyMatrixSolution(sol_m);
+        CopyMatrixSolution(sol_m);
         
-        // CopyFractureSolution(sol_f);
+        CopyFractureSolution(sol_f);
     }
 
 
@@ -310,9 +324,37 @@ bool HybridModel::solve_pressure_monolithic()
 
     utopia::USparseMatrix T =  * T_;
 
-    utopia::USparseMatrix A_tot = transpose(T) * A_f * T + A_m;
+    utopia::disp(size(T).get(0));
 
-    utopia::UVector rhs_tot     = rhs_m + transpose(T) * rhs_f;
+    utopia::disp(size(T).get(1));
+
+    utopia::disp(size(A_f).get(0));
+
+    utopia::disp(size(A_m).get(0));
+
+    utopia::set_zero_at_constraint_rows(_f_var.sys().system().get_dof_map(), A_f);
+
+    utopia::USparseMatrix A_tot = transpose(T) * A_f * T;
+
+    A_tot += A_m;
+
+    utopia::disp(size(A_tot).get(0));
+
+    utopia::disp(size(A_tot).get(1));
+
+    utopia::UVector rhs_tot =  transpose(T) * rhs_f;
+
+    rhs_tot += rhs_m;
+
+    auto V_m = utopia::LibMeshFunctionSpace(utopia::make_ref(_m_var.sys().system().get_equation_systems()),_m_var.sys().system().number(), _m_var.number());
+
+    boundary_conditions(V_m.dof_map(), A_tot, rhs_tot, rhs_m);
+
+    utopia::disp(size(rhs_f));
+
+    utopia::disp(size(rhs_m));
+
+    utopia::disp(size(rhs_tot));
     
     sol_m  = utopia::local_zeros(local_size(rhs_m));
 
@@ -336,11 +378,312 @@ bool HybridModel::solve_pressure_monolithic()
     sol_f = T * sol_m;
 
 
-
     _console << "Solve_monolithic():: STOP SOLVING"  << std::endl;
-    return true;
+
+    ok = true;
+    
+    return ok;
 
 }
+
+void
+HybridModel::constraint_mat(utopia::UVector &boundary, utopia::USparseMatrix &mat)
+{
+//    auto &V = space->space().last_subspace();
+
+    using namespace utopia;
+
+    typedef UTOPIA_SIZE_TYPE(UVector) SizeType;
+
+    std::vector<SizeType> rows;
+    
+    {
+
+        Read<utopia::UVector> r_v(boundary);
+        
+        rows.reserve(local_size(mat).get(0));
+
+        auto r = row_range(mat);
+
+        for(SizeType i = r.begin(); i < r.end(); ++i) {
+
+            //std::cout<<"value "<< boundary.get(i) <<std::endl;
+
+            if(boundary.get(i)!=0) {
+
+                //std::cout<<"i "<< i <<"valpos->second "<<boundary.get(i)<<std::endl;
+
+                // if(valpos != rhs_values.end()) {
+                rows.push_back(i);
+                // }
+            }
+        }
+    
+
+        set_zero_rows(mat, rows, 1.);
+    }    
+}
+
+
+void 
+HybridModel::set_zero_at_constraint_rows(DofMap &dof_map, utopia::USparseMatrix &mat)
+{
+    bool has_constaints = true;
+
+    using namespace utopia;
+
+    if( dof_map.constraint_rows_begin() == dof_map.constraint_rows_end()) {
+        // std::cerr << "[Warning] no zero boundary conditions to apply\n" << std::endl;
+        has_constaints = false;
+    }
+
+    Size s = size(mat);
+    utopia::USparseMatrix temp = mat;
+
+    {
+        Write<USparseMatrix> w_t(mat);
+
+        each_read(temp, [&](const SizeType i, const SizeType j, const libMesh::Real value) {
+            if(has_constaints && dof_map.is_constrained_dof(i)) {
+                mat.set(i, j, 0.0);
+            }
+        });
+    }
+}
+
+
+void
+HybridModel::constraint_vec(utopia::UVector &boundary, utopia::UVector &vec)
+{
+
+
+    using namespace utopia;
+    
+    {
+        Write<utopia::UVector> w_v(vec);
+
+        Read<utopia::UVector> r_v(boundary);
+
+            Range r = range(vec);
+
+            for(SizeType i = r.begin(); i < r.end(); ++i) {
+
+                if(boundary.get(i)!=0) {
+
+
+                    vec.set(i, boundary.get(i));
+    
+                
+            }
+        }
+    }
+
+    synchronize(vec);
+    
+}
+
+void
+HybridModel::find_boundary(std::vector<int> &zero_rows, std::vector<int> &_dc_boundary_id){
+
+  ConstBndNodeRange & bnd_nodes = *_fe_problem.mesh().getBoundaryNodeRange();
+  NonlinearSystemBase & _nl = _fe_problem.getNonlinearSystemBase();
+    unsigned int i = 0;
+    // std::cout<<"_dc_variables_id"<< _dc_variables_id[0].size()<<std::endl;
+    // std::cout<<"_dc_boundary_id"<< _dc_boundary_id.size()<<std::endl;
+    for(auto boundary = _dc_boundary_id.begin(); boundary != _dc_boundary_id.end(); ++boundary, i++)
+      {
+        // iterate just over boundary nodes
+            for (const auto & bnode : bnd_nodes)
+            {
+                  libMesh::Node * current_node = bnode->_node;
+
+                  // check if node is in active boundary list
+                  if (_fe_problem.mesh().isBoundaryNode(current_node->id(), *boundary))
+                  {
+                    // loop over all variables at this node
+
+                    for (auto v = 0; v < _fe_problem.getNonlinearSystemBase().nVariables(); v++)
+                    {
+                      const Variable & var = _nl.system().variable(v);
+                      unsigned int var_num = var.number();
+                        //std::cout<<"nnnnnnn"<< var_num <<std::endl;
+
+                      // see if this variable has any dofs at this node
+                      if (current_node->n_dofs(_fe_problem.getNonlinearSystemBase().number(), var_num) > 0)
+                      {
+                        // check if given variable has BC on node
+
+                        if(std::find(_dc_variables_id_m[i].begin(), _dc_variables_id_m[i].end(), var_num) != _dc_variables_id_m[i].end())
+                        {
+
+                          // different components are not supported by moose at the moment...
+                          //std::cout<<"kkkkkkkk"<< std::endl;
+                          zero_rows.push_back(
+                              current_node->dof_number(_fe_problem.getNonlinearSystemBase().number(), var_num, 0));
+                        }
+                    }
+                }
+            } 
+        }
+    }
+
+    std::cout<<"zero_rows_size: "<< zero_rows.size()<<std::endl;
+}
+
+
+void 
+HybridModel::determine_dc_bnd_var_id(const std::vector<std::string> & BC_var){
+    // automatic fill-in
+     NonlinearSystemBase & _nl = _fe_problem.getNonlinearSystemBase();
+
+    std::vector<int> vec(_nl.nVariables());
+
+    std::iota(vec.begin(), vec.end(), 0);
+
+    unsigned int i;
+
+    auto str_tmp = BC_var.begin();
+
+    PetscFunctionBegin;
+    // going over all BC_ids
+    for(i = 0; str_tmp != BC_var.end(); i++, str_tmp++)
+    {
+        std::vector<std::string> tmp = HybridModel::split_string(*str_tmp, '-');
+
+        // check if variable assigned in the input file exists for given simulation
+        bool var_flg = 1;
+        for(auto t = tmp.begin(); t != tmp.end(); ++t)
+        {
+            if(atoi(t->c_str()) >= _nl.nVariables())
+                var_flg = 0;
+        }
+
+        // in case u havent put anything into input file, or u put too much
+        if(*str_tmp == "-1" || var_flg == 0)
+        {
+            //std::cout<<"no_si"<<_nl.nVariables()<<std::endl;
+            _dc_variables_id_m.push_back(vec);
+        }
+        else
+        {
+            unsigned int j;
+            std::vector<int > one_BC_id;
+            auto str_in = tmp.begin();
+            for(j = 0; str_in != tmp.end(); j ++, str_in++)
+            {
+                one_BC_id.push_back(atoi(str_in->c_str()));
+            }
+            _dc_variables_id_m.push_back(one_BC_id);
+        }
+    }
+
+    // check if u have same number of BC_ids in both parameters
+    if(_dc_variables_id_m.size() != _dc_boundary_id_m.size())
+    {
+        _dc_variables_id_m.clear();
+        for(auto i = 0; i != _dc_boundary_id_m.size(); i++)
+        {
+            _dc_variables_id_m.push_back(vec);
+        }
+    }
+
+    // print out what is considered for zero-ing
+    std::cout<<" ------ BC CONDITIONS  ------ \n";
+    unsigned int t = 0;
+    //std::cout<<"_dc_variables_id.begin()"<<_dc_variables_id.size()<<std::endl;
+    for(auto i = _dc_variables_id_m.begin(); i != _dc_variables_id_m.end();  t++, i++)
+    {
+        std::cout<<"\n BC_id:  "<< _dc_boundary_id_m[t] << "   var_ids:  ";
+        std::for_each(i->begin(), i->end(), [](int i){ std::cout << i << "  " ; });
+    }
+
+}
+
+
+    
+
+     
+std::vector<std::string>
+HybridModel::split_string(const std::string & s, char delim)
+{
+
+      std::vector<std::string> v;
+
+      if (s.length() == 0)
+        std::cerr << "Got an empty string. Split_string(...) is confused. \n";
+
+      auto i = 0;
+      auto pos = s.find(delim);
+      while (pos != std::string::npos)
+      {
+        v.push_back(s.substr(i, pos - i));
+        i = ++pos;
+        pos = s.find(delim, pos);
+
+        if (pos == std::string::npos)
+          v.push_back(s.substr(i, s.length()));
+      }
+
+      if (v.size() == 0) // if only one word is in the string
+        v.push_back(s);
+
+      return v;
+}
+
+ void 
+ HybridModel::boundary_conditions(libMesh::DofMap &dof_map, utopia::USparseMatrix &mat, utopia::UVector &vec, utopia::UVector &rhs_values)
+{ 
+    //using namespace utopia;
+
+    //using SizeType = Traits<UVector>::SizeType;
+
+
+    determine_dc_bnd_var_id(HybridModel::split_string(_dc_var_m, ' '));
+        
+    find_boundary(zero_rows, _dc_boundary_id_m);
+
+    const bool has_constaints = dof_map.constraint_rows_begin() != dof_map.constraint_rows_end();
+
+
+    //std::cout<<"boundary_conditions"<<has_constaints<<std::endl;
+
+
+    utopia::Size ls = utopia::local_size(mat);
+    utopia::Size s = utopia::size(mat);
+
+    std::vector<int> index;
+
+    utopia::Range rr = utopia::range(vec);
+
+ 
+    for(int i = rr.begin(); i < rr.end(); ++i) {
+        auto it = std::find(zero_rows.begin(), zero_rows.end(), i);
+        if(it!=zero_rows.end()) {
+            index.push_back(i);
+            std::cout<<"i"<<i<<std::endl;
+        }
+    }
+
+    utopia::set_zero_rows(mat, index, 1.);
+
+    utopia::Write<utopia::UVector> w_v(vec);
+
+    utopia::Read<utopia::UVector> r_v(rhs_values);
+
+
+    
+
+    utopia::Range r = range(vec);
+    for(int i = r.begin(); i < r.end(); ++i) {
+        auto it = std::find(zero_rows.begin(), zero_rows.end(), i);
+        if(it!=zero_rows.end()) {
+            auto value = rhs_values.get(i);
+            vec.set(i, value);
+        }
+    }
+    
+}
+
 
 
 
@@ -407,7 +750,7 @@ HybridModel::CopyMatrixSolution(utopia::UVector _sol_m)
     _sys_m.update();
 
     //if(_pressure)
-       ExodusII_IO (*_mesh_m).write_equation_systems("matrix_p.e", _var_m.sys().system().get_equation_systems());
+    ExodusII_IO (*_mesh_m).write_equation_systems("matrix_p.e", _var_m.sys().system().get_equation_systems());
     // else
     //    ExodusII_IO (*_mesh_m).write_equation_systems("matrix_c.e", _var_m.sys().system().get_equation_systems());
     

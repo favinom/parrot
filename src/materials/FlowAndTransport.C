@@ -100,11 +100,14 @@ FlowAndTransport::computeQpProperties()
 	if (_isPressureValid)
 	{
 		_U[_qp] =  -1.0 * _K[_qp] * _gradP[_qp];
+		std::cout<<"I am there"<< _K[_qp] <<std::endl;
 	}
 	else
 	{
-		for (int i=0; i<3; ++i)
+		for (int i=0; i<3; ++i){
+			std::cout<<"I am here"<<std::endl;
 			_U[_qp](i)=0.0/0.0;
+		}
 	}
 
 	if (_conservativeScheme && _qp==_qrule->n_points()-1)

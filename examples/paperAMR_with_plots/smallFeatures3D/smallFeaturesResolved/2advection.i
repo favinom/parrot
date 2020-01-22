@@ -11,7 +11,7 @@ boundary_name = 'inflow outflow'
 []
 
 [MeshModifiers]
-#active=''
+active=''
 [./fractureUserObject]
 type = FractureUserObject
 fn = 8
@@ -104,7 +104,7 @@ perf_graph = true
 
 
 [UserObjects]
-active='ComputeStatistics'
+active='soln'
  
 [./ComputeStatistics]
  type = ComputeStatistics

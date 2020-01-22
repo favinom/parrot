@@ -17,12 +17,12 @@ postprocessor=0;
 
 if [ $createmesh -eq 1 ]
 then
-mpirun -n ${np} ../../../../parrot-opt -i 0refineBlock.i typeMesh=${typem} origLevel=${ol} adapSteps=${as} Uref=${us}
+mpirun -n 4 ../../../../parrot-opt -i 0refineBlock.i typeMesh=${typem} origLevel=${ol} adapSteps=${as} Uref=${us}
 fi
 
 if [ $correction -eq 0 ]
 then
-	mpirun -n ${np} ../../../../parrot-opt -i 2advection.i typeMesh=${typem} origLevel=${ol} adapSteps=${as+1} Uref=${us}
+	mpirun -n ${np} ../../../../parrot-opt -i 2advection.i typeMesh=${typem} origLevel=${ol} adapSteps=1 Uref=${us}
 fi
 if [ $correction -eq 1 ]
 then

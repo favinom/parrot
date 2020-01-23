@@ -23,7 +23,7 @@ validParams<MyDiffusion>()
 
 MyDiffusion::MyDiffusion(const InputParameters & parameters) :
 Kernel(parameters),
-_K(getMaterialProperty<RealTensorValue>("conductivityTensor")),
+_K(getMaterialProperty<RealTensorValue>("PermeabilityTensor")),
 _coef(getParam<Real>("coef"))
 {}
 

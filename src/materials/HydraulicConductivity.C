@@ -21,7 +21,7 @@ validParams<HydraulicConductivity>()
 HydraulicConductivity::HydraulicConductivity(const InputParameters &parameters) :
 Material(parameters),
 _cond(getParam<Real>("conductivity")),
-_K(declareProperty<RealTensorValue>("conductivityTensor")),
+_K(declareProperty<RealTensorValue>("PermeabilityTensor")),
 _gradP(parameters.isParamValid("pressure") ? coupledGradient("pressure"): _grad_zero),
 _U(declareProperty<RealVectorValue>("VelocityVector"))
 // _Hsupg(declareProperty<Real>("Hsupg"))

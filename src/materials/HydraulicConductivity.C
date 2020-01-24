@@ -24,7 +24,6 @@ _cond(getParam<Real>("conductivity")),
 _K(declareProperty<RealTensorValue>("PermeabilityTensor")),
 _gradP(parameters.isParamValid("pressure") ? coupledGradient("pressure"): _grad_zero),
 _U(declareProperty<RealVectorValue>("VelocityVector"))
-// _Hsupg(declareProperty<Real>("Hsupg"))
 {}
 
 void
@@ -32,16 +31,14 @@ HydraulicConductivity::computeQpProperties()
 {
 
 
-_K[_qp]=RealTensorValue(1.0,0.0,0.0,
-                        0.0,1.0,0.0,
-                        0.0,0.0,1.0);
+  _K[_qp]=RealTensorValue(1.0,0.0,0.0,
+                          0.0,1.0,0.0,
+                          0.0,0.0,1.0);
 
-    _K[_qp]=_cond*_K[_qp];
+  _K[_qp]=_cond*_K[_qp];
+  
     
-    _U[_qp] =  -1.0 * _K[_qp] * _gradP[_qp];
+  _U[_qp] =  -1.0 * _K[_qp] * _gradP[_qp];
 
-    // Real v_mod = _U[_qp] .norm();
-
-    // _Hsupg[_qp] = _current_elem->hmax() * v_mod;
 
 }

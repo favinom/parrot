@@ -135,12 +135,16 @@ public:
 
     std::unique_ptr<ExodusII_IO> _ex_writer;
 
+    QBase const * const & _qrule;
+
 
     KSP ksp;
     SNESType ttype;
     KSPType type;
 
     KSP_PARROT * _ksp_ptr;
+
+    utopia::UVector  rhs_m_c, rhs_f_c;
 
 
 

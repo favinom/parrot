@@ -110,8 +110,7 @@ validParams<HybridModel>()
     //params.addRequiredParam<UserObjectName>("operator_userobject","The userobject that stores our operators");
     params.addParam<bool>("pressure","false","put true if you solve pressure system");
     params.addParam<bool>("transport","false","put true if you transport system");
-    params.addRequiredParam<MultiAppName>("multi_app", "The MultiApp's name in your input file!");
-    
+    params.addRequiredParam<MultiAppName>("multi_app", "The MultiApp's name in your input file!");    
     return params;
 }
 
@@ -136,6 +135,7 @@ _qrule(_assembly.qRule())
         _dc_boundary_id_m.push_back(atoi(str_tmp->c_str()));
     }
 
+    
 }
 
 
@@ -148,6 +148,37 @@ HybridModel::initialize()
     _console << "Initial Setup of Fracture App " << std::endl;
     
     using namespace utopia;
+
+    _regionMin.push_back(RealVectorValue(0.0,0.0,0.0) );
+    _regionMax.push_back(RealVectorValue(0.5,0.5,0.0) );
+    
+    _regionMin.push_back(RealVectorValue(0.5,0.0,0.0) );
+    _regionMax.push_back(RealVectorValue(1.01,0.5,0.0) );
+    
+    _regionMin.push_back(RealVectorValue(0.0,0.5,0.0) );
+    _regionMax.push_back(RealVectorValue(0.5,1.01,0.0) );
+    
+    _regionMin.push_back(RealVectorValue(0.750,0.750,0.0) );
+    _regionMax.push_back(RealVectorValue(1.01,1.01,0.0) );
+    
+    _regionMin.push_back(RealVectorValue(0.75,0.50,0.0) );
+    _regionMax.push_back(RealVectorValue(1.01,0.75,0.0) );
+    
+    _regionMin.push_back(RealVectorValue(0.5,0.750,0.0) );
+    _regionMax.push_back(RealVectorValue(0.75,1.01,0.0) );
+    
+    _regionMin.push_back(RealVectorValue(0.50,0.50,0.0) );
+    _regionMax.push_back(RealVectorValue(0.625,0.625,0.0) );
+    
+    _regionMin.push_back(RealVectorValue(0.6250,0.50,0.0) );
+    _regionMax.push_back(RealVectorValue(0.75,0.625,0.0) );
+    
+    _regionMin.push_back(RealVectorValue(0.5,0.6250,0.0) );
+    _regionMax.push_back(RealVectorValue(0.625,0.75,0.0) );
+    
+    _regionMin.push_back(RealVectorValue(0.625,0.6250,0.0) );
+    _regionMax.push_back(RealVectorValue(0.75,0.75,0.0) );
+
     
     MultiApp &  _multi_app = * _fe_problem.getMultiApp(_multiapp_name);
     

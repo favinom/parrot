@@ -95,6 +95,7 @@ boundary_N_bc = ''
 value_N_bc=''
 aux_variable=P_aux
 fractureMeshModifier = fractureUserObject
+conservative = true
 #output_file=matrix.e
 [../]
 []

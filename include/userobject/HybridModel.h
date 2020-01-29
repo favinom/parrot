@@ -135,6 +135,7 @@ public:
 
     std::unique_ptr<ExodusII_IO> _ex_writer;
 
+
     QBase const * const & _qrule;
 
 
@@ -145,6 +146,10 @@ public:
     KSP_PARROT * _ksp_ptr;
 
     utopia::UVector  rhs_m_c, rhs_f_c;
+
+      
+    std::vector<RealVectorValue> _regionMin;
+    std::vector<RealVectorValue> _regionMax;
 
 
 

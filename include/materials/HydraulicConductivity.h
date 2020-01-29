@@ -40,6 +40,8 @@ protected:
   MaterialProperty<RealTensorValue> &_K;
   const VariableGradient &_gradP;
   MaterialProperty<RealVectorValue> &_U;
+  //std::string _meshModifierName;
+  //bool const _hasMeshModifier;
   // MaterialProperty<Real> &_Hsupg;
 
 };

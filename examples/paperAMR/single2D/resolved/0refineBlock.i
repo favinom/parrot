@@ -4,7 +4,7 @@ solve = false
 []
 
 [Mesh]
- file = square_one_frac.e
+ file = single_${tipeMesh}_${origRef}.e
  block_id = '2 4 5 6 7'
  boundary_id = '1 2'
  boundary_name = 'inflow outflow'

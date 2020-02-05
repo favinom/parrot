@@ -3,6 +3,11 @@ type = ParrotProblem
 use_AFC = true
 []
 
+[GlobalParams]
+conservative = true
+[]
+
+
 [Mesh]
  file = refinedMesh_${unifSteps}_000${adapSteps}_mesh.xdr
  block_id = '1 6 4 7 2'

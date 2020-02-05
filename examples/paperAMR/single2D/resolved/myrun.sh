@@ -1,15 +1,19 @@
 #!/bin/bash
 
-as=6;
+as=0;
 us=0;
 np=4;
+# this is type mesh: 0 old style, 1 the better one
+tm=0;
+or=09;
+
 createmesh=1;
-correction=1;
+correction=0;
 
 if [ $createmesh -eq 1 ]
 then
 	./myclean.sh
-	mpirun -n ${np} ../../../../parrot-opt -i 0refineBlock.i adapSteps=${as} unifSteps=${us}
+	mpirun -n ${np} ../../../../parrot-opt -i 0refineBlock.i adapSteps=${as} unifSteps=${us} tipeMesh=${tm} origRef=${or}
 	for (( c=0; c<=as+1; c++ ))
 	do
 		rm refinedMesh_${us}_000$c.xdr

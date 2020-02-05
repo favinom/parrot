@@ -1,0 +1,82 @@
+reset
+
+create surface rectangle width 100 height 10 zplane
+create surface rectangle width 100 height 10 zplane
+create surface rectangle width 100 height 10 zplane
+create surface rectangle width 100 height 10 zplane
+create surface rectangle width 100 height 10 zplane
+create surface rectangle width 100 height 10 zplane
+create surface rectangle width 100 height 10 zplane
+create surface rectangle width 100 height 10 zplane
+create surface rectangle width 100 height 10 zplane
+create surface rectangle width 100 height 10 zplane
+
+move Surface  1 y -45
+move Surface  2 y -35
+move Surface  3 y -25
+move Surface  4 y -15
+move Surface  5 y  -5
+move Surface  6 y   5
+move Surface  7 y  15
+move Surface  8 y  25
+move Surface  9 y  35
+move Surface 10 y  45
+
+create Surface    rectangle width 130 height 0.01 zplane 
+rotate Surface 11 angle -30.9637565320735 about Z include_merged
+
+Intersect Body 11 With Body 1 2 3 4 5 6 7 8 9 10
+
+create surface rectangle width 100 height 10 zplane
+create surface rectangle width 100 height 10 zplane
+create surface rectangle width 100 height 10 zplane
+create surface rectangle width 100 height 10 zplane
+create surface rectangle width 100 height 10 zplane
+create surface rectangle width 100 height 10 zplane
+create surface rectangle width 100 height 10 zplane
+create surface rectangle width 100 height 10 zplane
+create surface rectangle width 100 height 10 zplane
+create surface rectangle width 100 height 10 zplane
+
+move Volume 12 y -45
+move Volume 13 y -35
+move Volume 14 y -25
+move Volume 15 y -15
+move Volume 16 y  -5
+move Volume 17 y   5
+move Volume 18 y  15
+move Volume 19 y  25
+move Volume 20 y  35
+move Volume 21 y  45
+
+Subtract Body 2 From Body 13 keep
+Subtract Body 3 From Body 14 keep
+Subtract Body 4 From Body 15 keep
+Subtract Body 5 From Body 16 keep
+Subtract Body 6 From Body 17 keep
+Subtract Body 7 From Body 18 keep
+Subtract Body 8 From Body 19 keep
+Subtract Body 9 From Body 20 keep
+
+delete body 13
+delete body 14
+delete body 15
+delete body 16
+delete body 17
+delete body 18
+delete body 19
+delete body 20
+
+merge body all
+
+block 1 surface 29
+block 2 surface 20
+block 6 surface 43 41 39 37 35 33 31 
+block 7 surface 42 40 38 36 34 32 30
+block 4 surface 12 13 14 15 16 17 18 19
+
+Sideset 6 curve 114
+Sideset 7 curve 80
+
+surface all size auto factor 1
+mesh surface all

@@ -1,0 +1,34 @@
+reset
+create surface rectangle width 100 height 10 zplane
+create surface rectangle width 100 height 10 zplane
+
+move Surface 1 y 45 
+move Surface 2 y -45
+
+create surface rectangle width 100 height 80 zplane
+
+create surface rectangle width 140 height 0.01 zplane
+
+
+rotate Surface 4 angle -30.9637565320735  about Z include_merged 
+
+Intersect Body 3 With Body 4
+
+create surface rectangle width 100 height 80 zplane
+
+Subtract Body 4 From Body 5 keep
+
+delete body 5
+
+merge body 1  with body 6
+merge body 2  with body 6
+merge body 4  with body 6
+
+Sideset 6 curve 2
+Sideset 7 curve 8
+
+surface all size auto factor 1
+mesh surface all
+
+set large exodus file off
+export mesh "/Users/favinom/projects02/parrot/examples/paperAMR/single2D/resolved/single_0_10.e" overwrite

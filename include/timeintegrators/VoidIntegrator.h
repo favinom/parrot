@@ -31,9 +31,7 @@ public:
   virtual void postResidual(NumericVector<Number> & residual) override {};
 
 protected:
-  /**
-   * Helper function that actually does the math for computing the time derivative
-   */
+
   template <typename T, typename T2>
   void computeTimeDerivativeHelper(T & u_dot, const T2 & u_old) const;
 };

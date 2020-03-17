@@ -230,6 +230,13 @@ ParrotProblem::computeResidualSys(NonlinearImplicitSystem & /*sys*/,
     if(this->timeStep()==1){
       
         FEProblemBase::computeResidualSys(a[0],soln,residual);
+        
+        if (_use_afc && _is_stab_matrix_assembled)
+        {
+        _stab_matrix.vector_mult_add(residual,soln);
+
+        //residual.print_matlab("residual_moose.m");
+        }
 
     }
     else
@@ -275,12 +282,7 @@ ParrotProblem::computeResidualSys(NonlinearImplicitSystem & /*sys*/,
         //FEProblemBase::computeResidualSys(a[0],soln,residual);
     }
 
-      if (_use_afc && _is_stab_matrix_assembled)
-    {
-        //_stab_matrix.vector_mult_add(residual,soln);
-
-        //residual.print_matlab("residual_moose.m");
-    }
+ 
     
 }
 

@@ -10,7 +10,7 @@ typedef struct {
     PC * local_pc;
     int * factorized;
     FEProblem * fe_problem;
-    //PetscVector<Number> &sol_vec;
+    UserObjectName * userObjectName;
 } KSP_PARROT;
 
 #endif

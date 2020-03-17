@@ -193,7 +193,7 @@ void ParrotProblem::timestepSetup()
     _ksp_ptr = (KSP_PARROT *)ksp->data;
     (_ksp_ptr[0].local_pc)=&_problem_PC;
     (*_ksp_ptr).factorized=&_factorized;
-    //_ksp_ptr->sol_vec = *_sol_vec;
+    _ksp_ptr->userObjectName=userObjectName;
     _ksp_ptr->fe_problem = this;
     
     std::cout<<"END ParrotProblem::timestepSetup"<<std::endl;
@@ -230,7 +230,7 @@ ParrotProblem::computeResidualSys(NonlinearImplicitSystem & /*sys*/,
     if(this->timeStep()==1){
       
         FEProblemBase::computeResidualSys(a[0],soln,residual);
-        
+
         if (_use_afc && _is_stab_matrix_assembled)
         {
         _stab_matrix.vector_mult_add(residual,soln);

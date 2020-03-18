@@ -10,6 +10,10 @@
 #include "ParrotProblem.h"
 #include "libmesh/petsc_nonlinear_solver.h"
 #include "petscmat.h"
+#include "petscmat.h"
+#include "chrono"
+
+
 
 registerMooseObject("parrotApp", ParrotProblem);
 
@@ -46,6 +50,7 @@ ParrotProblem::ParrotProblem(const InputParameters & parameters) :
 FEProblem(parameters),
 _pp_comm(_mesh.comm()),
 _stab_matrix(_pp_comm),
+_res_m(_pp_comm),
 _use_afc(getParam<bool>("use_AFC"))
 {
  
@@ -106,11 +111,8 @@ void ParrotProblem::initialSetup()
 
 
     NonlinearSystemBase & _nl = this->getNonlinearSystemBase();
-
     const DofMap & dof_map = _nl.dofMap(); 
-
     _sol_vec                = _storeOperatorsUO->SolVec();
-
     _sol_vec->init(dof_map.n_dofs(), dof_map.n_local_dofs());
 
     std::cout<<"END ParrotProblem::initialSetup"<<std::endl;
@@ -125,37 +127,36 @@ ParrotProblem::solve()
 
     std::cout<<"I am in FEProblemBase::solve()"<<std::endl;
 
+    auto t_start = std::chrono::high_resolution_clock::now();
+
+
     #ifdef LIBMESH_HAVE_PETSC
-      Moose::PetscSupport::petscSetOptions(*this); // Make sure the PETSc options are setup for this app
+    Moose::PetscSupport::petscSetOptions(*this); // Make sure the PETSc options are setup for this app
     #endif
 
-      Moose::setSolverDefaults(*this);
+    Moose::setSolverDefaults(*this);
 
-      // Setup the output system for printing linear/nonlinear iteration information
-      initPetscOutput();
+    // Setup the output system for printing linear/nonlinear iteration information
+    initPetscOutput();
 
-      possiblyRebuildGeomSearchPatches();
+    possiblyRebuildGeomSearchPatches();
 
-      // reset flag so that linear solver does not use
-      // the old converged reason "DIVERGED_NANORINF", when
-      // we throw  an exception and stop solve
-      //_fail_next_linear_convergence_check = false;
+    // reset flag so that linear solver does not use
+    // the old converged reason "DIVERGED_NANORINF", when
+    // we throw  an exception and stop solve
+    _fail_next_linear_convergence_check = false;
 
-      if (_solve) {
+    if (_solve) _nl->solve();
+    
 
-         _nl->solve();
+    if (_solve)
+    {
 
-         //update_sol();
-         //ParrotProblem::solve_linear_system();
-      }
-
-       if (_solve){
-
-          if(this->timeStep()==1)_nl->update();
-          else update_sol();
-           
-          // update_sol();
-       }
+      if(this->timeStep()==1)_nl->update();
+      
+      else update_sol();
+       
+    }
 
 }
 
@@ -219,17 +220,18 @@ ParrotProblem::computeResidualSys(NonlinearImplicitSystem & /*sys*/,
                                   NumericVector<Number> & residual)
 {
         
-    NonlinearImplicitSystem * a;
-    
-    //FEProblemBase::computeResidualSys(a[0],soln,residual);
-    
-    NonlinearSystemBase & nl_sys = this->getNonlinearSystemBase();
-    
-    DofMap const & dof_map = nl_sys.dofMap();
 
     if(this->timeStep()==1){
-      
+
+        NonlinearImplicitSystem * a;
+
+        NonlinearSystemBase & nl_sys = this->getNonlinearSystemBase();
+
+        DofMap const & dof_map = nl_sys.dofMap();
+
         FEProblemBase::computeResidualSys(a[0],soln,residual);
+
+        _res_m.init(dof_map.n_dofs(), dof_map.n_local_dofs());
 
         if (_use_afc && _is_stab_matrix_assembled)
         {
@@ -238,48 +240,37 @@ ParrotProblem::computeResidualSys(NonlinearImplicitSystem & /*sys*/,
         //residual.print_matlab("residual_moose.m");
         }
 
-    }
-    else
-    {
-        //_nl->zeroVariablesForResidual();
-        
-        //_aux->zeroVariablesForResidual();
-
-
         _poro_lumped = _storeOperatorsUO->PoroLumpMassMatrix();
-
-        // NumericVector<Number> & older_solution = nl_sys.solutionOlder();
-
-        // _poro_lumped->print_matlab("_poro_lumped.m");
 
         _dirichlet_bc = _storeOperatorsUO->BcVec();
 
         _value_dirichlet_bc = _storeOperatorsUO->ValueBcVec();
 
-        PetscVector<Number> res_m(this->es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
+    }
+    else
+    {
+     
+        auto t_start = std::chrono::high_resolution_clock::now();
 
-        res_m.zero();
+        std::cout<<"start computing?\n";
+
+        _res_m.zero();
     
-        _poro_lumped->vector_mult(res_m, soln);
+        _poro_lumped->vector_mult(_res_m, soln);
 
-        // res_m.add(-1.0, older_solution);
-
-
-        residual.pointwise_mult(res_m,*_dirichlet_bc);
-
-        // // std::cout<<"inv_dt"<<-1.0/this->dt()<<std::endl;
+        residual.pointwise_mult(_res_m,*_dirichlet_bc);
 
         Real inv_dt = 1.0/this->dt();
         
         residual.scale(inv_dt);
 
-        _value_dirichlet_bc->print_matlab("value_bounadry.m");
-
         residual.add(*_value_dirichlet_bc);
 
-        //residual.print_matlab("_poro_res.m");
+        auto t_end = std::chrono::high_resolution_clock::now();
 
-        //FEProblemBase::computeResidualSys(a[0],soln,residual);
+        std::cout<<"done computing?\n";
+        std::cout<<"computing time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
+
     }
 
  

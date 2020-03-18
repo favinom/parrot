@@ -52,8 +52,10 @@ public:
     int _factorized;
         
     Parallel::Communicator const & _pp_comm;
-    PetscMatrix<Number> _stab_matrix;
     
+    PetscMatrix<Number> _stab_matrix;
+
+    PetscVector<Number> _res_m;    
     bool _use_afc;
     bool _is_stab_matrix_assembled;
 
@@ -70,5 +72,7 @@ public:
     std::shared_ptr<PetscVector<Number>> _value_dirichlet_bc;
 
     std::shared_ptr<PetscVector<Number>> _sol_vec;
+
+     bool _fail_next_linear_convergence_check;
 };
 

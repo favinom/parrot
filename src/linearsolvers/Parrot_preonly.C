@@ -41,79 +41,72 @@ PetscErrorCode  KSPSolve_Parrot_PREONLY(KSP ksp)
     
     if (factorized==0)
     {
-        _ksp_ptr[0].factorized[0]=1;
-    
-    
-    //PC pc_lu;
-//  PCCreate(PetscObjectComm((PetscObject)ksp), _ksp_ptr[0].local_pc);
-    PCSetType(_ksp_ptr[0].local_pc[0],PCLU);
-    PCSetOperators(_ksp_ptr[0].local_pc[0],Hmat,Pmat);
-    PCFactorSetMatSolverPackage(_ksp_ptr[0].local_pc[0],MATSOLVERMUMPS); //MATSOLVERSUPERLU_DIST);MATSOLVERMUMPS
-        
-    std::cout<<"start factorizing?\n";
-    auto t_start = std::chrono::high_resolution_clock::now();
-    PCSetUp(_ksp_ptr[0].local_pc[0]);
-    auto t_end = std::chrono::high_resolution_clock::now();
-    std::cout<<"done factorizing?\n";
-        std::cout<<"fact time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
-   // }
-    PCSetReusePreconditioner(_ksp_ptr[0].local_pc[0], PETSC_TRUE);
-    std::cout<<"start solving?\n";
-    t_start = std::chrono::high_resolution_clock::now();
-  
-    PCApply(_ksp_ptr[0].local_pc[0],ksp->vec_rhs,ksp->vec_sol);
+      _ksp_ptr[0].factorized[0]=1;
+
+      // auto vec_sol=storeOperatorsUO.SolVec();
+      // NonlinearSystemBase & nl_sys = _ksp_ptr->fe_problem->getNonlinearSystemBase();
+      // DofMap const & dof_map = nl_sys.dofMap();
+      // vec_sol->init(dof_map.n_dofs(), dof_map.n_local_dofs());    
+      
+
+      PCSetType(_ksp_ptr[0].local_pc[0],PCLU);
+      PCSetOperators(_ksp_ptr[0].local_pc[0],Hmat,Pmat);
+      PCFactorSetMatSolverPackage(_ksp_ptr[0].local_pc[0],MATSOLVERMUMPS); //MATSOLVERSUPERLU_DIST);MATSOLVERMUMPS
+          
+      std::cout<<"start factorizing?\n";
+      auto t_start = std::chrono::high_resolution_clock::now();
+      PCSetUp(_ksp_ptr[0].local_pc[0]);
+      auto t_end = std::chrono::high_resolution_clock::now();
+      std::cout<<"done factorizing?\n";
+          std::cout<<"fact time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
+      // }
+      PCSetReusePreconditioner(_ksp_ptr[0].local_pc[0], PETSC_TRUE);
+      std::cout<<"start solving?\n";
+      t_start = std::chrono::high_resolution_clock::now();
+
+      PCApply(_ksp_ptr[0].local_pc[0],ksp->vec_rhs,ksp->vec_sol);
 
 
-    
-    t_end = std::chrono::high_resolution_clock::now();
-    std::cout<<"done solving?\n";
-    std::cout<<"solve time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
 
-    _ksp_ptr[0].local_pc=NULL;
+      t_end = std::chrono::high_resolution_clock::now();
+      std::cout<<"done solving?\n";
+      std::cout<<"solve time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
 
-    Vec r;
+      _ksp_ptr[0].local_pc=NULL;
 
-    VecDuplicate(ksp->vec_rhs,&r);
-    MatResidual(Hmat,ksp->vec_rhs,ksp->vec_sol,r);
-    PetscReal norm;
-    VecNorm(r,NORM_2,&norm);
-    std::cout<<"qui "<<norm<<std::endl;
-    PetscPrintf(PETSC_COMM_WORLD,"   %14.12e \n", norm);
+      Vec r;
+
+      VecDuplicate(ksp->vec_rhs,&r);
+      MatResidual(Hmat,ksp->vec_rhs,ksp->vec_sol,r);
+      PetscReal norm;
+      VecNorm(r,NORM_2,&norm);
+      std::cout<<"qui "<<norm<<std::endl;
+      PetscPrintf(PETSC_COMM_WORLD,"   %14.12e \n", norm);
 
   }
   else{
-    PCSetReusePreconditioner(_ksp_ptr[0].local_pc[0], PETSC_TRUE);
-    std::cout<<"start solving?\n";
-    auto t_start = std::chrono::high_resolution_clock::now();
-    auto vec_sol=storeOperatorsUO.SolVec();
 
+      PCSetReusePreconditioner(_ksp_ptr[0].local_pc[0], PETSC_TRUE);
+      auto vec_sol=storeOperatorsUO.SolVec();
+      auto sol_tmp = (*vec_sol).vec();
+      std::cout<<"start solving?\n";
+      auto t_start = std::chrono::high_resolution_clock::now();
 
-    NonlinearSystemBase & nl_sys = _ksp_ptr->fe_problem->getNonlinearSystemBase();
-    
-    DofMap const & dof_map = nl_sys.dofMap();
+      PCApply(_ksp_ptr[0].local_pc[0],ksp->vec_rhs,sol_tmp);
 
-    vec_sol->init(dof_map.n_dofs(), dof_map.n_local_dofs());
+      auto t_end = std::chrono::high_resolution_clock::now();
+      std::cout<<"done solving?\n";
+      std::cout<<"solve time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
 
-    vec_sol->zero();
-    
-    PCApply(_ksp_ptr[0].local_pc[0],ksp->vec_rhs,(*vec_sol).vec());
+      _ksp_ptr[0].local_pc=NULL;
 
-
-    vec_sol->print_matlab("solution.m");
-    
-    auto t_end = std::chrono::high_resolution_clock::now();
-    std::cout<<"done solving?\n";
-    std::cout<<"solve time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
-
-    _ksp_ptr[0].local_pc=NULL;
-
-    Vec r;
-    VecDuplicate(ksp->vec_rhs,&r);
-    MatResidual(Hmat,ksp->vec_rhs,(*vec_sol).vec(),r);
-    PetscReal norm;
-    VecNorm(r,NORM_2,&norm);
-    std::cout<<"VecNorm "<<norm<<std::endl;
-    PetscPrintf(PETSC_COMM_WORLD,"   %14.12e \n", norm);
+      Vec r;
+      VecDuplicate(ksp->vec_rhs,&r);
+      MatResidual(Hmat,ksp->vec_rhs,(*vec_sol).vec(),r);
+      PetscReal norm;
+      VecNorm(r,NORM_2,&norm);
+      std::cout<<"VecNorm "<<norm<<std::endl;
+      PetscPrintf(PETSC_COMM_WORLD,"   %14.12e \n", norm);
   }
 //    std::cout<<"start solving?\n";
 //     t_start = std::chrono::high_resolution_clock::now();

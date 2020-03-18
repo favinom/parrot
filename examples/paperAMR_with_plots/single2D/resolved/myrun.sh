@@ -2,10 +2,10 @@
 
 as=0;
 us=2;
-or=5;
+or=2;
 np=6;
 createmesh=1;
-correction=1;
+correction=;
 
 if [ $createmesh -eq 1 ]
 then

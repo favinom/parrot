@@ -2,9 +2,9 @@
 
 as=0;
 us=0;
-np=4;
+np=1;
 # this is type mesh: 0 old style, 1 the better one
-tm=0;
+tm=1;
 or=09;
 
 createmesh=1;

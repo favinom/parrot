@@ -378,7 +378,7 @@ ParrotProblem::update_sol()
 
     _sol_vec                = _storeOperatorsUO->SolVec();
 
-    _sol_vec->print_matlab("sol_moose.m");
+    //_sol_vec->print_matlab("sol_moose.m");
 
     { 
         

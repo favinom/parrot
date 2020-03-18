@@ -32,6 +32,7 @@ uniform_refine = 0
 []
 
 
+
 [Kernels]
 active='time upwind'
 [upwind] type = Advection variable = CM [../]

@@ -116,89 +116,35 @@ operator_userobject = storeOperatorsUO
  execute_on = 'timestep_end'
  dc_boundaries = '1'
 [../]
+[./assembleVolumeVectors]
+type=AssembleVolumeVectors
+fractureMeshModifier = aa2
+execute_on = 'initial'
+[../]
 []
 
 [Postprocessors]
-[./cm0]
-type = ElementIntegralConcentrationPostprocessor
-variable = CM fractureRegionId = 0 fractureMeshModifier =  aa2
-[../]
-[./cm1]
-type = ElementIntegralConcentrationPostprocessor
-variable = CM fractureRegionId = 1 fractureMeshModifier =  aa2
-[../]
-[./cm2]
-type = ElementIntegralConcentrationPostprocessor
-variable = CM fractureRegionId = 2 fractureMeshModifier =  aa2
-[../]
-[./cm3]
-type = ElementIntegralConcentrationPostprocessor
-variable = CM fractureRegionId = 4 fractureMeshModifier =  aa2
-[../]
-[./cm4]
-type = ElementIntegralConcentrationPostprocessor
-variable = CM fractureRegionId = 4 fractureMeshModifier =  aa2
-[../]
-[./cm5]
-type = ElementIntegralConcentrationPostprocessor
-variable = CM fractureRegionId = 5 fractureMeshModifier =  aa2
-[../]
-[./cm6]
-type = ElementIntegralConcentrationPostprocessor
-variable = CM fractureRegionId = 6 fractureMeshModifier =  aa2
-[../]
-[./cm7]
-type = ElementIntegralConcentrationPostprocessor
-variable = CM fractureRegionId = 7 fractureMeshModifier =  aa2
-[../]
-[./cm8]
-type = ElementIntegralConcentrationPostprocessor
-variable = CM fractureRegionId = 8 fractureMeshModifier =  aa2
-[../]
-[./cm9]
-type = ElementIntegralConcentrationPostprocessor
-variable = CM fractureRegionId = 9 fractureMeshModifier =  aa2
-[../]
 
-[./vol0]
-type = ElementIntegralVolumePostprocessor
-fractureRegionId = 0 fractureMeshModifier =  aa2
-[../]
-[./vol1]
-type = ElementIntegralVolumePostprocessor
-fractureRegionId = 1 fractureMeshModifier =  aa2
-[../]
-[./vol2]
-type = ElementIntegralVolumePostprocessor
-fractureRegionId = 2 fractureMeshModifier =  aa2
-[../]
-[./vol3]
-type = ElementIntegralVolumePostprocessor
-fractureRegionId = 3 fractureMeshModifier =  aa2
-[../]
-[./vol4]
-type = ElementIntegralVolumePostprocessor
-fractureRegionId = 4 fractureMeshModifier =  aa2
-[../]
-[./vol5]
-type = ElementIntegralVolumePostprocessor
-fractureRegionId = 5 fractureMeshModifier =  aa2
-[../]
-[./vol6]
-type = ElementIntegralVolumePostprocessor
-fractureRegionId = 6 fractureMeshModifier =  aa2
-[../]
-[./vol7]
-type = ElementIntegralVolumePostprocessor
-fractureRegionId = 7 fractureMeshModifier =  aa2
-[../]
-[./vol8]
-type = ElementIntegralVolumePostprocessor
-fractureRegionId = 8 fractureMeshModifier =  aa2
-[../]
-[./vol9]
-type = ElementIntegralVolumePostprocessor
-fractureRegionId = 9 fractureMeshModifier =  aa2
-[../]
+ [./int0] type = IntegralSolutionOverRegionFast region = 0 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+ [./int1] type = IntegralSolutionOverRegionFast region = 1 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+ [./int2] type = IntegralSolutionOverRegionFast region = 2 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+ [./int3] type = IntegralSolutionOverRegionFast region = 3 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+ [./int4] type = IntegralSolutionOverRegionFast region = 4 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+ [./int5] type = IntegralSolutionOverRegionFast region = 5 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+ [./int6] type = IntegralSolutionOverRegionFast region = 6 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+ [./int7] type = IntegralSolutionOverRegionFast region = 7 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+ [./int8] type = IntegralSolutionOverRegionFast region = 8 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+ [./int9] type = IntegralSolutionOverRegionFast region = 9 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
 
-[]
+ [./reg0] type = IntegralSolutionOverRegionFast region = 0 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+ [./reg1] type = IntegralSolutionOverRegionFast region = 1 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+ [./reg2] type = IntegralSolutionOverRegionFast region = 2 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+ [./reg3] type = IntegralSolutionOverRegionFast region = 3 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+ [./reg4] type = IntegralSolutionOverRegionFast region = 4 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+ [./reg5] type = IntegralSolutionOverRegionFast region = 5 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+ [./reg6] type = IntegralSolutionOverRegionFast region = 6 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+ [./reg7] type = IntegralSolutionOverRegionFast region = 7 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+ [./reg8] type = IntegralSolutionOverRegionFast region = 8 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+ [./reg9] type = IntegralSolutionOverRegionFast region = 9 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+
+ []

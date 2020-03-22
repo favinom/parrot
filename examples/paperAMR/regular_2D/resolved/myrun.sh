@@ -3,9 +3,9 @@
 # number of processors
 np=4;
 #background elements, THIS NUMBER HAS TO BE DIVISIBLE BY 8
-be=80;
+be=160;
 # element per fracture
-fe=2;
+fe=8;
 # starting level
 res=`expr ${be} + 3 \\* ${fe}`
 #echo $res
@@ -14,7 +14,7 @@ res=`expr ${be} + 3 \\* ${fe}`
 as=0;
 us=0;
 
-createmesh=0;
+createmesh=1;
 correction=0;
 
 if [ $createmesh -eq 1 ]
@@ -60,7 +60,6 @@ fi
 
 if [ $correction -eq 0 ]
 then
-	#mpirun -n ${np} ../../../parrot-opt -i 2advection.i resolution=${res} unifSteps=${us} adaptSteps=${as}
 	mpirun -n ${np} ../../../../parrot-opt -i 3advection.i resolution=${res} unifSteps=${us} adaptSteps=${as} UserObjects/active='soln assembleVolumeVectors'
 fi
 if [ $correction -eq 1 ]

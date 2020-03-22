@@ -112,16 +112,6 @@ execute_on = 'initial'
 []
 
 [Postprocessors]
- [./int0S] type = ElementIntegralVariableOverRegion variable = CM region = 0 [../]
- [./int1S] type = ElementIntegralVariableOverRegion variable = CM region = 1 [../]
- [./int2S] type = ElementIntegralVariableOverRegion variable = CM region = 2 [../]
- [./int3S] type = ElementIntegralVariableOverRegion variable = CM region = 3 [../]
- [./int4S] type = ElementIntegralVariableOverRegion variable = CM region = 4 [../]
- [./int5S] type = ElementIntegralVariableOverRegion variable = CM region = 5 [../]
- [./int6S] type = ElementIntegralVariableOverRegion variable = CM region = 6 [../]
- [./int7S] type = ElementIntegralVariableOverRegion variable = CM region = 7 [../]
- [./int8S] type = ElementIntegralVariableOverRegion variable = CM region = 8 [../]
- [./int9S] type = ElementIntegralVariableOverRegion variable = CM region = 9 [../]
 
  [./int0] type = IntegralSolutionOverRegionFast region = 0 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
  [./int1] type = IntegralSolutionOverRegionFast region = 1 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]

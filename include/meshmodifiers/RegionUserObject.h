@@ -36,6 +36,8 @@ public:
     
     virtual bool isInsideRegion(RealVectorValue const & point, int region, Real & bound) const = 0;
 
+    int get_fn() const {return _fn;};
+
     
 protected:
     

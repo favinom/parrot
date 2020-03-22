@@ -1,5 +1,5 @@
 reslist="40 80" # "80 160 320 640"
-aslist="7 8 9 10" # 4 8 16"
+aslist="8 9 10" # 4 8 16"
 
 createmesh=0;
 

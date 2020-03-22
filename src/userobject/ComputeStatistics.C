@@ -89,10 +89,10 @@ void ComputeStatistics::execute()
   
   // Get a constant reference to the mesh object.
   MeshBase     const & mesh = _fe_problem.es().get_mesh();
-  unsigned int const   dim  = mesh.mesh_dimension();
+  //unsigned int const   dim  = mesh.mesh_dimension();
 
   // Get a reference to our system.
-  TransientNonlinearImplicitSystem const & _system = _fe_problem.es().get_system<TransientNonlinearImplicitSystem>("nl0");
+  //TransientNonlinearImplicitSystem const & _system = _fe_problem.es().get_system<TransientNonlinearImplicitSystem>("nl0");
 
   std::vector<dof_id_type> dof_indices;
 

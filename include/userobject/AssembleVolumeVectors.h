@@ -32,6 +32,8 @@ public:
 
   std::vector< PetscVector<Number> * > const & getVolumeVectors() const {return volumes;};
 
+  ~AssembleVolumeVectors();
+
   protected:
 
     std::vector< PetscVector<Number> * > volumes;
@@ -40,6 +42,8 @@ public:
     std::string _meshModifierName;
 
     unsigned _fn;
+
+    bool _vectorAllocated;
 
     // std::vector<int> _vector_p;
     // std::vector<Real> _vector_value;

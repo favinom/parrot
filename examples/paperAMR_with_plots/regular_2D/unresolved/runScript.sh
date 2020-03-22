@@ -15,7 +15,7 @@ echo $as
 
 if [ $correction -eq 0 ]
 then
-	mpirun -n ${np} ../../../../parrot-opt -i 2advection.i resolution=${res} adapSteps=${as} UserObjects/active='soln'
+	mpirun -n ${np} ../../../../parrot-opt -i 2advection.i resolution=${res} adapSteps=${as} UserObjects/active='soln assembleVolumeVectors'
 fi
 if [ $correction -eq 1 ]
 then

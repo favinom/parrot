@@ -62,6 +62,7 @@ _hasMeshModifier( isParamValid("fractureMeshModifier") )
 
 // _qrule(_assembly.qRule())
 {
+  _vectorAllocated=false;
   if (_hasMeshModifier)
     _meshModifierName=getParam<std::string>("fractureMeshModifier");
 }
@@ -84,7 +85,7 @@ void AssembleVolumeVectors::execute()
   DofMap   const & dof_map = _fe_problem.getNonlinearSystemBase().dofMap();
   auto &comm = _fe_problem.es().get_mesh().comm();
 
-  _fn = 10;
+  _fn = _myRegionUserObject_ptr[0].get_fn();
   volumes.resize(_fn);
 
   for (int i=0; i<_fn; ++i)
@@ -178,3 +179,19 @@ void AssembleVolumeVectors::execute()
 
 }
 
+AssembleVolumeVectors::~AssembleVolumeVectors()
+{
+  RegionUserObject const * _myRegionUserObject_ptr;
+
+  if (_hasMeshModifier)
+  {
+    MeshModifier const & _myMeshModifier( _app.getMeshModifier( _meshModifierName.c_str()) );
+    RegionUserObject const & _regionUserObject( dynamic_cast<RegionUserObject const &>(_myMeshModifier) );
+    _myRegionUserObject_ptr=&_regionUserObject;
+  }
+
+  int fn = _myRegionUserObject_ptr[0].get_fn();
+
+  for (int i=0; i<fn; ++i)
+    delete volumes[i];
+}

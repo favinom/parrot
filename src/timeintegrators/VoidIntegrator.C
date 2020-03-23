@@ -25,20 +25,4 @@ VoidIntegrator::VoidIntegrator(const InputParameters & parameters) : TimeIntegra
 
 VoidIntegrator::~VoidIntegrator() {}
 
-void
-VoidIntegrator::computeTimeDerivatives()
-{
 
-}
-
-void
-VoidIntegrator::computeADTimeDerivatives(DualReal & ad_u_dot, const dof_id_type & dof) const
-{
-
-}
-
-void
-VoidIntegrator::postResidual(NumericVector<Number> & residual)
-{
-
-}

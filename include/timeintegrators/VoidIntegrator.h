@@ -26,9 +26,9 @@ public:
   virtual ~VoidIntegrator();
 
   virtual int order() override { return 1; }
-  virtual void computeTimeDerivatives() override;
-  void computeADTimeDerivatives(DualReal & ad_u_dot, const dof_id_type & dof) const override;
-  virtual void postResidual(NumericVector<Number> & residual) override;
+  virtual void computeTimeDerivatives() override {};
+  void computeADTimeDerivatives(DualReal & ad_u_dot, const dof_id_type & dof) const override {};
+  virtual void postResidual(NumericVector<Number> & residual) override {};
 
 protected:
   /**

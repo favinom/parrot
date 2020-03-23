@@ -30,6 +30,7 @@ public:
     
     virtual void initialSetup();
     virtual void timestepSetup();
+    virtual void solve();
     
     void computeStabilizationMatrix(SparseMatrix<Number> & jacobian);
     
@@ -41,6 +42,8 @@ public:
     void computeResidualSys(NonlinearImplicitSystem & /*sys*/,
                                       const NumericVector<Number> & soln,
                             NumericVector<Number> & residual);
+
+    virtual void update_sol();
 
     
     KSP_PARROT * _ksp_ptr;
@@ -59,5 +62,13 @@ public:
     bool _hasStoreOperatorsUO;
 
     UserObjectName * userObjectName;
+
+    std::shared_ptr<PetscMatrix<Number>> _poro_lumped;
+
+    std::shared_ptr<PetscVector<Number>> _dirichlet_bc;
+
+    std::shared_ptr<PetscVector<Number>> _value_dirichlet_bc;
+
+    std::shared_ptr<PetscVector<Number>> _sol_vec;
 };
 

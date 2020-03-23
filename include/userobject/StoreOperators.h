@@ -15,6 +15,8 @@
 #include "GeneralUserObject.h"
 #include "libmesh/petsc_matrix.h"
 
+#include "libmesh/petsc_vector.h"
+
 // Forward declarations
 class StoreOperators;
 
@@ -80,6 +82,26 @@ public:
     return _stab_matrix;
   };
 
+  std::shared_ptr<PetscVector<Number>> &
+  BcVec()
+  {
+    return _bc_vec;
+  };
+
+  std::shared_ptr<PetscVector<Number>> &
+  ValueBcVec()
+  {
+    return _value_bc_vec;
+  };
+
+  std::shared_ptr<PetscVector<Number>> &
+  SolVec()
+  {
+    return _solution_vec;
+  };
+
+
+
 protected:
   std::shared_ptr<PetscMatrix<Number>> _interpolator;
   std::shared_ptr<PetscMatrix<Number>> _mass_matrix;
@@ -87,6 +109,9 @@ protected:
   std::shared_ptr<PetscMatrix<Number>> _lump_mass_matrix;
   std::shared_ptr<PetscMatrix<Number>>  _poro_lump_mass_matrix;
   std::shared_ptr<PetscMatrix<Number>>  _jac_matrix;
+  std::shared_ptr<PetscVector<Number>>  _bc_vec;
+  std::shared_ptr<PetscVector<Number>>  _value_bc_vec;
+  std::shared_ptr<PetscVector<Number>>  _solution_vec;
   PetscMatrix<Number> * _stab_matrix;
 
 };

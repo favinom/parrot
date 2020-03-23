@@ -53,5 +53,24 @@ public:
     std::string _meshModifierName;
 
     QBase const * const & _qrule;
+
+
+    std::shared_ptr<PetscVector<Number>> _bc_vec;
+
+    std::shared_ptr<PetscVector<Number>> _value_bc_vec;
+ 
+    std::string _dc_var;
+
+    std::vector<int> _dc_boundary_id;
+
+    std::vector<std::vector<int> > _dc_variables_id;
+
+    std::vector<Real> _value_D_bc;
+
+    void find_boundary(std::vector<int> &_dc_boundary_id);
+
+    void determine_dc_bnd_var_id(const std::vector<std::string> & BC_var);
+
+    std::vector<std::string> split_string(const std::string & s, char delim);
 };
 

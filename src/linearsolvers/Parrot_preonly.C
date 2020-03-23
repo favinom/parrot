@@ -3,6 +3,8 @@
 #include "ksp_parrot_impl.h"
 #include "iostream"
 #include "chrono"
+#include "StoreOperators.h"
+#include "NonlinearSystemBase.h"
 //static
 PetscErrorCode KSPSetUp_Parrot_PREONLY(KSP ksp)
 {
@@ -34,6 +36,8 @@ PetscErrorCode  KSPSolve_Parrot_PREONLY(KSP ksp)
     Mat Hmat,Pmat;
     
     ierr = KSPGetOperators(ksp,&Hmat,&Pmat);CHKERRQ(ierr);
+
+    StoreOperators & storeOperatorsUO=(_ksp_ptr->fe_problem->getUserObjectTempl<StoreOperators>("storeOperatorsUO"));
     
     if (factorized==0)
     {
@@ -52,17 +56,48 @@ PetscErrorCode  KSPSolve_Parrot_PREONLY(KSP ksp)
     auto t_end = std::chrono::high_resolution_clock::now();
     std::cout<<"done factorizing?\n";
         std::cout<<"fact time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
-    }
+   // }
+    PCSetReusePreconditioner(_ksp_ptr[0].local_pc[0], PETSC_TRUE);
+    std::cout<<"start solving?\n";
+    t_start = std::chrono::high_resolution_clock::now();
+  
+    PCApply(_ksp_ptr[0].local_pc[0],ksp->vec_rhs,ksp->vec_sol);
+
+
+    
+    t_end = std::chrono::high_resolution_clock::now();
+    std::cout<<"done solving?\n";
+    std::cout<<"solve time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
+
+    _ksp_ptr[0].local_pc=NULL;
+
+  }
+  else{
     PCSetReusePreconditioner(_ksp_ptr[0].local_pc[0], PETSC_TRUE);
     std::cout<<"start solving?\n";
     auto t_start = std::chrono::high_resolution_clock::now();
-    PCApply(_ksp_ptr[0].local_pc[0],ksp->vec_rhs,ksp->vec_sol);
+    auto vec_sol=storeOperatorsUO.SolVec();
+
+
+    NonlinearSystemBase & nl_sys = _ksp_ptr->fe_problem->getNonlinearSystemBase();
+    
+    DofMap const & dof_map = nl_sys.dofMap();
+
+    vec_sol->init(dof_map.n_dofs(), dof_map.n_local_dofs());
+
+    vec_sol->zero();
+    
+    PCApply(_ksp_ptr[0].local_pc[0],ksp->vec_rhs,(*vec_sol).vec());
+
+
+    vec_sol->print_matlab("solution.m");
+    
     auto t_end = std::chrono::high_resolution_clock::now();
     std::cout<<"done solving?\n";
     std::cout<<"solve time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
 
     _ksp_ptr[0].local_pc=NULL;
-    
+  }
 //    std::cout<<"start solving?\n";
 //     t_start = std::chrono::high_resolution_clock::now();
 //    PCApply(_ksp_ptr[0].local_pc[0],ksp->vec_rhs,ksp->vec_sol);
@@ -71,6 +106,11 @@ PetscErrorCode  KSPSolve_Parrot_PREONLY(KSP ksp)
 //    std::cout<<"solve time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
     
     Vec r;
+
+ 
+
+
+
     VecDuplicate(ksp->vec_rhs,&r);
     MatResidual(Hmat,ksp->vec_rhs,ksp->vec_sol,r);
     PetscReal norm;

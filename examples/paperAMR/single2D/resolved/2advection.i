@@ -1,4 +1,4 @@
- [Problem]
+[Problem]
 type = ParrotProblem
 use_AFC = true
 operator_userobject = storeOperatorsUO
@@ -50,6 +50,12 @@ full = true
 []
 
 [Executioner]
+
+[./TimeIntegrator]
+type = VoidIntegrator
+[../]
+
+
 type = Transient
 solve_type= LINEAR
 line_search = none

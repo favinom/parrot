@@ -46,4 +46,7 @@ StoreOperators::StoreOperators(const InputParameters & parameters) :
     _lump_mass_matrix = std::make_shared<PetscMatrix<Number>>(comm);
     _poro_lump_mass_matrix = std::make_shared<PetscMatrix<Number>>(comm);
     _jac_matrix = std::make_shared<PetscMatrix<Number>>(comm);
+    _bc_vec = std::make_shared<PetscVector<Number>>(comm);
+    _solution_vec = std::make_shared<PetscVector<Number>>(comm);
+    _value_bc_vec = std::make_shared<PetscVector<Number>>(comm);
 }

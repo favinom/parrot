@@ -1,0 +1,44 @@
+//* This file is part of the MOOSE framework
+//* https://www.mooseframework.org
+//*
+//* All rights reserved, see COPYRIGHT for full restrictions
+//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
+//*
+//* Licensed under LGPL 2.1, please see LICENSE for details
+//* https://www.gnu.org/licenses/lgpl-2.1.html
+
+#include "VoidIntegrator.h"
+#include "NonlinearSystem.h"
+
+registerMooseObject("parrotApp", VoidIntegrator);
+
+template <>
+InputParameters
+validParams<VoidIntegrator>()
+{
+  InputParameters params = validParams<TimeIntegrator>();
+
+  return params;
+}
+
+VoidIntegrator::VoidIntegrator(const InputParameters & parameters) : TimeIntegrator(parameters) {}
+
+VoidIntegrator::~VoidIntegrator() {}
+
+void
+VoidIntegrator::computeTimeDerivatives()
+{
+
+}
+
+void
+VoidIntegrator::computeADTimeDerivatives(DualReal & ad_u_dot, const dof_id_type & dof) const
+{
+
+}
+
+void
+VoidIntegrator::postResidual(NumericVector<Number> & residual)
+{
+
+}

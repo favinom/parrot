@@ -1,10 +1,10 @@
 #!/bin/bash
 
 as=0;
-us=0;
+us=3;
 np=1;
 # this is type mesh: 0 old style, 1 the better one
-tm=1;
+tm=0;
 or=09;
 
 createmesh=1;

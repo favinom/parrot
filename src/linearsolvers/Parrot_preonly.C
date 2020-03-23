@@ -60,31 +60,31 @@ PetscErrorCode  KSPSolve_Parrot_PREONLY(KSP ksp)
       std::cout<<"done factorizing?\n";
           std::cout<<"fact time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
       // }
-      PCSetReusePreconditioner(_ksp_ptr[0].local_pc[0], PETSC_TRUE);
-      std::cout<<"start solving?\n";
-      t_start = std::chrono::high_resolution_clock::now();
+      // PCSetReusePreconditioner(_ksp_ptr[0].local_pc[0], PETSC_TRUE);
+      // std::cout<<"start solving?\n";
+      // t_start = std::chrono::high_resolution_clock::now();
 
-      PCApply(_ksp_ptr[0].local_pc[0],ksp->vec_rhs,ksp->vec_sol);
+      // PCApply(_ksp_ptr[0].local_pc[0],ksp->vec_rhs,ksp->vec_sol);
 
 
 
-      t_end = std::chrono::high_resolution_clock::now();
-      std::cout<<"done solving?\n";
-      std::cout<<"solve time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
+      // t_end = std::chrono::high_resolution_clock::now();
+      // std::cout<<"done solving?\n";
+      // std::cout<<"solve time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
 
-      _ksp_ptr[0].local_pc=NULL;
+      // _ksp_ptr[0].local_pc=NULL;
 
-      Vec r;
+      // Vec r;
 
-      VecDuplicate(ksp->vec_rhs,&r);
-      MatResidual(Hmat,ksp->vec_rhs,ksp->vec_sol,r);
-      PetscReal norm;
-      VecNorm(r,NORM_2,&norm);
-      std::cout<<"qui "<<norm<<std::endl;
-      PetscPrintf(PETSC_COMM_WORLD,"   %14.12e \n", norm);
+      // VecDuplicate(ksp->vec_rhs,&r);
+      // MatResidual(Hmat,ksp->vec_rhs,ksp->vec_sol,r);
+      // PetscReal norm;
+      // VecNorm(r,NORM_2,&norm);
+      // std::cout<<"qui "<<norm<<std::endl;
+      // PetscPrintf(PETSC_COMM_WORLD,"   %14.12e \n", norm);
 
   }
-  else{
+  //else{
 
       PCSetReusePreconditioner(_ksp_ptr[0].local_pc[0], PETSC_TRUE);
       auto vec_sol=storeOperatorsUO.SolVec();
@@ -107,7 +107,7 @@ PetscErrorCode  KSPSolve_Parrot_PREONLY(KSP ksp)
       VecNorm(r,NORM_2,&norm);
       std::cout<<"VecNorm "<<norm<<std::endl;
       PetscPrintf(PETSC_COMM_WORLD,"   %14.12e \n", norm);
-  }
+ // }
 //    std::cout<<"start solving?\n";
 //     t_start = std::chrono::high_resolution_clock::now();
 //    PCApply(_ksp_ptr[0].local_pc[0],ksp->vec_rhs,ksp->vec_sol);

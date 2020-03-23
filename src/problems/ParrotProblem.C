@@ -125,7 +125,7 @@ ParrotProblem::solve()
 {
 
 
-    std::cout<<"I am in FEProblemBase::solve()"<<std::endl;
+    std::cout<<"I am in ParrotProblemBase::solve()"<<std::endl;
 
     auto t_start = std::chrono::high_resolution_clock::now();
 
@@ -152,9 +152,10 @@ ParrotProblem::solve()
     if (_solve)
     {
 
-      if(this->timeStep()==1)_nl->update();
+      //if(this->timeStep()==1)_nl->update();
       
-      else update_sol();
+      //else 
+        update_sol();
        
     }
 
@@ -223,28 +224,49 @@ ParrotProblem::computeResidualSys(NonlinearImplicitSystem & /*sys*/,
 
     if(this->timeStep()==1){
 
-        NonlinearImplicitSystem * a;
+        auto t_start = std::chrono::high_resolution_clock::now();
 
         NonlinearSystemBase & nl_sys = this->getNonlinearSystemBase();
 
         DofMap const & dof_map = nl_sys.dofMap();
-
-        FEProblemBase::computeResidualSys(a[0],soln,residual);
-
-        _res_m.init(dof_map.n_dofs(), dof_map.n_local_dofs());
-
-        if (_use_afc && _is_stab_matrix_assembled)
-        {
-        _stab_matrix.vector_mult_add(residual,soln);
-
-        //residual.print_matlab("residual_moose.m");
-        }
 
         _poro_lumped = _storeOperatorsUO->PoroLumpMassMatrix();
 
         _dirichlet_bc = _storeOperatorsUO->BcVec();
 
         _value_dirichlet_bc = _storeOperatorsUO->ValueBcVec();
+
+
+        //FEProblemBase::computeResidualSys(a[0],soln,residual);
+
+        _res_m.init(dof_map.n_dofs(), dof_map.n_local_dofs());
+
+        //residual.init(dof_map.n_dofs(), dof_map.n_local_dofs());
+
+        std::cout<<"start computing?\n";
+
+        residual.add(*_value_dirichlet_bc);       
+
+        auto t_end = std::chrono::high_resolution_clock::now();
+
+        std::cout<<"computing time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
+
+        //NonlinearImplicitSystem * a;
+
+        // FEProblemBase::computeResidualSys(a[0],soln,residual);
+
+        // if (_use_afc && _is_stab_matrix_assembled)
+        // {
+        // _stab_matrix.vector_mult_add(residual,soln);
+
+        // residual.print_matlab("residual_moose.m");
+        // }
+
+        // _poro_lumped = _storeOperatorsUO->PoroLumpMassMatrix();
+
+        // _dirichlet_bc = _storeOperatorsUO->BcVec();
+
+        // _value_dirichlet_bc = _storeOperatorsUO->ValueBcVec();
 
     }
     else
@@ -269,6 +291,7 @@ ParrotProblem::computeResidualSys(NonlinearImplicitSystem & /*sys*/,
         auto t_end = std::chrono::high_resolution_clock::now();
 
         std::cout<<"done computing?\n";
+
         std::cout<<"computing time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
 
     }

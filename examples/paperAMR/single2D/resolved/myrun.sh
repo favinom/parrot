@@ -1,5 +1,4 @@
 #!/bin/bash
-
 as=2;
 us=1;
 np=4;

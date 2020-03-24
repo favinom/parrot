@@ -60,11 +60,11 @@ fi
 
 if [ $correction -eq 0 ]
 then
-	mpirun -n ${np} ../../../../parrot-opt -i 3advection.i resolution=${res} unifSteps=${us} adaptSteps=${as} UserObjects/active='soln assembleVolumeVectors'
+	mpirun -n ${np} ../../../../parrot-opt -i 3advectionM.i resolution=${res} unifSteps=${us} adaptSteps=${as} Problem/operator_userobject='storeOperatorsUO' UserObjects/active='soln assembleVolumeVectors MassAssembly storeOperatorsUO'
 fi
 if [ $correction -eq 1 ]
 then
-	mpirun -n ${np} ../../../../parrot-opt -i 3advection.i resolution=${res} unifSteps=${us} adaptSteps=${as} Problem/operator_userobject='storeOperatorsUO'
+	mpirun -n ${np} ../../../../parrot-opt -i 3advectionM.i resolution=${res} unifSteps=${us} adaptSteps=${as} Problem/operator_userobject='storeOperatorsUO'
 fi
 if [ $correction -eq 2 ]
 then

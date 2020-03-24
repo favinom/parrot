@@ -1,6 +1,7 @@
 [Problem]
 type = ParrotProblem
 use_AFC = true
+operator_userobject = storeOperatorsUO
 []
 
 [Mesh]
@@ -60,8 +61,11 @@ full = true
 []
 
 [Executioner]
+[./TimeIntegrator]
+ type = VoidIntegrator
+[../]
 
-type = Transient
+ type = Transient
 solve_type= LINEAR
 line_search = none
 
@@ -77,9 +81,14 @@ num_steps=100
 
 [Outputs]
  file_base = AdvectionOut_${adapSteps}
- exodus = true
- csv=true
  perf_graph = true
+ 
+ execute_on = 'timestep_end'
+ 
+# Demonstration of using an Exodus Outputter
+ [./out]
+ type = Exodus
+ [../]
 []
 
 
@@ -96,5 +105,24 @@ value_N_bc=''
 aux_variable=P_aux
 fractureMeshModifier = fractureUserObject
 #output_file=matrix.e
+conservative=false
+[../]
+ 
+[./MassAssembly]
+ type = AssembleMassMatrix
+ operator_userobject = storeOperatorsUO
+ block_id = '0   2'
+ value_p = ' 0.2 0.25 0.4'
+ execute_on = 'initial'
+ constrain_matrix = true
+ dc_boundaries = '11'
+ dc_variables='CM'
+ value_D_bc='0.01'
+ fractureMeshModifier = fractureUserObject
+ [../]
+ 
+ 
+[./storeOperatorsUO]
+ type = StoreOperators
 [../]
 []

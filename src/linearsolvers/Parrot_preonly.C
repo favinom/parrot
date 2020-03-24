@@ -87,27 +87,36 @@ PetscErrorCode  KSPSolve_Parrot_PREONLY(KSP ksp)
   //else{
 
       PCSetReusePreconditioner(_ksp_ptr[0].local_pc[0], PETSC_TRUE);
+      
       auto vec_sol=storeOperatorsUO.SolVec();
+      
       auto sol_tmp = (*vec_sol).vec();
+      
       std::cout<<"start solving?\n";
+      
       auto t_start = std::chrono::high_resolution_clock::now();
 
       PCApply(_ksp_ptr[0].local_pc[0],ksp->vec_rhs,sol_tmp);
 
       auto t_end = std::chrono::high_resolution_clock::now();
+      
       std::cout<<"done solving?\n";
       std::cout<<"solve time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
 
       _ksp_ptr[0].local_pc=NULL;
 
       Vec r;
+      
       VecDuplicate(ksp->vec_rhs,&r);
       MatResidual(Hmat,ksp->vec_rhs,(*vec_sol).vec(),r);
+      
       PetscReal norm;
+      
       VecNorm(r,NORM_2,&norm);
       std::cout<<"VecNorm "<<norm<<std::endl;
+      
       PetscPrintf(PETSC_COMM_WORLD,"   %14.12e \n", norm);
- // }
+// }
 //    std::cout<<"start solving?\n";
 //     t_start = std::chrono::high_resolution_clock::now();
 //    PCApply(_ksp_ptr[0].local_pc[0],ksp->vec_rhs,ksp->vec_sol);

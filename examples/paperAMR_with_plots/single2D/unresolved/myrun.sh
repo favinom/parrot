@@ -1,9 +1,9 @@
 #!/bin/bash
 
-as=7;
-np=4;
-createmesh=1;
-correction=1;
+as=9;
+np=6;
+createmesh=0;
+correction=0;
 
 if [ $createmesh -eq 1 ]
 then
@@ -55,7 +55,7 @@ then
 fi
 if [ $correction -eq 1 ]
 then
-    mpirun -n ${np} ../../../../parrot-opt -i 2advectionCorrection.i adapSteps=${as}
+   # mpirun -n ${np} ../../../../parrot-opt -i 2advectionCorrection.i adapSteps=${as}
     mpirun -n ${np} ../../../../parrot-opt -i plotLine_master_P.i    adapSteps=${as}
     mpirun -n ${np} ../../../../parrot-opt -i plotLine_master_CM.i   adapSteps=${as}
     mpirun -n ${np} ../../../../parrot-opt -i plotLine_master_CM2.i  adapSteps=${as} 

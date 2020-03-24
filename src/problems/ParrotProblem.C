@@ -152,10 +152,7 @@ ParrotProblem::solve()
     if (_solve)
     {
 
-      //if(this->timeStep()==1)_nl->update();
-      
-      //else 
-        update_sol();
+      update_sol();
        
     }
 

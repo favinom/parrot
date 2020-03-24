@@ -1,4 +1,5 @@
 #!/bin/bash
+
 as=9;
 np=6;
 createmesh=0;

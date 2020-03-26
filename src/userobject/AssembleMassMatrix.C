@@ -105,6 +105,11 @@ void AssembleMassMatrix::assemble_mass_matrix(){
    _lump_mass_matrix      = storeOperatorsUO.LumpMassMatrix();
    _poro_lump_mass_matrix = storeOperatorsUO.PoroLumpMassMatrix();
    _hanging_interpolator  = storeOperatorsUO.H_Interpolator();
+   _hanging_vec           = storeOperatorsUO.HangVec();
+   _hanging_vec->init(dof_map.n_dofs(), dof_map.n_local_dofs());
+   _hanging_vec->zero();
+   _hanging_vec->add(1.0);
+
 
    if (_code_dof_map)
    {
@@ -167,12 +172,13 @@ void AssembleMassMatrix::assemble_mass_matrix(){
     std::vector<dof_id_type> dof_indices_p;
     std::vector<dof_id_type> dof_indices_l_p;
     std::vector<dof_id_type> dof_indices_i;
+    std::vector<dof_id_type> dof_indices_h;
 
     DenseMatrix<Number> Me;
     DenseMatrix<Number> Me_p;
     DenseMatrix<Number> Me_l;
     DenseMatrix<Number> Me_l_p;
-    DenseMatrix<Number> Me_i;
+    DenseMatrix<Number> Me_i, Me_h;
     
     MeshBase::const_element_iterator       el     = mesh.active_local_elements_begin();
     MeshBase::const_element_iterator const end_el = mesh.active_local_elements_end();
@@ -186,6 +192,7 @@ void AssembleMassMatrix::assemble_mass_matrix(){
     	dof_map.dof_indices(elem, dof_indices_p);
     	dof_map.dof_indices(elem, dof_indices_l_p);
     	dof_map.dof_indices(elem, dof_indices_i);
+      dof_map.dof_indices(elem, dof_indices_h);
 
     	int const loc_n=dof_indices.size();
 
@@ -194,11 +201,16 @@ void AssembleMassMatrix::assemble_mass_matrix(){
     	Me_l.resize(loc_n,loc_n);
     	Me_l_p.resize(loc_n,loc_n);
     	Me_i.resize(loc_n,loc_n);
+
+      Me_h.resize(loc_n,loc_n);
+
     	Me.zero();
     	Me_p.zero();
     	Me_l.zero();
     	Me_l_p.zero();
     	Me_i.zero();
+
+      Me_h.zero();
 
     	for (unsigned int i=0; i<phi.size(); i++)
     	{
@@ -220,6 +232,7 @@ void AssembleMassMatrix::assemble_mass_matrix(){
     				Me_p(i,j)   += poro * JxW[qp] * phi[i][qp] * phi[j][qp];
     				Me_l(i,i)   += JxW[qp] * phi[i][qp] * phi[j][qp];
     				Me_l_p(i,i) += poro * JxW[qp] * phi[i][qp] * phi[j][qp];
+            //Me_h(i,i)    = 0.5;
 
     			}
     		}
@@ -228,17 +241,51 @@ void AssembleMassMatrix::assemble_mass_matrix(){
     	if (_constrainMatrices)
     	{
     		dof_map.constrain_element_matrix(Me,dof_indices,true);
-    		dof_map.constrain_element_matrix(Me_p,dof_indices_p,false);
+    		dof_map.constrain_element_matrix(Me_p,dof_indices_p,true);
     		dof_map.constrain_element_matrix(Me_l,dof_indices_l,true);
     		dof_map.constrain_element_matrix(Me_l_p,dof_indices_l_p,true);
     	}
     	{
     		dof_map.constrain_element_matrix(Me_i,dof_indices_i,true);
-        
-        (*_hanging_interpolator).add_matrix (Me_i, dof_indices_i);
+        dof_map.constrain_element_matrix(Me_h, dof_indices_h, true);
+
+        //std::cout<<"a"<<Me_h.m()<<"b"<<Me_h.n()<<"c"<<dof_indices_h.size()<<std::endl;
+
+        for (int i=0; i<Me_h.m(); ++i)
+        {
+
+          for (int j=0; j<Me_h.n(); ++j)
+           {
+            if(Me_h(i,j)==1){
+
+              _hanging_vec->set(dof_indices.at(i),0.0);  
+
+            }
+            if (Me_h(i,j)<0){
+
+              // std::cout<<"begin"<<std::endl;
+              // std::cout<<"dof_indices.at(i)"<<dof_indices.at(i)<<std::endl;
+              // std::cout<<"dof_indices.at(j)"<<dof_indices.at(j)<<std::endl;
+              // std::cout<<"value"<<Me_h(i,j)<<std::endl;
+              //std::cout<<"end"<<std::endl;
+              //_hanging_vec->set(dof_indices.at(j),0.0);  
+
+              Real value = -1.0 * Me_h(i,j);
+              
+              _hanging_interpolator->set(dof_indices.at(i),dof_indices.at(j),value);
+
+            }
+          }
+        }
+      }
+
+  
+     {
     		
         for (int i=0; i<Me_i.m(); ++i)
     		{
+          //Me_h(i,i)=1.0;
+
     			if (Me_i(i,i)<0.5)
     			{
     				Me_i(i,i)=1;
@@ -254,12 +301,19 @@ void AssembleMassMatrix::assemble_mass_matrix(){
     		}
     	}
 
+      
+
     	(*_mass_matrix).add_matrix(Me, dof_indices);
     	(*_poro_mass_matrix).add_matrix (Me_p, dof_indices_p);
     	(*_lump_mass_matrix).add_matrix (Me_l, dof_indices_l);
     	(*_poro_lump_mass_matrix).add_matrix (Me_l_p, dof_indices_l_p);
     	(*_interpolator).add_matrix (Me_i, dof_indices_i);
-      //(*_hanging_interpolator).add_matrix (Me_i, dof_indices_i);
+
+      //(*_hanging_interpolator).add_matrix (Me_h, dof_indices_h);
+
+    
+
+    
    }
 
    if (!_code_dof_map)
@@ -278,8 +332,12 @@ void AssembleMassMatrix::assemble_mass_matrix(){
    (*_lump_mass_matrix).close();
    (*_interpolator).close();
    (*_hanging_interpolator).close();
+    _hanging_vec->close();
    
     _console << "Assemble_Mass_matrix() end "  << std::endl;
+    //_interpolator->print_matlab("interp_marco");
+    //_hanging_vec->print_matlab("hv.m");
+    //_hanging_interpolator->print_matlab("Interp.m");
 
 }
 

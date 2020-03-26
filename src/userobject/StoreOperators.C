@@ -42,6 +42,7 @@ StoreOperators::StoreOperators(const InputParameters & parameters) :
     // _lump_mass_matrix = new PetscMatrix<Number>(comm);
     _interpolator = std::make_shared<PetscMatrix<Number>>(comm);
     _hanging_interpolator = std::make_shared<PetscMatrix<Number>>(comm);
+    _hanging_vec = std::make_shared<PetscVector<Number>>(comm);
 	_mass_matrix = std::make_shared<PetscMatrix<Number>>(comm);
     _poro_mass_matrix = std::make_shared<PetscMatrix<Number>>(comm);
     _lump_mass_matrix = std::make_shared<PetscMatrix<Number>>(comm);

@@ -135,8 +135,9 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
     auto _PL = storeOperatorsUO.PoroLumpMassMatrix();
     auto _PM = storeOperatorsUO.PoroMassMatrix();
     auto _D  = storeOperatorsUO.StabMatrix();
+    auto _hv = storeOperatorsUO.HangVec();
 
-    //_M->print_matlab("porous_matrix.m");
+    //_L->print_matlab("lump_matrix.m");
 
     if(_fe_problem.timeStep()==1)
     {
@@ -147,6 +148,8 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 
 
 
+    std::vector<double>_vec_localize;
+    std::vector<double>_vec_localize_dot;
 
     PetscVector<Number> _inv(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
     _inv.zero();
@@ -160,29 +163,61 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
     PetscVector<Number> _tmp(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
     _tmp.zero();
 
+    PetscVector<Number> _tmp2(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
+    _tmp2.zero();
 
-    _sol_vec_fluxes  = storeOperatorsUO.SolVec();
+    PetscVector<Number> _sol_fluxes(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
+    _sol_fluxes.zero();
 
+    PetscMatrix<Number> _I_tr(_pp_comm);
+
+
+    _sol_vec_fluxes = storeOperatorsUO.SolVec();
+
+
+    _tmp2.pointwise_mult(*_sol_vec_fluxes,*_hv);
+
+
+    auto _I = storeOperatorsUO.H_Interpolator();
+
+    _I->get_transpose(_I_tr);
+
+    _I->vector_mult(_sol_fluxes,*_sol_vec_fluxes);
+
+    _sol_fluxes.add(_tmp2);
+
+    //_sol_vec_fluxes->print_matlab("_sol_vec_fluxes.m");
+
+    //_sol_fluxes.print_matlab("_sol_fluxes.m");
+
+    //_I->print_matlab("Interp.m");
+
+    //H_Interpolator->vector_mult(_sol_fluxes,*_sol_vec_fluxes);
+
+    _sol_fluxes.localize(_vec_localize);
+
+    //_sol_fluxes.print_matlab("_sol_fluxes.m");
     //_sol_vec_fluxes->print_matlab("_sol_vec_fluxes.m");
 
     
     //NumericVector<Number> &ghosted_solution = *_sys.current_local_solution.get();
     
   
-    std::vector<double>_vec_localize;
-    std::vector<double>_vec_localize_dot;
 
-    _sol_vec_fluxes->localize(_vec_localize);
-    _J->vector_mult(_tmp, *_sol_vec_fluxes);
+    _J->vector_mult(_tmp, _sol_fluxes);
 
     _L->get_diagonal(_inv); 
+
     _inv.reciprocal();
 
     _PL->get_diagonal(_inv_p); 
+
     _inv_p.reciprocal();
 
-
     _u_dot.pointwise_mult(_inv_p,_tmp);
+
+    // _u_dot.pointwise_mult(_u_dot,*_hv);
+
     _u_dot.localize(_vec_localize_dot);
 
     
@@ -190,7 +225,7 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
     // PetscVector<Number> &_u_dot = dynamic_cast<libMesh::PetscVector<libMesh::Number>& >(*_u_dot_moose);
     //_u_dot.print_matlab("_u_dot.m");
 
-    PetscMatrix<Number> _I_tr(_pp_comm);
+
     //_J->get_transpose(_J_tr);
     //Mat L_petsc     = _L->mat();
     
@@ -327,7 +362,7 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 
                 Real PMij = val_m[p];
                 
-                auto v_i = (*_sol_vec_fluxes)(row);
+                auto v_i = (_sol_fluxes)(row);
 
                 auto v_d_i = _u_dot(row);
 
@@ -373,7 +408,7 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 
         MatRestoreRow(M_petsc,row,&ncols_m,&cols_m,&val_m);   
 
-        double v_i = (*_sol_vec_fluxes)(row);
+        double v_i = (_sol_fluxes)(row);
 
         double m_i = _m_i(row);
 
@@ -552,27 +587,37 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
         
     (*f).close();
 
+
+
+    //_sol_vec_fluxes->add(*f);
+
+    // //f->print_matlab("correction.m");
+
     PetscVector<Number> _f_I(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
     _f_I.zero();
 
-    auto _I = storeOperatorsUO.H_Interpolator();
+    PetscVector<Number> _tmp3(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
+    _tmp3.zero();
 
-    _I->get_transpose(_I_tr);
+    _tmp3.pointwise_mult(*_hv,*f);
+    //_tmp3.print_matlab("tmp3.m");
 
-    //_I->print_matlab("Interp.m");
+    _I->vector_mult(_f_I,*f);
 
-    _I_tr.vector_mult(_f_I,*f);
+    _f_I.add(_tmp3);
+    
+    //_f_I.print_matlab("f_I.m");
 
-    //(*f).print_matlab("f.m");
+    //_hv->print_matlab("hv.m");
 
     //if(_fe_problem.timeStep()>1) 
 
     _sol_vec_fluxes->add(_f_I);
 
-    // ghosted_solution.print_matlab("sol.m");
+    //ghosted_solution.print_matlab("sol.m");
 
 
-    PetscVector<Number> &f_c= dynamic_cast<libMesh::PetscVector<libMesh::Number>& >(*f);
+    PetscVector<Number> &f_c= dynamic_cast<libMesh::PetscVector<libMesh::Number>& >(_f_I);
 
 
     //PetscVector<Number> &sol = dynamic_cast<libMesh::PetscVector<libMesh::Number>& >(ghosted_solution);

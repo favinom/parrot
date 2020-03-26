@@ -105,11 +105,19 @@ public:
     return _solution_vec;
   };
 
+  std::shared_ptr<PetscVector<Number>> &
+  HangVec()
+  {
+    return _hanging_vec;
+  };
+
+
 
 
 protected:
   std::shared_ptr<PetscMatrix<Number>> _interpolator;
   std::shared_ptr<PetscMatrix<Number>> _hanging_interpolator;
+  std::shared_ptr<PetscVector<Number>> _hanging_vec;
   std::shared_ptr<PetscMatrix<Number>> _mass_matrix;
   std::shared_ptr<PetscMatrix<Number>> _poro_mass_matrix;
   std::shared_ptr<PetscMatrix<Number>> _lump_mass_matrix;

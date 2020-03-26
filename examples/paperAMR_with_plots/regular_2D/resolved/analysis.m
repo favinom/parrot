@@ -1,8 +1,8 @@
 clear all
 close all
 
-belist=[80,160,320,640];
-felist=[1,2,4,8];
+belist=[80,160,320,640,1280];
+felist=[1,2,4,8,16];
 
 as=0;
 us=0;

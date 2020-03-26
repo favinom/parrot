@@ -1,6 +1,6 @@
 #!/bin/bash
 as=2;
-us=1;
+us=0;
 np=4;
 # this is type mesh: 0 old style, 1 the better one
 tm=1;

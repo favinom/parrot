@@ -1,6 +1,7 @@
 [Problem]
 type = ParrotProblem
 use_AFC = true
+operator_userobject = storeOperatorsUO
 []
 
 
@@ -141,7 +142,7 @@ conservative=true
 type = ComputeConservativeFlux
 execute_on = 'timestep_end'
 block_id='1 2 3 4 5 6 7 8 11 12 13'
-value_p ='1e4 1e4 1e4 1e4 1e4 1e4 1e4 1e4 1 1 1'
+value_p ='0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2'
 aux_variable=P_aux
 conservative=true
 boundary_N_bc = '21'
@@ -149,6 +150,24 @@ value_N_bc='-1.0'
 #fractureMeshModifier = fractureUserObject
 #output_file=matrix.e
 [../]
+ 
+[./MassAssembly]
+ type = AssembleMassMatrix
+ operator_userobject = storeOperatorsUO
+ block_id = '1 6 7 2 4'
+ value_p = ' 0.2 0.2 0.2 0.25 0.4'
+#value_p = ' 1.0 1.0 1.0 1.0 1.0'
+ execute_on = 'initial'
+ constrain_matrix = true
+ dc_boundaries = '21'
+ dc_variables='CM'
+ value_D_bc='1.0'
+ [../]
+ 
+ 
+[./storeOperatorsUO]
+ type = StoreOperators
+ [../]
 []
 
 [Postprocessors]

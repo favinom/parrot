@@ -42,6 +42,7 @@ validParams<AntidiffusiveFluxes>()
     params.addParam<std::string>("dc_boundaries", "-1", "Dirichlet Boundary ID");
     params.addParam<std::string>("dc_variables" , "-1", "Variable to which given BC_id applies");
     params.addRequiredParam<UserObjectName>("operator_userobject","The userobject that stores our operators");
+    params.addRequiredParam<bool>("WriteCorrection","boolean to write correction");
 
     return params;
     
@@ -69,7 +70,8 @@ AntidiffusiveFluxes::AntidiffusiveFluxes(const InputParameters & parameters):
 GeneralUserObject(parameters),
 _pp_comm(_fe_problem.es().get_mesh().comm()),
 _dc_var(getParam<std::string>("dc_variables")),
-_userObjectName(getParam<UserObjectName>("operator_userobject"))
+_userObjectName(getParam<UserObjectName>("operator_userobject")),
+_write_correction(getParam<bool>("WriteCorrection"))
 {
  
     std::vector<std::string> tmp = split_string(parameters.get<std::string>("dc_boundaries"), ' ');
@@ -114,19 +116,16 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
     //petsc_mat->print_matlab("petsc_mat.txt");
     //_stab_matrix.print_matlab("original.txt");    
 
+    //    int m=dof_map.n_dofs();
+    //
+    //    int n=dof_map.n_dofs();
+    //
+    //    int m_l=dof_map.n_local_dofs();
+    //
+    //    int n_l=dof_map.n_local_dofs();
 
 
-
-//    int m=dof_map.n_dofs();
-//
-//    int n=dof_map.n_dofs();
-//
-//    int m_l=dof_map.n_local_dofs();
-//
-//    int n_l=dof_map.n_local_dofs();
-    
-
-   // int nnz_x_row = *std::max_element(dof_map.get_n_nz().begin(), dof_map.get_n_nz().end());
+    // int nnz_x_row = *std::max_element(dof_map.get_n_nz().begin(), dof_map.get_n_nz().end());
 
     StoreOperators & storeOperatorsUO=_fe_problem.getUserObjectTempl<StoreOperators>(_userObjectName);
 
@@ -137,73 +136,12 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
     auto _PM = storeOperatorsUO.PoroMassMatrix();
     auto _D  = storeOperatorsUO.StabMatrix();
 
+    //_M->print_matlab("porous_matrix.m");
+
     if(_fe_problem.timeStep()==1)
     {
-//        _J->attach_dof_map(dof_map);
-//        _J->init();
-//
-//        std::vector<Real> v1;
-//        std::vector<int> c1;
-//
-//        int rb1=petsc_mat->row_start();
-//        int rb2=_J->row_start();
-//        int re1=petsc_mat->row_stop();
-//        int re2=_J->row_stop();
-//
-//        if (rb1!=rb2)
-//        {
-//            std::cout<<"rb\n";
-//            exit(1);
-//        }
-//        if (re1!=re2)
-//        {
-//            std::cout<<"re\n";
-//            exit(1);
-//        }
-
-//        for (int row=rb1; row<re1; ++row)
-//        {
-//            getRow(*petsc_mat,row,v1,c1);
-//
-//            for (int ii=0; ii<v1.size(); ++ii)
-//            {
-//                int col=c1.at(ii);
-//                Real v=v1.at(ii);
-//                _J->set(row,col,v);
-//            }
-//        }
-//        _J->close();
-
-//        rb1=_D->row_start();
-//        rb2=_J->row_start();
-//        re1=_D->row_stop();
-        // re2=_J->row_stop();
-
-        // if (rb1!=rb2)
-        // {
-        //     std::cout<<"rb\n";
-        //     exit(1);
-        // }
-        // if (re1!=re2)
-        // {
-        //     std::cout<<"re\n";
-        //     exit(1);
-        // }
-
-        // for (int row=rb1; row<re1; ++row)
-        // {
-        //     getRow(*_D,row,v1,c1);
-        //     getRow(*_J,row,v2,c2);
-        //     if (v1.size()!=v2.size())
-        //     {
-        //         std::cout<<"v1.size()!=v2.size()"<<std::endl;
-        //         exit(1);
-        //     }
-        //     //std::cout<<row<<" "<<v1.size()<<" "<<v2.size()<<std::endl;
-        // }
-        //_J->add(-1.0,*_D);
-        AntidiffusiveFluxes::determine_dc_bnd_var_id(AntidiffusiveFluxes::split_string(_dc_var, ' '));
         
+        AntidiffusiveFluxes::determine_dc_bnd_var_id(AntidiffusiveFluxes::split_string(_dc_var, ' '));
         find_boundary(zero_rows, _dc_boundary_id);
     }
 
@@ -216,54 +154,52 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
     PetscVector<Number> _inv_p(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
     _inv_p.zero();
 
-    // PetscVector<Number> _u_dot(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
-    // _u_dot.zero();
+    PetscVector<Number> _u_dot(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
+    _u_dot.zero();
 
     PetscVector<Number> _tmp(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
     _tmp.zero();
 
+
+    _sol_vec_fluxes  = storeOperatorsUO.SolVec();
+
+    //_sol_vec_fluxes->print_matlab("_sol_vec_fluxes.m");
+
     
-    NumericVector<Number> &ghosted_solution = *_sys.current_local_solution.get();
+    //NumericVector<Number> &ghosted_solution = *_sys.current_local_solution.get();
     
   
     std::vector<double>_vec_localize;
-    ghosted_solution.localize(_vec_localize);
+    std::vector<double>_vec_localize_dot;
 
-    _L->get_diagonal(_inv);
+    _sol_vec_fluxes->localize(_vec_localize);
+    _J->vector_mult(_tmp, *_sol_vec_fluxes);
+
+    _L->get_diagonal(_inv); 
     _inv.reciprocal();
 
-    _PL->get_diagonal(_inv_p);
+    _PL->get_diagonal(_inv_p); 
     _inv_p.reciprocal();
 
-    NumericVector<Number> * _u_dot_moose = _nl.solutionUDot();
 
-    PetscVector<Number> &_u_dot = dynamic_cast<libMesh::PetscVector<libMesh::Number>& >(*_u_dot_moose);
-
-    std::vector<double>_vec_localize_dot;
-   
+    _u_dot.pointwise_mult(_inv_p,_tmp);
     _u_dot.localize(_vec_localize_dot);
 
-
-//    NumericVector<Number> * local_vector;
-//    std::unique_ptr<NumericVector<Number>> local_vector_built;
-//    local_vector_built = NumericVector<Number>::build(dof_map.comm());
-//    local_vector = local_vector_built.get();
-//    local_vector->init(dof_map.n_dofs(), false, SERIAL);
-//    ghosted_solution.localize(*local_vector,dof_map.get_send_list());
-//    local_vector->close();
-
-    //local_vector->print_matlab("local_vector.m");
     
-    int r_start = _PM->row_start();
-    int r_stop  = _PM->row_stop();
+    // NumericVector<Number> * _u_dot_moose = _nl.solutionUDot();
+    // PetscVector<Number> &_u_dot = dynamic_cast<libMesh::PetscVector<libMesh::Number>& >(*_u_dot_moose);
+    //_u_dot.print_matlab("_u_dot.m");
 
-
-//    PetscMatrix<Number> _J_tr(_pp_comm);
-//    _J->get_transpose(_J_tr);
-
-    Mat PM_petsc    = _PM->mat();
+    PetscMatrix<Number> _I_tr(_pp_comm);
+    //_J->get_transpose(_J_tr);
     //Mat L_petsc     = _L->mat();
-    Mat D_petsc     = _D->mat();
+    
+    int r_start = _M->row_start();
+    int r_stop  = _M->row_stop();
+
+
+    Mat M_petsc    = _M->mat();
+    Mat D_petsc    = _D->mat();
 
 
     PetscVector<Number> _R_p(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
@@ -287,11 +223,13 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 
     
     PetscMatrix<Number> _f_mat(_pp_comm);
-    PetscMatrix<Number> _alpha_mat(_pp_comm);
     _f_mat.attach_dof_map(dof_map);
-    _alpha_mat.attach_dof_map(dof_map);
     _f_mat.init();
+
+    PetscMatrix<Number> _alpha_mat(_pp_comm);
+    _alpha_mat.attach_dof_map(dof_map);
     _alpha_mat.init();
+
     {
         std::vector<Real> v1;
         std::vector<int> c1;
@@ -333,17 +271,18 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
             }
         }
     }
+
+
     _f_mat.close();
     _alpha_mat.close();
 
-    std::unique_ptr<NumericVector<Number>> f = ghosted_solution.zero_clone();
+    std::unique_ptr<NumericVector<Number>> f = _sol_vec_fluxes->zero_clone();
 
     
     _PL->vector_mult(_m_i,_ones);
     
-    Real volume = _m_i.dot(_ones);
-    
-    std::cout<<"domian_sum"<<volume<<std::endl;
+    //Real volume = _m_i.dot(_ones);
+    //std::cout<<"domian_sum"<<volume<<std::endl;
 
 
     Real dt = static_cast<Transient*>(_fe_problem.getMooseApp().getExecutioner())->getDT();
@@ -356,30 +295,23 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 
         PetscInt const *cols_m; 
         PetscInt const *cols_d; 
-//        PetscInt const *cols_l;
+        //PetscInt const *cols_l;
 
 
         PetscScalar const *val_m; 
         PetscScalar const *val_d; 
-//        PetscScalar const *val_l;
+        //PetscScalar const *val_l;
         
-
-
-
         Real _P_p=0.0; 
         Real _Q_p=0.0; 
 
         Real _P_m=0.0; 
         Real _Q_m=0.0; 
 
-        
-
         Real f_ij = 0.0;
         //Real f_ij_sum = 0.0;
 
-
-
-        MatGetRow(PM_petsc,row,&ncols_m,&cols_m,&val_m);  
+        MatGetRow(M_petsc,row,&ncols_m,&cols_m,&val_m);  
         MatGetRow(D_petsc,row,&ncols_d,&cols_d,&val_d);
 
 
@@ -395,16 +327,18 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 
                 Real PMij = val_m[p];
                 
-                auto v_i = ghosted_solution(row);
+                auto v_i = (*_sol_vec_fluxes)(row);
 
                 auto v_d_i = _u_dot(row);
 
                 f_ij = PMij * (v_d_i - _vec_localize_dot.at(col)) - 1.0 * Dij * (v_i - _vec_localize.at(col));
 
 
-                double check = (v_i - _vec_localize.at(col)) * f_ij;
+                double check = (_vec_localize.at(col) - v_i) * f_ij;
 
-                if(check<1.0e-8) _f_mat.set(row, col,0.0);
+                //if(check>1.0e-16)std::cout<<"check"<<check<<std::endl;
+
+                if(check > 1.0e-16) _f_mat.set(row, col,0.0);
                
                 else _f_mat.set(row, col, f_ij);
 
@@ -418,30 +352,28 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 
 
 
-        MatRestoreRow(PM_petsc,row,&ncols_m,&cols_m,&val_m);  
+        MatRestoreRow(M_petsc,row,&ncols_m,&cols_m,&val_m);  
         
         MatRestoreRow(D_petsc,row,&ncols_d,&cols_d,&val_d);
 
-
         
         //Real u_max = ghosted_solution(row);
-
         //Real u_min = ghosted_solution(row);
 
         std::vector<Real> values;
         values.clear();
 
 
-        MatGetRow(PM_petsc,row,&ncols_m,&cols_m,&val_m);
+        MatGetRow(M_petsc,row,&ncols_m,&cols_m,&val_m);
 
         for (int p=0; p<ncols_m; ++p){
                 int col=cols_m[p];
                 values.push_back(_vec_localize.at(col));
             }
 
-        MatRestoreRow(PM_petsc,row,&ncols_m,&cols_m,&val_m);   
+        MatRestoreRow(M_petsc,row,&ncols_m,&cols_m,&val_m);   
 
-        double v_i = ghosted_solution(row);
+        double v_i = (*_sol_vec_fluxes)(row);
 
         double m_i = _m_i(row);
 
@@ -452,7 +384,7 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
         
         Real value_p = 0.0;
 
-        if(std::abs(_P_p)>1e-6) {
+        if(std::abs(_P_p)>1e-16) {
             
             value_p = _Q_p/_P_p;
             //std::cout<<"value_p==>"<<_P_p<<std::endl;
@@ -460,7 +392,7 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 
         Real value_m = 0.0;
 
-        if(std::abs(_P_m)>1e-6) {
+        if(std::abs(_P_m)>1e-16) {
 
             value_m = _Q_m/_P_m;
         }
@@ -485,9 +417,8 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 
         {
             _R_p.set(row,1.0);
-
             _R_m.set(row,1.0);
-            //std::cout<<"ciao"<<std::endl;
+            
         }
     }
 
@@ -498,7 +429,7 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 
     _R_p.close();
 
-//  _f_mat.print_matlab("f_d.m");
+    //_f_mat.print_matlab("f_d.m");
 
     std::vector<double>_vec_localize_r_p;
     _R_p.localize(_vec_localize_r_p);
@@ -509,9 +440,9 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
     _R_m.localize(_vec_localize_r_m);
 
 
-//    _R_m.print_matlab("R_m.m");
-//
-//    _R_p.print_matlab("R_p.m");
+    // _R_m.print_matlab("R_m.m");
+
+    // _R_p.print_matlab("R_p.m");
 
 
 
@@ -528,74 +459,54 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
         values.clear();
         
 
-        MatGetRow(PM_petsc,row,&ncols_m,&cols_m,&val_m); 
+        MatGetRow(M_petsc,row,&ncols_m,&cols_m,&val_m); 
+
         for (int p=0; p<ncols_m; ++p){
                 int col=cols_m[p];
                 values.push_back(_vec_localize.at(col));
             }
-        MatRestoreRow(PM_petsc,row,&ncols_m,&cols_m,&val_m);   
+        MatRestoreRow(M_petsc,row,&ncols_m,&cols_m,&val_m);   
+   
+        MatGetRow(_f_mat.mat(),row,&ncols_f,&cols_f,&val_f); 
 
-        
-        MatGetRow(_f_mat.mat(),row,&ncols_f,&cols_f,&val_f);  
-        MatGetRow(PM_petsc,row,&ncols_m,&cols_m,&val_m); 
-
-        double v_i = ghosted_solution(row);    
+        MatGetRow(M_petsc,row,&ncols_m,&cols_m,&val_m); 
+ 
 
         for (int p=0; p<ncols_m; ++p)
         {
             int col=cols_m[p];
 
+
+
             if(row!=col) {
 
                 Real ris = 0.0;
 
-                if(val_f[p]>0.0) {
-                
+                if(val_f[p]>=0.0) {
+                                   
                     double entry_p = std::min(_R_p(row),_vec_localize_r_m.at(col));
-
                     ris = val_f[p] * entry_p;
+                    _alpha_mat.set(row, col, ris);
 
-                    if(std::abs(*std::max_element(std::begin(values), end(values)) - v_i)<1.0e-7){
-                        _alpha_mat.set(row, col, 0.0);
-                    }
-                    else{
-                        _alpha_mat.set(row, col, ris);
-                    }
+
                  
                     
                 }
 
-                else if(val_f[p]<0.0) 
-                {
-
-                    double entry_m = std::min(_R_m(row),_vec_localize_r_p.at(col));
-
-                    ris = val_f[p] * entry_m;
-
-                    if(std::abs(*std::min_element(std::begin(values), end(values)) - v_i)<1.0e-7){
-
-                        _alpha_mat.set(row, col, 0.0);
-
-                    }
-                    else{
-
-                        _alpha_mat.set(row, col, ris);
-                    
-                    }
-                    
-                }
-                
                 else 
                 {
 
-                    _alpha_mat.set(row, col, 0.0);
-                  
+                    double entry_m = std::min(_R_m(row),_vec_localize_r_p.at(col));
+                    ris = val_f[p] * entry_m;
+                    _alpha_mat.set(row, col, ris);
+
                 }
+
             }
                 
         }
 
-        MatRestoreRow(PM_petsc,row,&ncols_m,&cols_m,&val_m);  
+        MatRestoreRow(M_petsc,row,&ncols_m,&cols_m,&val_m);  
  
         MatRestoreRow(_f_mat.mat(),row,&ncols_f,&cols_f,&val_f); 
 
@@ -606,7 +517,7 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
     _alpha_mat.close();
 
 
-    // _alpha_mat.print_matlab("alpha.m");
+    //_alpha_mat.print_matlab("alpha.m");
 
     _alpha_mat.vector_mult(_a_bar,_ones);
 
@@ -617,9 +528,10 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
         auto it = std::find(zero_rows.begin(), zero_rows.end(), row);
 
         if(it == zero_rows.end()){
-//            std::cout<<"_a_bar(row)"<<_a_bar(row)<<std::endl;
-//           
-//            std::cout<<"_inv(row)"<<_inv(row)<<std::endl;
+
+            //std::cout<<"_a_bar(row)"<<_a_bar(row)<<std::endl;
+            //std::cout<<"_inv(row)"<<_inv(row)<<std::endl;
+            
 
             auto f_bar = _a_bar(row) * _inv(row) * dt;
 
@@ -634,13 +546,28 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
     }
 
 
+   
+
              
         
     (*f).close();
 
-    // (*f).print_matlab("f.m");
+    PetscVector<Number> _f_I(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
+    _f_I.zero();
 
-    ghosted_solution.add(*f);
+    auto _I = storeOperatorsUO.H_Interpolator();
+
+    _I->get_transpose(_I_tr);
+
+    //_I->print_matlab("Interp.m");
+
+    _I_tr.vector_mult(_f_I,*f);
+
+    //(*f).print_matlab("f.m");
+
+    //if(_fe_problem.timeStep()>1) 
+
+    _sol_vec_fluxes->add(_f_I);
 
     // ghosted_solution.print_matlab("sol.m");
 
@@ -648,8 +575,10 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
     PetscVector<Number> &f_c= dynamic_cast<libMesh::PetscVector<libMesh::Number>& >(*f);
 
 
-    PetscVector<Number> &sol = dynamic_cast<libMesh::PetscVector<libMesh::Number>& >(ghosted_solution);
-    set_solution(f_c,sol);
+    //PetscVector<Number> &sol = dynamic_cast<libMesh::PetscVector<libMesh::Number>& >(ghosted_solution);
+    
+
+    if(_write_correction) set_solution(f_c);
 
 }
 
@@ -801,7 +730,7 @@ AntidiffusiveFluxes::split_string(const std::string & s, char delim)
       return v;
 }
 
-void AntidiffusiveFluxes::set_solution(PetscVector<Number> &correction, PetscVector<Number> &sol)
+void AntidiffusiveFluxes::set_solution(PetscVector<Number> &correction)
 {
     // copy projected solution into target es
     
@@ -814,7 +743,7 @@ void AntidiffusiveFluxes::set_solution(PetscVector<Number> &correction, PetscVec
     // solution of the original system
     System & main_sys = main_var.sys().system();
 
-    NumericVector<Number> * main_solution = main_sys.solution.get();
+    //NumericVector<Number> * main_solution = main_sys.solution.get();
 
     System & aux_sys = aux_var_c.sys().system();
 
@@ -835,11 +764,11 @@ void AntidiffusiveFluxes::set_solution(PetscVector<Number> &correction, PetscVec
 
                 const dof_id_type proj_index = node->dof_number(_nl.number(), sol_var.number(), comp);
 
-                const dof_id_type to_index = node->dof_number(main_sys.number(), main_var.number(), comp);
+                //const dof_id_type to_index = node->dof_number(main_sys.number(), main_var.number(), comp);
 
                 const dof_id_type to_index_c = node->dof_number(aux_sys.number(), aux_var_c.number(), comp);
 
-                main_solution->set(to_index, sol(proj_index));
+                //main_solution->set(to_index, sol(proj_index));
 
                 aux_solution->set(to_index_c, correction(proj_index));
             }
@@ -849,9 +778,9 @@ void AntidiffusiveFluxes::set_solution(PetscVector<Number> &correction, PetscVec
 
 
 
-  main_solution->close();
+  //main_solution->close();
   aux_solution->close();
-  main_sys.update();
+  //main_sys.update();
   aux_sys.update();
 
   //ExodusII_IO (_fe_problem.es().get_mesh()).write_equation_systems("matrix_c.e", _fe_problem.es());

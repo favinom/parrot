@@ -24,6 +24,7 @@ validParams<ParrotProblem>()
     InputParameters params = validParams<FEProblem>();
     params.addRequiredParam<bool>("use_AFC","use_AlgFluxCorr");
     params.addParam<UserObjectName>("operator_userobject","The userobject that stores our operators");
+    params.addParam<UserObjectName>("antidiffusive_fluxes","The userobject that computes antidiffusive_fluxes");
     return params;
 }
 
@@ -64,10 +65,21 @@ _use_afc(getParam<bool>("use_AFC"))
   // std::cout<<userobjs.size()<<std::endl;
   // exit(1);
     }
+
     else
     {
         _hasStoreOperatorsUO=false;
         _storeOperatorsUO=NULL;
+    }
+
+    if(parameters.isParamValid("antidiffusive_fluxes"))
+    {
+        _ComputeAntidiffusiveFluxes=true;
+        userObjectNameFluxes=new UserObjectName(getParam<UserObjectName>("antidiffusive_fluxes"));
+    }
+    else{
+          _ComputeAntidiffusiveFluxes=false;
+
     }
 
     PCCreate(PETSC_COMM_WORLD, &_problem_PC);
@@ -115,6 +127,26 @@ void ParrotProblem::initialSetup()
     _sol_vec                = _storeOperatorsUO->SolVec();
     _sol_vec->init(dof_map.n_dofs(), dof_map.n_local_dofs());
 
+
+    if (_ComputeAntidiffusiveFluxes)
+    {
+
+        _ComputeAF=&getUserObject<AntidiffusiveFluxes>(userObjectNameFluxes[0]);
+
+        _JMatrix  = _storeOperatorsUO[0].JacMatrix();
+
+        _JMatrix->attach_dof_map(dof_map);
+
+        _JMatrix->init();
+
+        _JMatrix->zero();
+
+        _JMatrix->close();
+    }
+
+
+
+
     std::cout<<"END ParrotProblem::initialSetup"<<std::endl;
     
 };
@@ -147,6 +179,13 @@ ParrotProblem::solve()
     _fail_next_linear_convergence_check = false;
 
     if (_solve) _nl->solve();
+
+
+    if (_ComputeAntidiffusiveFluxes){
+
+         _ComputeAF->stabilize_coeffiecient();
+    }
+
     
 
     if (_solve)
@@ -209,6 +248,13 @@ ParrotProblem::computeJacobianSys(NonlinearImplicitSystem & /*sys*/,
     {
         computeStabilizationMatrix(jacobian);
         jacobian.add(1.0,_stab_matrix);
+
+        if (_ComputeAntidiffusiveFluxes){
+             _poro_lumped = _storeOperatorsUO->PoroLumpMassMatrix();
+            _JMatrix->add(1.0, jacobian);
+            _JMatrix->add(-1.0, *_poro_lumped);
+        }
+
     }
 }
 

@@ -44,6 +44,11 @@ public:
     return _interpolator;
   };
 
+  std::shared_ptr<PetscMatrix<Number>> &
+  H_Interpolator()
+  {
+    return _hanging_interpolator;
+  };
 
   std::shared_ptr<PetscMatrix<Number>> &
   MassMatrix()
@@ -104,6 +109,7 @@ public:
 
 protected:
   std::shared_ptr<PetscMatrix<Number>> _interpolator;
+  std::shared_ptr<PetscMatrix<Number>> _hanging_interpolator;
   std::shared_ptr<PetscMatrix<Number>> _mass_matrix;
   std::shared_ptr<PetscMatrix<Number>> _poro_mass_matrix;
   std::shared_ptr<PetscMatrix<Number>> _lump_mass_matrix;

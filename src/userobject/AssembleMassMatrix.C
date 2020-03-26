@@ -104,6 +104,7 @@ void AssembleMassMatrix::assemble_mass_matrix(){
    _poro_mass_matrix      = storeOperatorsUO.PoroMassMatrix();
    _lump_mass_matrix      = storeOperatorsUO.LumpMassMatrix();
    _poro_lump_mass_matrix = storeOperatorsUO.PoroLumpMassMatrix();
+   _hanging_interpolator  = storeOperatorsUO.H_Interpolator();
 
    if (_code_dof_map)
    {
@@ -112,11 +113,13 @@ void AssembleMassMatrix::assemble_mass_matrix(){
    	_poro_mass_matrix->attach_dof_map(dof_map);
    	_lump_mass_matrix->attach_dof_map(dof_map);
    	_poro_lump_mass_matrix->attach_dof_map(dof_map);
+    _hanging_interpolator->attach_dof_map(dof_map);
    	_interpolator->init();
    	_mass_matrix->init();
    	_poro_mass_matrix->init();
    	_lump_mass_matrix->init();
    	_poro_lump_mass_matrix->init();
+    _hanging_interpolator->init();
    }
    else
    {
@@ -130,6 +133,7 @@ void AssembleMassMatrix::assemble_mass_matrix(){
    	_poro_mass_matrix->init(m,n,m_l,n_l);
    	_lump_mass_matrix->init(m,n,m_l,n_l);
    	_poro_lump_mass_matrix->init(m,n,m_l,n_l);
+    _hanging_interpolator->init(m,n,m_l,n_l);
 
    }
 
@@ -144,11 +148,11 @@ void AssembleMassMatrix::assemble_mass_matrix(){
     // Get a constant reference to the Finite Element type
     // for the first (and only) variable in the system.
     FEType const & fe_type = _system.get_dof_map().variable_type(0);
-	//FEType fe_type = system.variable_type(0);
-	UniquePtr<FEBase> fe (FEBase::build(dim, fe_type));
+    //FEType fe_type = system.variable_type(0);
+    UniquePtr<FEBase> fe (FEBase::build(dim, fe_type));
     //QGauss qrule (dim, fe_type.default_quadrature_order());
-  std::unique_ptr<QBase> qrule( QBase::build (_qrule->type(),dim,_qrule->get_order()));
-	//QGauss qrule (dim, TENTH);
+    std::unique_ptr<QBase> qrule( QBase::build (_qrule->type(),dim,_qrule->get_order()));
+    //QGauss qrule (dim, TENTH);
     // Tell the finite element object to use our quadrature rule.
     fe->attach_quadrature_rule (qrule.get());
 
@@ -224,13 +228,16 @@ void AssembleMassMatrix::assemble_mass_matrix(){
     	if (_constrainMatrices)
     	{
     		dof_map.constrain_element_matrix(Me,dof_indices,true);
-    		dof_map.constrain_element_matrix(Me_p,dof_indices_p,true);
+    		dof_map.constrain_element_matrix(Me_p,dof_indices_p,false);
     		dof_map.constrain_element_matrix(Me_l,dof_indices_l,true);
     		dof_map.constrain_element_matrix(Me_l_p,dof_indices_l_p,true);
     	}
     	{
     		dof_map.constrain_element_matrix(Me_i,dof_indices_i,true);
-    		for (int i=0; i<Me_i.m(); ++i)
+        
+        (*_hanging_interpolator).add_matrix (Me_i, dof_indices_i);
+    		
+        for (int i=0; i<Me_i.m(); ++i)
     		{
     			if (Me_i(i,i)<0.5)
     			{
@@ -252,6 +259,7 @@ void AssembleMassMatrix::assemble_mass_matrix(){
     	(*_lump_mass_matrix).add_matrix (Me_l, dof_indices_l);
     	(*_poro_lump_mass_matrix).add_matrix (Me_l_p, dof_indices_l_p);
     	(*_interpolator).add_matrix (Me_i, dof_indices_i);
+      //(*_hanging_interpolator).add_matrix (Me_i, dof_indices_i);
    }
 
    if (!_code_dof_map)
@@ -261,6 +269,7 @@ void AssembleMassMatrix::assemble_mass_matrix(){
    	MatSetOption(_poro_lump_mass_matrix->mat(), MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);
    	MatSetOption(_lump_mass_matrix->mat(), MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);
    	MatSetOption(_interpolator->mat(), MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);
+    MatSetOption(_hanging_interpolator->mat(), MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);
    }
 
    (*_mass_matrix).close();
@@ -268,6 +277,7 @@ void AssembleMassMatrix::assemble_mass_matrix(){
    (*_poro_lump_mass_matrix).close();
    (*_lump_mass_matrix).close();
    (*_interpolator).close();
+   (*_hanging_interpolator).close();
    
     _console << "Assemble_Mass_matrix() end "  << std::endl;
 

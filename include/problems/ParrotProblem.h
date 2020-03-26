@@ -13,6 +13,8 @@
 #include "NonlinearSystem.h"
 #include <petsc/private/kspimpl.h>
 #include "ksp_parrot_impl.h"
+
+#include "AntidiffusiveFluxes.h"
 #include "StoreOperators.h"
 
 #include "libmesh/petsc_matrix.h"
@@ -61,11 +63,16 @@ public:
 
     std::vector<int> zero_rows;
     StoreOperators * _storeOperatorsUO;
+    AntidiffusiveFluxes *_ComputeAF;
     bool _hasStoreOperatorsUO;
+    bool _ComputeAntidiffusiveFluxes;
 
     UserObjectName * userObjectName;
+    UserObjectName * userObjectNameFluxes;
 
     std::shared_ptr<PetscMatrix<Number>> _poro_lumped;
+
+    std::shared_ptr<PetscMatrix<Number>>   _JMatrix;
 
     std::shared_ptr<PetscVector<Number>> _dirichlet_bc;
 

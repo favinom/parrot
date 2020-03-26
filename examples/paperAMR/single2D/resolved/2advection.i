@@ -2,6 +2,7 @@
 type = ParrotProblem
 use_AFC = true
 operator_userobject = storeOperatorsUO
+antidiffusive_fluxes = antidiffusiveFluxes
 []
 
 [GlobalParams]
@@ -23,6 +24,7 @@ uniform_refine = 0
 
 [AuxVariables]
 [./P_aux] [../]
+[./correction] [../]
 []
 
 [Materials]
@@ -107,7 +109,14 @@ dc_variables='CM'
 value_D_bc='0.01'
 [../]
 
-
+[./antidiffusiveFluxes]
+ type = AntidiffusiveFluxes
+ execute_on = 'timestep_end'
+ dc_boundaries = '6'
+ operator_userobject = storeOperatorsUO
+ WriteCorrection=true
+[../]
+ 
 [./storeOperatorsUO]
 type = StoreOperators
 [../]

@@ -62,6 +62,10 @@ public:
     UserObjectName const _userObjectName;
     StoreOperators * _storeOperatorsUO;
 
+    bool _write_correction;
+
+    std::shared_ptr<PetscVector<Number>> _sol_vec_fluxes;
+
 
 
     void find_boundary(std::vector<int> &zero_rows, 
@@ -69,7 +73,7 @@ public:
 
     void determine_dc_bnd_var_id(const std::vector<std::string> & BC_var);
 
-    void set_solution(PetscVector<Number> &correction, PetscVector<Number> &sol);
+    void set_solution(PetscVector<Number> &correction);
 
     std::vector<std::string> split_string(const std::string & s, char delim);
 

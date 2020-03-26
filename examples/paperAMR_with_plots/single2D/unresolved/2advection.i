@@ -83,7 +83,7 @@ num_steps=100
  file_base = AdvectionOut_${adapSteps}
  perf_graph = true
  
- execute_on = 'timestep_end'
+ execute_on = 'FINAL'
  
 # Demonstration of using an Exodus Outputter
  [./out]

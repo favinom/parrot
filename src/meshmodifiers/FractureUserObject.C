@@ -274,6 +274,8 @@ bool FractureUserObject::isInsideRegion3D(RealVectorValue const & point, int con
     for (int k=0; k<_dim; ++k)
         localbounds(k)=std::max(_dimension[i](k)/2.0,bound);
 
+    //std::cout<<"I am here"<<std::endl;
+
     Real temp1=std::fabs( _n[i][0]*point-_d[i](0) );
     if (temp1<localbounds(0))
     {

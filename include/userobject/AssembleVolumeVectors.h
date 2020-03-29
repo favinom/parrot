@@ -40,12 +40,14 @@ public:
 
     bool const _hasMeshModifier;
     std::string _meshModifierName;
+    bool _r_fracture;
+    int _n_regions;
 
     unsigned _fn;
 
     bool _vectorAllocated;
 
-    // std::vector<int> _vector_p;
+    std::vector<int> _block_id;
     // std::vector<Real> _vector_value;
 
     // UserObjectName const userObjectName;
@@ -60,7 +62,7 @@ public:
     
 
     // void assemble_mass_matrix();
-    // Real ComputeMaterialProprties(const Elem *elem);
+    //Real ComputeMaterialProprties(const Elem *elem);
 
     // bool const _constrainMatrices;
     // bool const _code_dof_map;

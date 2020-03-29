@@ -32,8 +32,8 @@ then
 
 	commandString='faimesh('${be}','${fe}')'
 
-	#/Users/mariagiuseppinanestola/Desktop/MATLAB_R2014b.app/bin/matlab -nodesktop -nosplash -r ${commandString}
-	/Applications/MATLAB_R2018b.app/bin/matlab -nodesktop -nosplash -r ${commandString}
+   /Users/mariagiuseppinanestola/Desktop/MATLAB_R2014b.app/bin/matlab -nodesktop -nosplash -r ${commandString}
+   #/Applications/MATLAB_R2018b.app/bin/matlab -nodesktop -nosplash -r ${commandString}
 
 	rm uniform_${res}_mesh.xda
 

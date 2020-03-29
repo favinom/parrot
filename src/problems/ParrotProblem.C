@@ -433,7 +433,7 @@ ParrotProblem::computeStabilizationMatrix(SparseMatrix<Number> & jacobian)
 void
 ParrotProblem::update_sol()
 {
-    std::cout<<"ParrotProblem::update_sol"<<std::endl;
+    std::cout<<"ParrotProblem::update_sol BEGIN"<<std::endl;
 
     MooseVariableFEBase  & main_var = this->getVariable(0, "CM", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
 
@@ -475,6 +475,8 @@ ParrotProblem::update_sol()
     main_solution->close();
     //aux_solution->close();
     main_sys.update();
+
+    std::cout<<"ParrotProblem::update_sol END"<<std::endl;
 
 
 

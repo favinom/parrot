@@ -88,22 +88,16 @@ _write_correction(getParam<bool>("WriteCorrection"))
 
 void
 AntidiffusiveFluxes::initialize()
-{
-  
-}
-  
+{}  
 
 void
 AntidiffusiveFluxes::execute()
-{
-  stabilize_coeffiecient();
-}
+{}
 
 
 void
 AntidiffusiveFluxes::finalize()
-{
-}
+{}
 
 void
 AntidiffusiveFluxes::stabilize_coeffiecient()
@@ -143,7 +137,7 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
     {
         
         AntidiffusiveFluxes::determine_dc_bnd_var_id(AntidiffusiveFluxes::split_string(_dc_var, ' '));
-        find_boundary(zero_rows, _dc_boundary_id);
+        find_boundary(zero_rows_fluxes, _dc_boundary_id);
     }
 
 
@@ -436,11 +430,11 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 
         Real entry_m = std::min(1.0,value_m);
 
-        auto it = std::find(zero_rows.begin(), zero_rows.end(), row);
+        auto it = std::find(zero_rows_fluxes.begin(), zero_rows_fluxes.end(), row);
 
         //std::cout<<"zero_rows.size()"<<zero_rows.size()<<std::endl;
 
-        if(it == zero_rows.end()){
+        if(it == zero_rows_fluxes.end()){
 
             _R_p.set(row,entry_p);
 
@@ -560,9 +554,9 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
     for (int row=r_start; row<r_stop; ++row)
     {
           
-        auto it = std::find(zero_rows.begin(), zero_rows.end(), row);
+        auto it = std::find(zero_rows_fluxes.begin(), zero_rows_fluxes.end(), row);
 
-        if(it == zero_rows.end()){
+        if(it == zero_rows_fluxes.end()){
 
             //std::cout<<"_a_bar(row)"<<_a_bar(row)<<std::endl;
             //std::cout<<"_inv(row)"<<_inv(row)<<std::endl;
@@ -628,7 +622,7 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 }
 
 void
-AntidiffusiveFluxes::find_boundary(std::vector<int> &zero_rows, std::vector<int> &_dc_boundary_id){
+AntidiffusiveFluxes::find_boundary(std::vector<int> &zero_rows_fluxes, std::vector<int> &_dc_boundary_id){
 
   ConstBndNodeRange & bnd_nodes = *_fe_problem.mesh().getBoundaryNodeRange();
   NonlinearSystemBase & _nl = _fe_problem.getNonlinearSystemBase();
@@ -663,7 +657,7 @@ AntidiffusiveFluxes::find_boundary(std::vector<int> &zero_rows, std::vector<int>
 
                           // different components are not supported by moose at the moment...
                           //std::cout<<"kkkkkkkk"<< std::endl;
-                          zero_rows.push_back(
+                          zero_rows_fluxes.push_back(
                               current_node->dof_number(_fe_problem.getNonlinearSystemBase().number(), var_num, 0));
                         }
                     }
@@ -733,7 +727,7 @@ AntidiffusiveFluxes::determine_dc_bnd_var_id(const std::vector<std::string> & BC
     }
 
     // print out what is considered for zero-ing
-    std::cout<<" ------ BC CONDITIONS  ------ \n";
+    std::cout<<" ------ BC CONDITIONS Fluxes Begin ------ \n";
     unsigned int t = 0;
     //std::cout<<"_dc_variables_id.begin()"<<_dc_variables_id.size()<<std::endl;
     for(auto i = _dc_variables_id.begin(); i != _dc_variables_id.end();  t++, i++)
@@ -741,7 +735,7 @@ AntidiffusiveFluxes::determine_dc_bnd_var_id(const std::vector<std::string> & BC
         std::cout<<"\n BC_id:  "<< _dc_boundary_id[t] << "   var_ids:  ";
         std::for_each(i->begin(), i->end(), [](int i){ std::cout << i << "  " ; });
     }
-
+    std::cout<<" ------ BC CONDITIONS Fluxes End ------ \n";
 }
 
 

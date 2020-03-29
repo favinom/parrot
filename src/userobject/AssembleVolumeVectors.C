@@ -9,29 +9,7 @@
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "AssembleVolumeVectors.h"
-
-// #include "FEProblem.h"
-// #include "FEProblemBase.h"
-// #include "NonlinearSystemBase.h"
-// #include "FractureUserObject.h"
-// #include "Assembly.h"
-// #include "MooseVariableFEBase.h"
-
-// #include "libmesh/quadrature_gauss.h"
-// #include "libmesh/exodusII_io.h"
-// #include "libmesh/nonlinear_implicit_system.h"
-// #include "libmesh/petsc_matrix.h"
-// #include "libmesh/petsc_vector.h"
-// #include "libmesh/sparse_matrix.h"
-// #include "libmesh/equation_systems.h"
-// #include "libmesh/linear_implicit_system.h"
-// #include "libmesh/transient_system.h"
-// #include "libmesh/dirichlet_boundaries.h"
-// #include "libmesh/zero_function.h"
-// #include "libmesh/const_function.h"
-// #include "libmesh/parsed_function.h"
-// #include "libmesh/petsc_matrix.h"
-// #include "libmesh/petsc_vector.h"
+#include "FractureUserObject.h"
 
 registerMooseObject("parrotApp", AssembleVolumeVectors);
 
@@ -42,19 +20,20 @@ validParams<AssembleVolumeVectors>()
 {
   InputParameters params = validParams<GeneralUserObject>();
   
-  // params.addRequiredParam<std::vector<int>>("block_id","block_id");
-  // params.addRequiredParam<std::vector<Real>>("value_p","value_p");
+  params.addParam<int>("NRegions",0,"NRegions");
+  params.addParam<std::vector<int>>("block_id","block_id");
   // params.addRequiredParam<bool>("constrain_matrix","constrain_matrix");
-  // params.addRequiredParam<UserObjectName>("operator_userobject","The userobject that stores our operators");
+  //params.addRequiredParam<UserObjectName>("operator_userobject","The userobject that stores our operators");
+  params.addParam<bool>("FractureRegions",false,"FractureRegions");
   params.addParam<std::string>("fractureMeshModifier","fractureMeshModifier");
   return params;
 }
 
 AssembleVolumeVectors::AssembleVolumeVectors(const InputParameters & parameters) :
 GeneralUserObject(parameters),
-_hasMeshModifier( isParamValid("fractureMeshModifier") )
-// ,
-// _vector_p(getParam<std::vector<int>>("block_id")),
+_hasMeshModifier( isParamValid("fractureMeshModifier") ),
+_r_fracture(getParam<bool>("FractureRegions")),
+_n_regions(getParam<int>("NRegions"))
 // _vector_value(getParam<std::vector<Real>>("value_p")),
 // userObjectName(getParam<UserObjectName>("operator_userobject")),
 // _constrainMatrices(getParam<bool>("constrain_matrix")),
@@ -63,8 +42,12 @@ _hasMeshModifier( isParamValid("fractureMeshModifier") )
 // _qrule(_assembly.qRule())
 {
   _vectorAllocated=false;
-  if (_hasMeshModifier)
+  if (_hasMeshModifier){
     _meshModifierName=getParam<std::string>("fractureMeshModifier");
+  }
+  if(_r_fracture){
+    _block_id=getParam<std::vector<int>>("block_id");
+  }
 }
 
 void AssembleVolumeVectors::execute()
@@ -73,19 +56,34 @@ void AssembleVolumeVectors::execute()
 
   //MeshModifier     const * _myMeshModifier_ptr;
   RegionUserObject const * _myRegionUserObject_ptr;
+  FractureUserObject const * _fractureUserObject_ptr;
 
   if (_hasMeshModifier)
   {
     MeshModifier const & _myMeshModifier( _app.getMeshModifier( _meshModifierName.c_str()) );
     //_myMeshModifier_ptr=&_myMeshModifier;
     RegionUserObject const & _regionUserObject( dynamic_cast<RegionUserObject const &>(_myMeshModifier) );
-    _myRegionUserObject_ptr=&_regionUserObject;
+    
+    if(_r_fracture) 
+    {
+        FractureUserObject const & _fractureUserObject( dynamic_cast<FractureUserObject const &>(_myMeshModifier) );
+        
+        _fractureUserObject_ptr=&_fractureUserObject;
+    }
+    else{
+
+      _myRegionUserObject_ptr=&_regionUserObject;
+    
+    }
+  
   }
 
   DofMap   const & dof_map = _fe_problem.getNonlinearSystemBase().dofMap();
   auto &comm = _fe_problem.es().get_mesh().comm();
 
-  _fn = _myRegionUserObject_ptr[0].get_fn();
+  if (_r_fracture==false) _fn = _myRegionUserObject_ptr[0].get_fn();
+  else _fn = _n_regions;
+
   volumes.resize(_fn);
 
   for (int i=0; i<_fn; ++i)
@@ -144,15 +142,26 @@ void AssembleVolumeVectors::execute()
       coeff.at(i).resize( qrule->n_points() );
     }
 
+
+
+
     Real ze=0.0;
     for (int qp=0; qp<qrule->n_points(); ++qp)
     {
       for (int i=0; i<_fn; ++i)
       {
-        if ( _myRegionUserObject_ptr[0].isInsideRegion(q_points[qp],i,ze) )
+        if ( _r_fracture==false && _myRegionUserObject_ptr[0].isInsideRegion(q_points[qp],i,ze) ){
+          
           coeff.at(i).at(qp)=1.0;
-        else
+        }
+        else if(_r_fracture && /*_fractureUserObject_ptr[0].isInsideRegion(q_points[qp],_block_id[i],ze)*/ elem->subdomain_id() == _block_id[i]){
+          
+          coeff.at(i).at(qp)=1.0;
+        }
+        else{
+          
           coeff.at(i).at(qp)=0.0;
+        }
       }
     }
 
@@ -181,17 +190,29 @@ void AssembleVolumeVectors::execute()
 
 AssembleVolumeVectors::~AssembleVolumeVectors()
 {
+ 
   RegionUserObject const * _myRegionUserObject_ptr;
 
   if (_hasMeshModifier)
   {
     MeshModifier const & _myMeshModifier( _app.getMeshModifier( _meshModifierName.c_str()) );
+    
     RegionUserObject const & _regionUserObject( dynamic_cast<RegionUserObject const &>(_myMeshModifier) );
-    _myRegionUserObject_ptr=&_regionUserObject;
+
+    if(!_r_fracture) _myRegionUserObject_ptr=&_regionUserObject;
   }
 
-  int fn = _myRegionUserObject_ptr[0].get_fn();
+  int fn = 0;
 
-  for (int i=0; i<fn; ++i)
-    delete volumes[i];
+  if(_r_fracture) {
+    
+    fn = _n_regions;
+  }
+  else{
+    
+    fn = _myRegionUserObject_ptr[0].get_fn();
+  }
+
+  for (int i=0; i<fn; ++i) delete volumes[i];
+
 }

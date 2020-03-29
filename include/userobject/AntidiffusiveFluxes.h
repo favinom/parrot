@@ -54,7 +54,7 @@ public:
 
     std::vector<std::vector<int> > _dc_variables_id;
 
-    std::vector<int> zero_rows;
+    std::vector<int> zero_rows_fluxes;
 
     void stabilize_coeffiecient();
 
@@ -68,7 +68,7 @@ public:
 
 
 
-    void find_boundary(std::vector<int> &zero_rows, 
+    void find_boundary(std::vector<int> &zero_rows_fluxes, 
                        std::vector<int> &_dc_boundary_id);
 
     void determine_dc_bnd_var_id(const std::vector<std::string> & BC_var);

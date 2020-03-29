@@ -500,7 +500,7 @@ AssembleMassMatrix::determine_dc_bnd_var_id(const std::vector<std::string> & BC_
     }
 
     // print out what is considered for zero-ing
-    std::cout<<" ------ BC CONDITIONS  ------ \n";
+    std::cout<<" ------ BC CONDITIONS Begin ------ \n";
     unsigned int t = 0;
     //std::cout<<"_dc_variables_id.begin()"<<_dc_variables_id.size()<<std::endl;
     for(auto i = _dc_variables_id.begin(); i != _dc_variables_id.end();  t++, i++)
@@ -508,7 +508,7 @@ AssembleMassMatrix::determine_dc_bnd_var_id(const std::vector<std::string> & BC_
         std::cout<<"\n BC_id:  "<< _dc_boundary_id[t] << "   var_ids:  ";
         std::for_each(i->begin(), i->end(), [](int i){ std::cout << i << "  " ; });
     }
-
+    std::cout<<" ------ BC CONDITIONS End ------ \n";
 }
 
 

@@ -1,4 +1,4 @@
-typem=4;
+typem=1;
 
 ol=0; #2
 

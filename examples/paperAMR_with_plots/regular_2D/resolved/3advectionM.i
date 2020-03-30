@@ -5,7 +5,7 @@ conservative = true
 [Problem]
 type = ParrotProblem
 use_AFC = true
-#operator_userobject = storeOperatorsUO
+operator_userobject = storeOperatorsUO
 []
 
 [Mesh]
@@ -14,6 +14,18 @@ file = refined_${resolution}_${unifSteps}_000${adaptSteps}_mesh.xdr
 
 [MeshModifiers]
 [./aa2] type = BenchRegular2D [../]
+
+#[./fractureUserObject]
+# type = FractureUserObject
+# fn = 6
+# fx_string = '0.5,0.5,0.75,0.75,0.625,0.625'
+# fy_string = '0.5,0.5,0.75,0.75,0.625,0.625'
+# fa1_string = '0.0,90.0,0.0,90.0,0.0,90.0'
+# fd1_string = '1.0,1.0,0.5,0.5,0.25,0.25'
+# fd2_string = '1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4'
+#[../]
+
+
 []
 
 [Variables]
@@ -63,7 +75,7 @@ full = true
  petsc_options_value='  ksp_parrot_preonly  ' # ::ascii_matlab
  
  dt = 0.0025
- num_steps=100.0
+ num_steps=100
 
 [./Quadrature] order=TENTH [../]
 []
@@ -109,7 +121,7 @@ value_D_bc='1.0'
 [./antidiffusiveFluxes]
  type = AntidiffusiveFluxes
  execute_on = 'timestep_end'
- dc_boundaries = '1./'
+ dc_boundaries = '1.0'
 operator_userobject = storeOperatorsUO
  [../]
 [./assembleVolumeVectors]
@@ -117,6 +129,14 @@ type=AssembleVolumeVectors
 fractureMeshModifier = aa2
 execute_on = 'initial'
 [../]
+
+
+#[./assembleVolumeVectors2]
+#type=AssembleVolumeVectors
+#fractureMeshModifier = fractureUserObject
+#execute_on = 'initial'
+#[../]
+
 []
 
 [Postprocessors]
@@ -143,5 +163,11 @@ execute_on = 'initial'
  [./reg8] type = IntegralSolutionOverRegionFast region = 8 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
  [./reg9] type = IntegralSolutionOverRegionFast region = 9 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
 
+# [./frac0] type = IntegralSolutionOverRegionFast region = 0 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors2 [../]
+# [./frac1] type = IntegralSolutionOverRegionFast region = 1 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors2 [../]
+# [./frac2] type = IntegralSolutionOverRegionFast region = 2 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors2 [../]
+# [./frac3] type = IntegralSolutionOverRegionFast region = 3 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors2 [../]
+# [./frac4] type = IntegralSolutionOverRegionFast region = 4 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors2 [../]
+# [./frac5] type = IntegralSolutionOverRegionFast region = 5 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors2 [../]
  []
 

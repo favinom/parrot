@@ -164,6 +164,7 @@ type = StoreOperators
 
 
 [Postprocessors]
+[./fluxBoundary] type = SideIntegralForFluxPostprocessor variable = P_aux boundary   = '21' [../]
 [./c0] type = IntegralSolutionOverRegionFast region = 0 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
 [./c1] type = IntegralSolutionOverRegionFast region = 1 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
 [./c2] type = IntegralSolutionOverRegionFast region = 2 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]

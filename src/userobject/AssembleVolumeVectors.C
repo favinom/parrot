@@ -154,7 +154,7 @@ void AssembleVolumeVectors::execute()
           
           coeff.at(i).at(qp)=1.0;
         }
-        else if(_r_fracture && /*_fractureUserObject_ptr[0].isInsideRegion(q_points[qp],_block_id[i],ze)*/ elem->subdomain_id() == _block_id[i]){
+        else if(_r_fracture && _fractureUserObject_ptr[0].isInsideRegion(q_points[qp],i,ze)){
           
           coeff.at(i).at(qp)=1.0;
         }

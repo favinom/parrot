@@ -96,7 +96,7 @@ petsc_options_iname=' -ksp_type            '   # -mat_view
 petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
 
 dt = 0.01
-num_steps=100
+num_steps=1
 
 [./Quadrature] type=GRID order=TENTH [../]
 
@@ -164,7 +164,7 @@ value_D_bc='1.0'
  FractureRegions=true
  NRegions=8
  execute_on = 'initial'
- block_id='1 2 3 4 5 6 7 8'
+#block_id='1 2 3 4 5 6 7 8'
  fractureMeshModifier = fractureUserObject
 [../]
 
@@ -176,14 +176,6 @@ type = StoreOperators
 
 [Postprocessors]
  
- [./int1] type = IntegralSolutionOverRegionFast region = 1 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
- [./int2] type = IntegralSolutionOverRegionFast region = 2 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
- [./int3] type = IntegralSolutionOverRegionFast region = 3 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
- [./int4] type = IntegralSolutionOverRegionFast region = 4 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
- [./int5] type = IntegralSolutionOverRegionFast region = 5 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
- [./int6] type = IntegralSolutionOverRegionFast region = 6 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
- [./int7] type = IntegralSolutionOverRegionFast region = 7 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
-
  
  [./reg0] type = IntegralSolutionOverRegionFast region = 0 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
  [./reg1] type = IntegralSolutionOverRegionFast region = 1 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
@@ -193,5 +185,12 @@ type = StoreOperators
  [./reg5] type = IntegralSolutionOverRegionFast region = 5 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
  [./reg6] type = IntegralSolutionOverRegionFast region = 6 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
  [./reg7] type = IntegralSolutionOverRegionFast region = 7 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
-
+[./volume1] type = VolumePostprocessor block = 1 [../] # execute_on = 'final'
+[./volume2] type = VolumePostprocessor block = 2 [../] # execute_on = 'final'
+[./volume3] type = VolumePostprocessor block = 3 [../] # execute_on = 'final'
+[./volume4] type = VolumePostprocessor block = 4 [../] # execute_on = 'final'
+[./volume5] type = VolumePostprocessor block = 5 [../] # execute_on = 'final'
+[./volume6] type = VolumePostprocessor block = 6 [../] # execute_on = 'final'
+[./volume7] type = VolumePostprocessor block = 7 [../] # execute_on = 'final'
+[./volume8] type = VolumePostprocessor block = 8 [../] # execute_on = 'final'
  []

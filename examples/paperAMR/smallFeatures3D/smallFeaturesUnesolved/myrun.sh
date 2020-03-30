@@ -2,7 +2,7 @@
 
 as=3;
 np=4;
-createmesh=0;
+createmesh=1;
 correction=0;
 
 if [ $createmesh -eq 1 ]
@@ -47,7 +47,7 @@ else
 fi
 echo $as
 
-mpirun -n ${np} ../../../../parrot-opt -i 1diffusion.i adapSteps=${as}
+# mpirun -n ${np} ../../../../parrot-opt -i 1diffusion.i adapSteps=${as}
 # exit 1
 
 if [ $correction -eq 0 ]

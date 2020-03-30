@@ -98,7 +98,7 @@ petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
 dt = 0.01
 num_steps=100
 
-[./Quadrature] type=GRID order=TENTH [../]
+[./Quadrature] type=GRID order=FOURTEENTH [../]
 
 []
 

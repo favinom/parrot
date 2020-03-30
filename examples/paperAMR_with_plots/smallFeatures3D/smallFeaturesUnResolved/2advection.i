@@ -105,6 +105,7 @@ aux_variable=P_aux
 fractureMeshModifier = fractureUserObject
 conservative=false
 [../]
+<<<<<<< Updated upstream
  
 [./MassAssembly]
 type = AssembleMassMatrix
@@ -133,17 +134,26 @@ fractureMeshModifier = fractureUserObject
 [../]
 []
 
+=======
+>>>>>>> Stashed changes
 
-[Postprocessors]
-[./fluxBoundary]
-type = SideIntegralForFluxPostprocessor
-variable = P_aux
-boundary   = '11'
-#  execute_on = 'initial'
+[./assembleVolumeVectors]
+ type=AssembleVolumeVectors
+ FractureRegions=true
+ NRegions=8
+ execute_on = 'initial'
+#block_id='1 2 3 4 5 6 7 8'
+ fractureMeshModifier = fractureUserObject
 [../]
 
+[]
 
 
+<<<<<<< Updated upstream
+
+=======
+[Postprocessors]
+>>>>>>> Stashed changes
 
 [./volume0]
 type = ElementIntegralVolumePostprocessor
@@ -152,8 +162,11 @@ fractureMeshModifier =  fractureUserObject
 #  execute_on = 'initial'
 [../]
 
+<<<<<<< Updated upstream
 
 
+=======
+>>>>>>> Stashed changes
 [./volume1]
 type = ElementIntegralVolumePostprocessor
 fractureRegionId = 1
@@ -161,8 +174,11 @@ fractureMeshModifier =  fractureUserObject
 #  execute_on = 'initial'
 [../]
 
+<<<<<<< Updated upstream
 
 
+=======
+>>>>>>> Stashed changes
 [./volume2]
 type = ElementIntegralVolumePostprocessor
 fractureRegionId = 2
@@ -170,8 +186,11 @@ fractureMeshModifier =  fractureUserObject
 #  execute_on = 'initial'
 [../]
 
+<<<<<<< Updated upstream
 
 
+=======
+>>>>>>> Stashed changes
 [./volume3]
 type = ElementIntegralVolumePostprocessor
 fractureRegionId = 3
@@ -179,7 +198,10 @@ fractureMeshModifier =  fractureUserObject
 #  execute_on = 'initial'
 [../]
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 [./volume4]
 type = ElementIntegralVolumePostprocessor
 fractureRegionId = 4
@@ -187,7 +209,10 @@ fractureMeshModifier =  fractureUserObject
 #  execute_on = 'initial'
 [../]
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 
 [./volume5]
 type = ElementIntegralVolumePostprocessor
@@ -196,8 +221,11 @@ fractureMeshModifier =  fractureUserObject
 #  execute_on = 'initial'
 [../]
 
+<<<<<<< Updated upstream
 
 
+=======
+>>>>>>> Stashed changes
 [./volume6]
 type = ElementIntegralVolumePostprocessor
 fractureRegionId = 6
@@ -205,7 +233,10 @@ fractureMeshModifier =  fractureUserObject
 #  execute_on = 'initial'
 [../]
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 [./volume7]
 type = ElementIntegralVolumePostprocessor
 fractureRegionId = 7
@@ -221,6 +252,10 @@ fractureMeshModifier =  fractureUserObject
  [./reg5] type = IntegralSolutionOverRegionFast region = 5 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
  [./reg6] type = IntegralSolutionOverRegionFast region = 6 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
  [./reg7] type = IntegralSolutionOverRegionFast region = 7 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+<<<<<<< Updated upstream
  
+=======
+
+>>>>>>> Stashed changes
 []
 

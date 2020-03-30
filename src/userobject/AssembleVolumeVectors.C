@@ -150,6 +150,7 @@ void AssembleVolumeVectors::execute()
     {
       for (int i=0; i<_fn; ++i)
       {
+<<<<<<< Updated upstream
         if (_r_fracture == false && _r_fractureUO==false && _myRegionUserObject_ptr[0].isInsideRegion(q_points[qp],i,ze) ){
           
           coeff.at(i).at(qp)=1.0;
@@ -164,11 +165,19 @@ void AssembleVolumeVectors::execute()
         }
         else{
           
+=======
+        if ( _myRegionUserObject_ptr[0].isInsideRegion(q_points[qp],i,ze) )
+        {
+          coeff.at(i).at(qp)=1.0;
+        }
+        else
+        {
+>>>>>>> Stashed changes
           coeff.at(i).at(qp)=0.0;
         }
       }
     }
-
+    
     for (unsigned int i=0; i<phi.size(); i++)
     {
       for (unsigned int qp=0; qp<qrule->n_points(); qp++)
@@ -189,6 +198,8 @@ void AssembleVolumeVectors::execute()
     volumes[i][0].close();
     //std::cout<<volumes.at(i)[0].sum()<<std::endl<<std::endl;
   }
+
+   _console << "AssembleVolumeVectors::execute() end"  << std::endl;
 
 }
 

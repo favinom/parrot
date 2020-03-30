@@ -9,15 +9,15 @@
 [./fractureUserObject]
 type = FractureUserObject
 fn = 8
-fx_string = '0.5  ,0.5  ,0.77,0.83, 0.2,0.2  , 0.5,0.5'
-fy_string = '1.125,0.175,2.05,2.05, 2.05,2.05 , 1.6,1.6'
-fz_string = '0.5  ,0.5  ,0.5 ,0.5, 0.5,0.5 , 0.675,0.31'
-fa1_string = '0,90,90,90,78.6901,-78.6901,0,0'
-fa2_string = '0, 0, 0, 0,0,0,0,0'
-fa3_string = '0,90,90,90,90,90,16.2602,-15.8192'
-fd1_string = '0.9,0.25,0.3,0.3,0.3059,0.3059,0.9,0.9'
-fd2_string = '1.75,0.9,0.4,0.4,0.4,0.4,1.25,1.2472'
+fx_string = '0.5,0.5,0.5,0.5,0.2,0.2,0.77,0.83'
+fy_string = '1.125,0.175,1.6,1.6,2.05,2.05,2.05,2.05'
+fz_string = '0.5,0.5,0.675,0.31,0.5,0.5,0.5,0.5'
+fd1_string = '0.9,0.9,0.9,0.9,0.4,0.4,0.4,0.4'
+fd2_string = '1.75,0.25,1.25,1.2472,0.30594,0.30594,0.3,0.3'
 fd3_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01'
+fa1_string = '0,0,0,0,78.6901,-78.6901,0,0'
+fa2_string = '0,90,0,0,-90,-90,-90,-90'
+fa3_string = '0,0,16.2602,-15.8192,90,-90,0,0'
 [../]
 []
 
@@ -31,9 +31,12 @@ fd3_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01'
 []
 
 [Materials]
-[./conductivity1] type = FractureMaterial fractureMeshModifier =  fractureUserObject
-matrixPorosity = 0.0 fracturePorosity = 0.0
-matrixPermeability = 1.0 fracturePermeability = 1e4
+[./conductivity1] 
+type = FlowAndTransport
+conservative = false
+fractureMeshModifier =  fractureUserObject
+phi = 0.0 phiFrac = 0.0
+k = 1 kFrac = 1e4
 [../]
 []
 
@@ -59,7 +62,7 @@ matrixPermeability = 1.0 fracturePermeability = 1e4
 # petsc_options_iname = '-pc_type -pc_hypre_type'
 # petsc_options_value = 'hypre boomeramg'
 
-[./Quadrature] order = TENTH [../]
+[./Quadrature] order = NINTH type = GRID [../]
 []
 
 

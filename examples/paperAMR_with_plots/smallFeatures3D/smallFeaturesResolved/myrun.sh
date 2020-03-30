@@ -1,6 +1,6 @@
-typem=1;
+typem=0;
 
-ol=0; #2
+ol=2; #2
 
 np=4;
 

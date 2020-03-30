@@ -68,12 +68,13 @@ variable = u
  
  
 [Outputs]
+[./out]
  execute_on = 'timestep_end'
- [./out]
  type = Exodus
- execute_on = 'timestep_end'
- [../]
+ file_base = PlotLineP1_Sub_${adapSteps}
+[../]
 []
+
 
 
 

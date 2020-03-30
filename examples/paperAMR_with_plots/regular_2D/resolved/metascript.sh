@@ -1,7 +1,7 @@
-belist="80 160 320 640"
-felist="1 2 4 8" # 4 8 16"
+belist="80" # 160 320 640"
+felist="1" # 2 4 8" # 4 8 16"
 
-createmesh=1;
+createmesh=0;
 
 for be in $belist
 do

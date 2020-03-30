@@ -13,7 +13,7 @@ boundary_name = 'inflow outflow'
 []
 
 [MeshModifiers]
-#active=''
+active=''
 [./fractureUserObject]
 type = FractureUserObject
 fn = 8
@@ -96,14 +96,14 @@ petsc_options_iname=' -ksp_type            '   # -mat_view
 petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
 
 dt = 0.01
-num_steps=1
+num_steps=100
 
 [./Quadrature] type=GRID order=TENTH [../]
 
 []
 
 [Outputs]
-file_base = AdvectionOutNew_${typeMesh}_${origLevel}_${Uref}_${adapSteps}
+file_base = AdvectionOut_${typeMesh}_${origLevel}_${Uref}_${adapSteps}
 exodus = true
 csv=true
 perf_graph = true
@@ -114,36 +114,25 @@ perf_graph = true
 #active='ComputeStatistics'
 
 [./antidiffusiveFluxes]
- type = AntidiffusiveFluxes
- execute_on = 'timestep_end'
- dc_boundaries = '6'
- operator_userobject = storeOperatorsUO
- WriteCorrection=true
+type = AntidiffusiveFluxes
+execute_on = 'timestep_end'
+dc_boundaries = '6'
+operator_userobject = storeOperatorsUO
+WriteCorrection=true
 [../]
- 
+
 [./soln]
- type = SolveDiffusion
- execute_on = 'initial'
- block_id='1 2 3 4 5 6 7 8 11 12 13'
- value_p ='1e4 1e4 1e4 1e4 1e4 1e4 1e4 1e4 1 1 1'
- boundary_D_bc = '22'
- value_D_bc='0.0 0.0'
- boundary_N_bc = '21'
- value_N_bc='-1.0'
-#'-1.3777384127' mesh_3_0
-#'-1.1271638853'
-#'-1.1271638853' mesh_0_2 with_1_Uref
-#'-1.2501939362' mesh_0_2
-#'-1.5289597863' mesh_0_0
-#'-1.310023788'mesh_1_2
-#'-1.371218453748253' mesh_1_2
-#'-1.1629356736' mesh_1_2 with_1_Uref
-#'-1.0883646525' mesh_1_2 with_2_Uref
- aux_variable=P_aux
- conservative=true
-#fractureMeshModifier = fractureUserObject
-#output_file=matrix.e
- [../]
+type = SolveDiffusion
+execute_on = 'initial'
+block_id='1 2 3 4 5 6 7 8 11 12 13'
+value_p ='1e4 1e4 1e4 1e4 1e4 1e4 1e4 1e4 1 1 1'
+boundary_D_bc = '22'
+value_D_bc='0.0 0.0'
+boundary_N_bc = '21'
+value_N_bc='-1.0'
+aux_variable=P_aux
+conservative=true
+[../]
 
 
 
@@ -160,12 +149,12 @@ value_D_bc='1.0'
 [../]
 
 [./assembleVolumeVectors]
- type=AssembleVolumeVectors
- FractureRegions=true
- NRegions=8
- execute_on = 'initial'
-#block_id='1 2 3 4 5 6 7 8'
- fractureMeshModifier = fractureUserObject
+type=AssembleVolumeVectors
+FractureRegions=true
+NRegions=8
+execute_on = 'initial'
+block_id='1 2 3 4 5 6 7 8'
+#fractureMeshModifier = fractureUserObject
 [../]
 
 [./storeOperatorsUO]
@@ -175,22 +164,22 @@ type = StoreOperators
 
 
 [Postprocessors]
- 
- 
- [./reg0] type = IntegralSolutionOverRegionFast region = 0 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
- [./reg1] type = IntegralSolutionOverRegionFast region = 1 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
- [./reg2] type = IntegralSolutionOverRegionFast region = 2 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
- [./reg3] type = IntegralSolutionOverRegionFast region = 3 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
- [./reg4] type = IntegralSolutionOverRegionFast region = 4 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
- [./reg5] type = IntegralSolutionOverRegionFast region = 5 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
- [./reg6] type = IntegralSolutionOverRegionFast region = 6 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
- [./reg7] type = IntegralSolutionOverRegionFast region = 7 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
-[./volume1] type = VolumePostprocessor block = 1 [../] # execute_on = 'final'
-[./volume2] type = VolumePostprocessor block = 2 [../] # execute_on = 'final'
-[./volume3] type = VolumePostprocessor block = 3 [../] # execute_on = 'final'
-[./volume4] type = VolumePostprocessor block = 4 [../] # execute_on = 'final'
-[./volume5] type = VolumePostprocessor block = 5 [../] # execute_on = 'final'
-[./volume6] type = VolumePostprocessor block = 6 [../] # execute_on = 'final'
-[./volume7] type = VolumePostprocessor block = 7 [../] # execute_on = 'final'
-[./volume8] type = VolumePostprocessor block = 8 [../] # execute_on = 'final'
- []
+[./c0] type = IntegralSolutionOverRegionFast region = 0 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./c1] type = IntegralSolutionOverRegionFast region = 1 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./c2] type = IntegralSolutionOverRegionFast region = 2 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./c3] type = IntegralSolutionOverRegionFast region = 3 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./c4] type = IntegralSolutionOverRegionFast region = 4 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./c5] type = IntegralSolutionOverRegionFast region = 5 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./c6] type = IntegralSolutionOverRegionFast region = 6 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./c7] type = IntegralSolutionOverRegionFast region = 7 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+
+[./reg0] type = IntegralSolutionOverRegionFast region = 0 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg1] type = IntegralSolutionOverRegionFast region = 1 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg2] type = IntegralSolutionOverRegionFast region = 2 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg3] type = IntegralSolutionOverRegionFast region = 3 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg4] type = IntegralSolutionOverRegionFast region = 4 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg5] type = IntegralSolutionOverRegionFast region = 5 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg6] type = IntegralSolutionOverRegionFast region = 6 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg7] type = IntegralSolutionOverRegionFast region = 7 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+
+[]

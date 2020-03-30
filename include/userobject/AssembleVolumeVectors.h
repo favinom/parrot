@@ -40,7 +40,7 @@ public:
 
     bool const _hasMeshModifier;
     std::string _meshModifierName;
-    bool _r_fracture;
+    bool _r_fracture, _r_fractureUO;
     int _n_regions;
 
     unsigned _fn;

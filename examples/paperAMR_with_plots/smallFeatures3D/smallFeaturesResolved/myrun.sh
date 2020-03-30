@@ -1,4 +1,4 @@
-typem=1;
+typem=4;
 
 ol=0; #2
 
@@ -10,7 +10,7 @@ us=0;
 
 correction=0;
 
-createmesh=0;
+createmesh=1;
 
 postprocessor=0;
 

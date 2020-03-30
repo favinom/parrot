@@ -33,6 +33,7 @@ AssembleVolumeVectors::AssembleVolumeVectors(const InputParameters & parameters)
 GeneralUserObject(parameters),
 _hasMeshModifier( isParamValid("fractureMeshModifier") ),
 _r_fracture(getParam<bool>("FractureRegions")),
+_r_fractureUO(isParamValid("fractureMeshModifier")),
 _n_regions(getParam<int>("NRegions"))
 // _vector_value(getParam<std::vector<Real>>("value_p")),
 // userObjectName(getParam<UserObjectName>("operator_userobject")),
@@ -42,12 +43,11 @@ _n_regions(getParam<int>("NRegions"))
 // _qrule(_assembly.qRule())
 {
   _vectorAllocated=false;
-  if (_hasMeshModifier){
+  if (_hasMeshModifier)
     _meshModifierName=getParam<std::string>("fractureMeshModifier");
-  }
-  if(_r_fracture){
+
+  if(_r_fracture)
     _block_id=getParam<std::vector<int>>("block_id");
-  }
 }
 
 void AssembleVolumeVectors::execute()
@@ -64,7 +64,7 @@ void AssembleVolumeVectors::execute()
     //_myMeshModifier_ptr=&_myMeshModifier;
     RegionUserObject const & _regionUserObject( dynamic_cast<RegionUserObject const &>(_myMeshModifier) );
     
-    if(_r_fracture) 
+    if(_r_fractureUO) 
     {
         FractureUserObject const & _fractureUserObject( dynamic_cast<FractureUserObject const &>(_myMeshModifier) );
         
@@ -150,11 +150,15 @@ void AssembleVolumeVectors::execute()
     {
       for (int i=0; i<_fn; ++i)
       {
-        if ( _r_fracture==false && _myRegionUserObject_ptr[0].isInsideRegion(q_points[qp],i,ze) ){
+        if (_r_fracture == false && _r_fractureUO==false && _myRegionUserObject_ptr[0].isInsideRegion(q_points[qp],i,ze) ){
           
           coeff.at(i).at(qp)=1.0;
         }
-        else if(_r_fracture && _fractureUserObject_ptr[0].isInsideRegion(q_points[qp],i,ze)){
+        else if (_r_fractureUO && _fractureUserObject_ptr[0].isInsideRegion(q_points[qp],i,ze)){
+          
+          coeff.at(i).at(qp)=1.0;
+        }
+        else if(_r_fracture  && elem->subdomain_id() == _block_id[i]){
           
           coeff.at(i).at(qp)=1.0;
         }

@@ -1,10 +1,10 @@
 #!/bin/bash
 
-as=4;
+as=1;
 
 np=4;
 
-createmesh=0;
+createmesh=1;
 
 correction=0;
 
@@ -52,9 +52,14 @@ else
 fi
 echo $as
 
-#mpirun -n ${np} ../../../../parrot-opt -i 1diffusion.i adapSteps=${as}
-#exit 1
-
+if [ $correction -eq 0 ]
+then
+mpirun -n ${np} ../../../../parrot-opt -i 2advection.i adapSteps=${as}
+fi
+if [ $correction -eq 1 ]
+then
+mpirun -n ${np} ../../../../parrot-opt -i 2advectionCorrection.i adapSteps=${as}
+fi
 
 
 if [ $postprocessors -eq 1 ]

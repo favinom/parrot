@@ -14,7 +14,7 @@ res=`expr ${be} + 3 \\* ${fe}`
 as=0;
 us=0;
 
-createmesh=1;
+createmesh=0;
 correction=4;
 
 if [ $createmesh -eq 1 ]

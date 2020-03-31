@@ -26,3 +26,5 @@ then
     mpirun -n ${np} ../../../../parrot-opt -i plotLine_master_P_2.i  adapSteps=${as}
 fi
 
+mv plotLine_master_P_out_sub0.e    plotLine_p1_${as}.e
+mv plotLine_master_P_2_out_sub0.e  plotLine_p2_${as}.e

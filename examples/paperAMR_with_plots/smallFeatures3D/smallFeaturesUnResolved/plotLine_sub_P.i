@@ -55,6 +55,5 @@
 [./out]
  execute_on = 'timestep_end'
  type = Exodus
- file_base = PlotLineP2_Sub_${adapSteps}
 [../]
 []

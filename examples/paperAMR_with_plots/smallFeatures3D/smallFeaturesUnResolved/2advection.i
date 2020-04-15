@@ -76,11 +76,9 @@ line_search = none
  petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
 
 dt = 0.01
-num_steps=100
+num_steps=1
 
-[./Quadrature]
-order = NINTH type = GRID
-[../]
+[./Quadrature] order = NINTH type = GRID [../]
 []
 
 [Outputs]
@@ -105,11 +103,7 @@ aux_variable=P_aux
 fractureMeshModifier = fractureUserObject
 #output_file=matrix.e
 [../]
-[./assembleVolumeVectors]
-type=AssembleVolumeVectors
-fractureMeshModifier = fractureUserObject
-execute_on = 'initial'
-[../]
+
 
 [./storeOperatorsUO]
 type = StoreOperators
@@ -136,7 +130,7 @@ value_D_bc='1.0'
 
 
 [Postprocessors]
-
+active=''
  [./int0] type = IntegralSolutionOverRegionFast region = 0 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
  [./int1] type = IntegralSolutionOverRegionFast region = 1 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
  [./int2] type = IntegralSolutionOverRegionFast region = 2 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]

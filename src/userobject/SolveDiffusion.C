@@ -27,7 +27,7 @@
 #include "libmesh/numeric_vector.h"
 #include "libmesh/petsc_matrix.h"
 #include "libmesh/petsc_vector.h"
-#include "libmesh/exodusII_io.h"
+#include "libmesh/nemesis_io.h"
 
 
 #include "libmesh/quadrature_gauss.h"
@@ -144,6 +144,13 @@ int SolveDiffusion::solve(EquationSystems & es)
 
   ierr = PCCreate(PETSC_COMM_WORLD, &_diff_problem);
   CHKERRQ(ierr);
+  ierr = PCSetType(_diff_problem,PCHYPRE);
+  CHKERRQ(ierr);
+  ierr = PCHYPRESetType(_diff_problem, "boomeramg");
+  CHKERRQ(ierr);
+
+  ierr = PCCreate(PETSC_COMM_WORLD, &_diff_problem);
+  CHKERRQ(ierr);
   ierr = PCSetType(_diff_problem,PCLU);
   CHKERRQ(ierr);
   ierr = PCSetOperators(_diff_problem, mat_PM.mat(),mat_PM.mat());
@@ -155,8 +162,16 @@ int SolveDiffusion::solve(EquationSystems & es)
   PCDestroy(&_diff_problem);
   //solution->print_matlab();
 
+  // ierr = PCSetOperators(_diff_problem, mat_PM.mat(),mat_PM.mat());
+  // CHKERRQ(ierr);  
+  // ierr = PCFactorSetMatSolverPackage(_diff_problem,MATSOLVERMUMPS);
+  // CHKERRQ(ierr);
+  // ierr = PCApply(_diff_problem,rhs_PV.vec(),sol_PV.vec()); CHKERRQ(ierr);
+  // CHKERRQ(ierr);
+  // PCDestroy(&_diff_problem);
+
   if(_has_output_file)
-    ExodusII_IO (es.get_mesh()).write_equation_systems(_output_filename.c_str(), es);
+    Nemesis_IO (es.get_mesh()).write_equation_systems(_output_filename.c_str(), es);
 
   _console<<"END solve\n";
 

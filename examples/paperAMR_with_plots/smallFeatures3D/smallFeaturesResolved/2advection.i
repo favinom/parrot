@@ -2,14 +2,15 @@
 type = ParrotProblem
 use_AFC = true
 operator_userobject = storeOperatorsUO
-antidiffusive_fluxes = antidiffusiveFluxes
+#antidiffusive_fluxes = antidiffusiveFluxes
+#solve=false
 []
 
 
 [Mesh]
 file = refinedMesh_${typeMesh}_${origLevel}_${Uref}_000${adapSteps}_mesh.xdr
-boundary_id = '21 22'
-boundary_name = 'inflow outflow'
+boundary_id = '21 22 23'
+boundary_name = 'inflow outflow1 outflow2'
 []
 
 [MeshModifiers]
@@ -40,9 +41,20 @@ fd3_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01'
 
 [Materials]
 
+active='porosity_1 porosity_2'
+
+[./conductivity1]
+type = FlowAndTransport fractureMeshModifier =  fractureUserObject
+phi = 0.2 phiFrac = 0.2
+k = 1 kFrac = 1e4
+pressure = P_aux
+conservative=false
+[../]
+
+
 [./porosity_1]
 type = FlowAndTransport
-conservative=true
+conservative=false
 block = '11 12 13'
 k = 1.0
 phi = 0.2
@@ -58,11 +70,6 @@ phi = 0.2
 pressure=P_aux
 [../]
 
-#[./conductivity1] type = FractureMaterial fractureMeshModifier =  fractureUserObject
-#matrixPorosity = 0.2 fracturePorosity = 0.2
-#matrixPermeability = 1 fracturePermeability = 1e4
-#pressure = P_aux
-#[../]
 []
 
 [Kernels]
@@ -98,20 +105,23 @@ petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
 dt = 0.01
 num_steps=100
 
-[./Quadrature] type=GRID order=FOURTEENTH [../]
+[./Quadrature] type=GRID order = TENTH [../]
 
 []
 
 [Outputs]
 file_base = AdvectionOut_${typeMesh}_${origLevel}_${Uref}_${adapSteps}
-exodus = true
-csv=true
+[./out]
+type = Exodus
+execute_on = FINAL
+[../]
+csv=false
 perf_graph = true
 []
 
 
 [UserObjects]
-#active='ComputeStatistics'
+active='soln MassAssembly storeOperatorsUO'
 
 [./antidiffusiveFluxes]
 type = AntidiffusiveFluxes
@@ -126,12 +136,27 @@ type = SolveDiffusion
 execute_on = 'initial'
 block_id='1 2 3 4 5 6 7 8 11 12 13'
 value_p ='1e4 1e4 1e4 1e4 1e4 1e4 1e4 1e4 1 1 1'
+boundary_D_bc = '22 23'
+value_D_bc='0.0 0.0'
+boundary_N_bc = '21'
+value_N_bc='-1.0'
+aux_variable=P_aux
+conservative=false
+[../]
+
+[./soln2]
+type = SolveDiffusion
+execute_on = 'initial'
+block_id='1 2 3 4 5 6 7 8 11 12 13'
+value_p =' 1 1 1 1 1 1 1 1 1 1 1 1e4'
 boundary_D_bc = '22'
 value_D_bc='0.0 0.0'
 boundary_N_bc = '21'
 value_N_bc='-1.0'
 aux_variable=P_aux
-conservative=true
+fractureMeshModifier = fractureUserObject
+conservative=false
+#output_file=matrix.e
 [../]
 
 
@@ -164,6 +189,7 @@ type = StoreOperators
 
 
 [Postprocessors]
+active=''
 [./fluxBoundary] type = SideIntegralForFluxPostprocessor variable = P_aux boundary   = '21' [../]
 [./c0] type = IntegralSolutionOverRegionFast region = 0 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
 [./c1] type = IntegralSolutionOverRegionFast region = 1 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]

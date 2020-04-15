@@ -1,11 +1,11 @@
-back_x=9
-back_y=20
+back_x=72
+back_y=160
 
 aslist="1 2" # 3 4 5"
 
 createmesh=1;
 np=4;
-postprocessors=1;
+postprocessors=0;
 
 export back_x
 export back_y

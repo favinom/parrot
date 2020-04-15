@@ -25,15 +25,16 @@ validParams<AssembleVolumeVectors>()
   // params.addRequiredParam<bool>("constrain_matrix","constrain_matrix");
   //params.addRequiredParam<UserObjectName>("operator_userobject","The userobject that stores our operators");
   params.addParam<bool>("FractureRegions",false,"FractureRegions");
-  params.addParam<std::string>("fractureMeshModifier","fractureMeshModifier");
+  params.addParam<std::string>("FractureMeshModifier","FractureMeshModifier");
+  params.addParam<std::string>("RegionMeshModifier","RegionMeshModifier");
   return params;
 }
 
 AssembleVolumeVectors::AssembleVolumeVectors(const InputParameters & parameters) :
 GeneralUserObject(parameters),
-_hasMeshModifier( isParamValid("fractureMeshModifier") ),
+_hasMeshModifier(isParamValid("RegionMeshModifier")),
 _r_fracture(getParam<bool>("FractureRegions")),
-_r_fractureUO(isParamValid("fractureMeshModifier")),
+_r_fractureUO(isParamValid("FractureMeshModifier")),
 _n_regions(getParam<int>("NRegions"))
 // _vector_value(getParam<std::vector<Real>>("value_p")),
 // userObjectName(getParam<UserObjectName>("operator_userobject")),
@@ -43,11 +44,21 @@ _n_regions(getParam<int>("NRegions"))
 // _qrule(_assembly.qRule())
 {
   _vectorAllocated=false;
-  if (_hasMeshModifier)
-    _meshModifierName=getParam<std::string>("fractureMeshModifier");
 
-  if(_r_fracture)
+  //_console<<"_hasMeshModifier"<<_hasMeshModifier<<std::endl;
+
+  if (_hasMeshModifier){
+    _meshModifierName=getParam<std::string>("RegionMeshModifier");
+    //_console << "name" << _meshModifierName <<std::endl;
+  }
+
+  if(_r_fractureUO){
+    _meshModifierName=getParam<std::string>("FractureMeshModifier");
+  }
+
+  if(_r_fracture){
     _block_id=getParam<std::vector<int>>("block_id");
+  }
 }
 
 void AssembleVolumeVectors::execute()
@@ -56,27 +67,29 @@ void AssembleVolumeVectors::execute()
 
   //MeshModifier     const * _myMeshModifier_ptr;
   RegionUserObject const * _myRegionUserObject_ptr;
+  
   FractureUserObject const * _fractureUserObject_ptr;
 
-  if (_hasMeshModifier)
+  if(_r_fractureUO) 
   {
+    
     MeshModifier const & _myMeshModifier( _app.getMeshModifier( _meshModifierName.c_str()) );
-    //_myMeshModifier_ptr=&_myMeshModifier;
-    RegionUserObject const & _regionUserObject( dynamic_cast<RegionUserObject const &>(_myMeshModifier) );
-    
-    if(_r_fractureUO) 
-    {
-        FractureUserObject const & _fractureUserObject( dynamic_cast<FractureUserObject const &>(_myMeshModifier) );
-        
-        _fractureUserObject_ptr=&_fractureUserObject;
-    }
-    else{
-
-      _myRegionUserObject_ptr=&_regionUserObject;
-    
-    }
+    FractureUserObject const & _fractureUserObject( dynamic_cast<FractureUserObject const &>(_myMeshModifier) );
+    _fractureUserObject_ptr=&_fractureUserObject;
   
   }
+  else
+  {
+    
+    MeshModifier const & _myMeshModifier( _app.getMeshModifier( _meshModifierName.c_str()) );
+    RegionUserObject const & _regionUserObject( dynamic_cast<RegionUserObject const &>(_myMeshModifier) );
+    _myRegionUserObject_ptr=&_regionUserObject;
+
+  }
+  
+
+
+
 
   DofMap   const & dof_map = _fe_problem.getNonlinearSystemBase().dofMap();
   auto &comm = _fe_problem.es().get_mesh().comm();
@@ -142,9 +155,7 @@ void AssembleVolumeVectors::execute()
       coeff.at(i).resize( qrule->n_points() );
     }
 
-
-
-
+   
     Real ze=0.0;
     for (int qp=0; qp<qrule->n_points(); ++qp)
     {

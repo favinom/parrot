@@ -126,7 +126,7 @@ operator_userobject = storeOperatorsUO
  [../]
 [./assembleVolumeVectors]
 type=AssembleVolumeVectors
-fractureMeshModifier = aa2
+RegionMeshModifier = aa2
 execute_on = 'initial'
 [../]
 

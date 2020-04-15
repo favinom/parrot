@@ -6,8 +6,8 @@ solve = false
 [Mesh]
 file =mesh_${typeMesh}_${origLevel}.e
 block_id = '1 2 3 4 5 6 7 8 11 12 13'
-boundary_id = '21 22'
-boundary_name = 'inflow outflow'
+boundary_id = '21 22 23'
+boundary_name = 'inflow outflow1 outflow2'
 uniform_refine = ${Uref}
 #second_order=true
 []

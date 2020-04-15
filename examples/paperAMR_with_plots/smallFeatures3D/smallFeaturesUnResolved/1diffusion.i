@@ -1,8 +1,8 @@
 [Mesh]
- file = refinedMesh_00${adapSteps}_mesh.xdr
-  boundary_id = '11 22 23'
-  boundary_name = 'inflow outflow1 outflow2'
-# partitioner = linear
+file = refinedMesh_00${adapSteps}_mesh.xdr
+boundary_id = '11 22 23'
+boundary_name = 'inflow outflow1 outflow2'
+parallel_type = distributed
 []
 
 [MeshModifiers]
@@ -42,32 +42,33 @@ k = 1 kFrac = 1e4
 
 # observe that with the second BCs the stiffness matrix is SDP and we can use choleski factorization
 [BCs]
-[./inflowBC]   type = NeumannBC   variable = pressure value = 1.0  boundary = inflow  [../]
-[./outflowBC1] type = DirichletBC variable = pressure value = 0.0  boundary = outflow1 [../]
-[./outflowBC2] type = DirichletBC variable = pressure value = 0.0  boundary = outflow2 [../]
+[./inflowBC]   type = NeumannBC  variable = pressure value = 1.0   boundary = inflow  [../]
+[./outflowBC1] type = DirichletBC  variable = pressure value = 0.0   boundary = top [../]
+#[./outflowBC2] type = DirichletBC  variable = pressure value = 0.0   boundary = top [../]
 []
- 
+
 [Preconditioning]
 [./prec] type = SMP full = true ksp_norm = default [../]
 []
- 
+
 [Executioner]
 
- type=Steady
- solve_type= LINEAR
- line_search = none
- petsc_options_iname=' -ksp_type -pc_type -pc_factor_shift_type -pc_factor_mat_solver_package '
- petsc_options_value='  preonly   lu       NONZERO               mumps '
- 
-# petsc_options_iname = '-pc_type -pc_hypre_type'
-# petsc_options_value = 'hypre boomeramg'
+type=Steady
+solve_type= LINEAR
+line_search = none
+#petsc_options_iname=' -ksp_type -pc_type -pc_factor_shift_type -pc_factor_mat_solver_package '
+#petsc_options_value='  preonly   lu       NONZERO               mumps '
+
+petsc_options_iname = '-pc_type -pc_hypre_type'
+petsc_options_value = 'hypre boomeramg'
 
 [./Quadrature] order = NINTH type = GRID [../]
 []
 
 
 [Outputs]
- file_base  = DiffusionOut_${adapSteps}
- exodus     = true
- perf_graph = true
+file_base  = DiffusionOut_${adapSteps}
+nemesis     = true
+execute_on = timestep_end
+perf_graph = true
 []

@@ -2,11 +2,11 @@ typem=0;
 
 ol=2; #2
 
-np=4;
+np=6;
 
 as=0;
 
-us=0;
+us=1;
 
 correction=0;
 

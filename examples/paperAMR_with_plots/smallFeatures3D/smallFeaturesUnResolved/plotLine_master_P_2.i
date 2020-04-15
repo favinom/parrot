@@ -1,5 +1,6 @@
 [Mesh]
  file=AdvectionOut_${adapSteps}.e
+  nemesis = true
 []
 
 [Problem]

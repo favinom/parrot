@@ -47,5 +47,5 @@
  
 [Outputs]
  execute_on = 'timestep_end'
- type = Exodus
+ exodus=true
 []

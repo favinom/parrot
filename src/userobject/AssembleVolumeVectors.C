@@ -53,7 +53,9 @@ _n_regions(getParam<int>("NRegions"))
   }
 
   if(_r_fractureUO){
+//    std::cout<<"I am here"<<std::endl;
     _meshModifierName=getParam<std::string>("FractureMeshModifier");
+    std::cout<<" _meshModifierName "<< _meshModifierName <<std::endl;
   }
 
   if(_r_fracture){
@@ -76,9 +78,10 @@ void AssembleVolumeVectors::execute()
     MeshModifier const & _myMeshModifier( _app.getMeshModifier( _meshModifierName.c_str()) );
     FractureUserObject const & _fractureUserObject( dynamic_cast<FractureUserObject const &>(_myMeshModifier) );
     _fractureUserObject_ptr=&_fractureUserObject;
+     //std::cout<<"I am here 2"<<std::endl;
   
   }
-  else
+  if(_hasMeshModifier)
   {
     
     MeshModifier const & _myMeshModifier( _app.getMeshModifier( _meshModifierName.c_str()) );
@@ -94,7 +97,7 @@ void AssembleVolumeVectors::execute()
   DofMap   const & dof_map = _fe_problem.getNonlinearSystemBase().dofMap();
   auto &comm = _fe_problem.es().get_mesh().comm();
 
-  if (_r_fracture==false) _fn = _myRegionUserObject_ptr[0].get_fn();
+  if (_hasMeshModifier) _fn = _myRegionUserObject_ptr[0].get_fn();
   else _fn = _n_regions;
 
   volumes.resize(_fn);
@@ -215,18 +218,18 @@ AssembleVolumeVectors::~AssembleVolumeVectors()
     
     RegionUserObject const & _regionUserObject( dynamic_cast<RegionUserObject const &>(_myMeshModifier) );
 
-    if(!_r_fracture) _myRegionUserObject_ptr=&_regionUserObject;
+   if(!_r_fracture) _myRegionUserObject_ptr=&_regionUserObject;
   }
 
   int fn = 0;
 
-  if(_r_fracture) {
+  if(_hasMeshModifier) {
     
-    fn = _n_regions;
+    fn = _myRegionUserObject_ptr[0].get_fn();
   }
   else{
     
-    fn = _myRegionUserObject_ptr[0].get_fn();
+    fn = _n_regions;
   }
 
   for (int i=0; i<fn; ++i) delete volumes[i];

@@ -103,7 +103,7 @@ petsc_options_iname=' -ksp_type            '   # -mat_view
 petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
 
 dt = 0.01
-num_steps=100
+num_steps=1
 
 [./Quadrature] type=GRID order = TENTH [../]
 
@@ -111,17 +111,13 @@ num_steps=100
 
 [Outputs]
 file_base = AdvectionOut_${typeMesh}_${origLevel}_${Uref}_${adapSteps}
-[./out]
-type = Exodus
-execute_on = FINAL
-[../]
-csv=false
+exodus=true
 perf_graph = true
 []
 
 
 [UserObjects]
-active='soln MassAssembly storeOperatorsUO'
+active='soln MassAssembly storeOperatorsUO assembleVolumeVectors'
 
 [./antidiffusiveFluxes]
 type = AntidiffusiveFluxes
@@ -189,8 +185,8 @@ type = StoreOperators
 
 
 [Postprocessors]
-active=''
-[./fluxBoundary] type = SideIntegralForFluxPostprocessor variable = P_aux boundary   = '21' [../]
+#active=''
+#[./fluxBoundary] type = SideIntegralForFluxPostprocessor variable = P_aux boundary   = '21' [../]
 [./c0] type = IntegralSolutionOverRegionFast region = 0 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
 [./c1] type = IntegralSolutionOverRegionFast region = 1 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
 [./c2] type = IntegralSolutionOverRegionFast region = 2 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]

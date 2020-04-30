@@ -75,7 +75,7 @@ fa3_string = '0,0,16.2602,-15.8192,90,-90,0,0'
 
 [Outputs]
  file_base = refinedMesh
- exodus = true
+# exodus = true
  perf_graph = true
  xdr = true
 []

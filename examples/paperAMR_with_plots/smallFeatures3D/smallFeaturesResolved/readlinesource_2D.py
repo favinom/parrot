@@ -5,12 +5,16 @@
 # ----------------------------------------------------------------
 import os, sys
 
-# folder = sys.argv[-1]
+# print 'Number of arguments:', len(sys.argv), 'arguments.'
+# print 'Argument List:', str(sys.argv)
+
+inputName=sys.argv[1]
+outputName = inputName.replace(".e", "_.csv")
+
 folder = os.getcwd()
 masterfiles = []
 slavefiles = []
-name = input("Enter file name")
-print(name)
+name = inputName
 for file in os.listdir(folder):
     if file.find(name)>-1:
         masterfiles.append(os.path.join(folder, file))
@@ -27,7 +31,9 @@ paraview.simple._DisableFirstRenderCameraReset()
 # create a new 'ExodusIIReader'
 mastere1 = ExodusIIReader(FileName=sorted(masterfiles))
 
-writer = CreateWriter("%s/output.csv"%folder, mastere1)
+outputNameAndFolder=folder+'/'+outputName;
+print(outputNameAndFolder)
+writer = CreateWriter(outputNameAndFolder, mastere1)
 writer.UpdatePipeline()
 
 

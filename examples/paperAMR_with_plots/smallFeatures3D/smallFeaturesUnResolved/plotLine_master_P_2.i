@@ -1,6 +1,6 @@
 [Mesh]
  file=AdvectionOut_${adapSteps}.e
-  nemesis = true
+#  nemesis = true
 []
 
 [Problem]
@@ -69,11 +69,7 @@ variable = u
  
  
 [Outputs]
-[./out]
- execute_on = 'timestep_end'
- type = Exodus
- file_base = PlotLineP2_Out_${adapSteps}
-[../]
+exodus=true
 []
 
 

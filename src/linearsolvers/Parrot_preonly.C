@@ -39,7 +39,7 @@ PetscErrorCode  KSPSolve_Parrot_PREONLY(KSP ksp)
 
     StoreOperators & storeOperatorsUO=(_ksp_ptr->fe_problem->getUserObjectTempl<StoreOperators>(*_ksp_ptr->userObjectName));
     
-    if (factorized==0)
+  /*  if (factorized==0)
     {
       _ksp_ptr[0].factorized[0]=1;
 
@@ -58,7 +58,7 @@ PetscErrorCode  KSPSolve_Parrot_PREONLY(KSP ksp)
       PCSetUp(_ksp_ptr[0].local_pc[0]);
       auto t_end = std::chrono::high_resolution_clock::now();
       std::cout<<"done factorizing?\n";
-          std::cout<<"fact time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
+          std::cout<<"fact time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";*/
       // }
       // PCSetReusePreconditioner(_ksp_ptr[0].local_pc[0], PETSC_TRUE);
       // std::cout<<"start solving?\n";
@@ -83,28 +83,60 @@ PetscErrorCode  KSPSolve_Parrot_PREONLY(KSP ksp)
       // std::cout<<"qui "<<norm<<std::endl;
       // PetscPrintf(PETSC_COMM_WORLD,"   %14.12e \n", norm);
 
-  }
+//  }
   //else{
 
-      PCSetReusePreconditioner(_ksp_ptr[0].local_pc[0], PETSC_TRUE);
+      //PCSetReusePreconditioner(_ksp_ptr[0].local_pc[0], PETSC_TRUE);
+      //
+      //________________________Begin hypre_____________________//
+      //
+      KSPCreate(PETSC_COMM_WORLD,&ksp);
+
+      KSPSetOperators(ksp,Hmat,Pmat);
+     
+      KSPSetType(ksp,KSPGMRES);
+  
+      PCSetType(_ksp_ptr[0].local_pc[0],PCHYPRE);
+      
+      PCHYPRESetType(_ksp_ptr[0].local_pc[0],"boomeramg"); 
+      
+      KSPType type;
+
+      KSPGetType(ksp, &type);
+      
+      std::cout<< "Running ith KSP "<<type<<std::endl;
+
+      KSPSetFromOptions(ksp);  
+
+      KSPSetUp(ksp);
+      
+      std::cout<<"start solving 0?\n";
+     //____________________end HYpre______________________//
       
       auto vec_sol=storeOperatorsUO.SolVec();
+
+      NonlinearSystemBase & nl_sys = _ksp_ptr->fe_problem->getNonlinearSystemBase();
+      DofMap const & dof_map = nl_sys.dofMap();
+      if( _ksp_ptr->fe_problem->timeStep()==0) vec_sol->init(dof_map.n_dofs(), dof_map.n_local_dofs());  
       
       auto sol_tmp = (*vec_sol).vec();
       
-      std::cout<<"start solving?\n";
+      std::cout<<"start solving 1?\n";
       
       auto t_start = std::chrono::high_resolution_clock::now();
 
-      PCApply(_ksp_ptr[0].local_pc[0],ksp->vec_rhs,sol_tmp);
+      /* for factorization
+      PCApply(_ksp_ptr[0].local_pc[0],ksp->vec_rhs,sol_tmp);*/
+
+      KSPSolve(ksp,ksp->vec_rhs,sol_tmp);
 
       auto t_end = std::chrono::high_resolution_clock::now();
       
       std::cout<<"done solving?\n";
       std::cout<<"solve time: "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
-
-      _ksp_ptr[0].local_pc=NULL;
-
+    
+      //_ksp_ptr[0].local_pc=NULL;
+     
       Vec r;
       
       VecDuplicate(ksp->vec_rhs,&r);

@@ -11,9 +11,9 @@
 back_x=18 #72
 back_y=45  #160
 
-aslist="3 4 5" # 3 4 5"
+aslist="2" # 3 4 5"
 
-createmesh=1;
+createmesh=0;
 np=20;
 postprocessors=1;
 

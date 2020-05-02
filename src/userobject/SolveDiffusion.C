@@ -123,7 +123,7 @@ void SolveDiffusion::initialize()
 }
 
 
-int SolveDiffusion::solve(EquationSystems & es)
+/*int SolveDiffusion::solve(EquationSystems & es)
 {
   _console<<"BEGIN solve\n";
 
@@ -142,12 +142,12 @@ int SolveDiffusion::solve(EquationSystems & es)
   PetscErrorCode ierr;
   PC _diff_problem;
 
-  ierr = PCCreate(PETSC_COMM_WORLD, &_diff_problem);
-  CHKERRQ(ierr);
-  ierr = PCSetType(_diff_problem,PCHYPRE);
-  CHKERRQ(ierr);
-  ierr = PCHYPRESetType(_diff_problem, "boomeramg");
-  CHKERRQ(ierr);
+//  ierr = PCCreate(PETSC_COMM_WORLD, &_diff_problem);
+//  CHKERRQ(ierr);
+//  ierr = PCSetType(_diff_problem,PCHYPRE);
+//  CHKERRQ(ierr);
+//  ierr = PCHYPRESetType(_diff_problem, "boomeramg");
+//  CHKERRQ(ierr);
 
   ierr = PCCreate(PETSC_COMM_WORLD, &_diff_problem);
   CHKERRQ(ierr);
@@ -157,8 +157,15 @@ int SolveDiffusion::solve(EquationSystems & es)
   CHKERRQ(ierr);  
   ierr = PCFactorSetMatSolverPackage(_diff_problem,MATSOLVERMUMPS);
   CHKERRQ(ierr);
+  ierr = PCSetType(_diff_problem,PCHYPRE);
+  CHKERRQ(ierr);
+  
+  ierr = PCHYPRESetType(_diff_problem, "boomeramg");
+  CHKERRQ(ierr);
+  
   ierr = PCApply(_diff_problem,rhs_PV.vec(),sol_PV.vec()); CHKERRQ(ierr);
   CHKERRQ(ierr);
+
   PCDestroy(&_diff_problem);
   //solution->print_matlab();
 
@@ -177,6 +184,58 @@ int SolveDiffusion::solve(EquationSystems & es)
 
   return 0 ;
 }
+*/
+
+int SolveDiffusion::solve(EquationSystems & es)
+{
+  _console<<"BEGIN solve\n";
+
+  LinearImplicitSystem & _system = es.get_system<LinearImplicitSystem> (_sys_name);
+
+  AssembleDiffusionOP(es, _sys_name.c_str() );
+
+  NumericVector<Number> & sol_NV=*_system.solution;
+  NumericVector<Number> & rhs_NV=*_system.rhs;
+  SparseMatrix<Number>  & mat_SM=*_system.matrix;
+
+  PetscVector<Number> & sol_PV= dynamic_cast<PetscVector<Number> &>(sol_NV);
+  PetscVector<Number> & rhs_PV= dynamic_cast<PetscVector<Number> &>(rhs_NV);
+  PetscMatrix<Number> & mat_PM= dynamic_cast<PetscMatrix<Number> &>(mat_SM);
+
+  KSP ksp;
+  PC _diff_problem;
+  PetscErrorCode ierr;
+
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp); CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,mat_PM.mat(),mat_PM.mat()); CHKERRQ(ierr);
+  ierr = KSPSetType(ksp,KSPGMRES); CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&_diff_problem); CHKERRQ(ierr); CHKERRQ(ierr);
+  ierr = PCSetType(_diff_problem,PCHYPRE);
+  ierr = PCHYPRESetType(_diff_problem,"boomeramg"); CHKERRQ(ierr);
+  
+  KSPType type;
+  ierr = KSPGetType(ksp, &type);
+  _console<< "Running ith KSP "<<type<<std::endl;
+  
+  KSPSetUp(ksp);
+  KSPSolve(ksp,rhs_PV.vec(),sol_PV.vec());
+
+  Vec r;
+  VecDuplicate(rhs_PV.vec(),&r);
+  PetscReal norm;
+  MatResidual(mat_PM.mat(),rhs_PV.vec(),sol_PV.vec(),r);
+  VecNorm(r,NORM_2,&norm);
+  std::cout<<"Residual norm="<<norm<<std::endl;
+
+ if(_has_output_file)
+   {
+       ExodusII_IO (es.get_mesh()).write_equation_systems(_output_filename.c_str(), es);
+   }
+
+  _console<<"END solve\n";
+  //
+  return 0 ;
+ }
 
 void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, std::string const & system_name)
 {

@@ -8,8 +8,8 @@
 #SBATCH --partition=fat
 #SBATCH --mem=100000
 
-back_x=18 #72
-back_y=45  #160
+back_x=9  #18 #72
+back_y=20  #45  #160
 
 aslist="2" # 3 4 5"
 

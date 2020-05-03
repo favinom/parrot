@@ -123,7 +123,7 @@ void SolveDiffusion::initialize()
 }
 
 
-/*int SolveDiffusion::solve(EquationSystems & es)
+int SolveDiffusion::solve(EquationSystems & es)
 {
   _console<<"BEGIN solve\n";
 
@@ -155,7 +155,7 @@ void SolveDiffusion::initialize()
   CHKERRQ(ierr);
   ierr = PCSetOperators(_diff_problem, mat_PM.mat(),mat_PM.mat());
   CHKERRQ(ierr);  
-  ierr = PCFactorSetMatSolverPackage(_diff_problem,MATSOLVERMUMPS);
+  ierr = PCFactorSetMatSolverPackage(_diff_problem,MATSOLVERSUPERLU_DIST);
   CHKERRQ(ierr);
   ierr = PCSetType(_diff_problem,PCHYPRE);
   CHKERRQ(ierr);
@@ -184,9 +184,8 @@ void SolveDiffusion::initialize()
 
   return 0 ;
 }
-*/
 
-int SolveDiffusion::solve(EquationSystems & es)
+/*int SolveDiffusion::solve(EquationSystems & es)
 {
   _console<<"BEGIN solve\n";
 
@@ -236,7 +235,7 @@ int SolveDiffusion::solve(EquationSystems & es)
   //
   return 0 ;
  }
-
+*/
 void SolveDiffusion::AssembleDiffusionOP(EquationSystems & _es, std::string const & system_name)
 {
   _console << "BEGIN Assemble_Diffusion"  << std::endl;

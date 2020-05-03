@@ -12,7 +12,7 @@ echo $as
 
 if [ $correction -eq 0 ]
 then
-srun -n ${np} ../../../../parrot-opt -i  2advection.i adapSteps=${as} --keep-cout
+srun -n ${np} ../../../../parrot-opt -i  2advection.i adapSteps=${as}
 fi
 
 if [ $correction -eq 1 ]

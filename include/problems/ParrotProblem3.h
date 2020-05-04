@@ -41,7 +41,7 @@ public:
                             const NumericVector<Number> & soln,
                             NumericVector<Number> & residual);
 
-    virtual void update_sol();
+    // virtual void update_sol();
         
     Parallel::Communicator const & _pp_comm;
     EquationSystems & _equationSystems;
@@ -75,9 +75,7 @@ public:
 
     std::shared_ptr<PetscVector<Number>> _value_dirichlet_bc;
 
-    std::shared_ptr<PetscVector<Number>> _sol_vec;
-
-     bool _fail_next_linear_convergence_check;
+    //std::shared_ptr<PetscVector<Number>> _sol_vec;
 
     ParrotSolver * parrotSolver;
     int _solverType;

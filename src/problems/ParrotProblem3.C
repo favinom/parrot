@@ -88,6 +88,7 @@ void ParrotProblem3::initialSetup()
         localmatrix=&_stab_matrix;
 
         _poro_lumped = _storeOperatorsUO->PoroLumpMassMatrix();
+
         _dirichlet_bc = _storeOperatorsUO->BcVec();
         _value_dirichlet_bc = _storeOperatorsUO->ValueBcVec();
 
@@ -102,8 +103,8 @@ void ParrotProblem3::initialSetup()
 
 
     const DofMap & dof_map = _nl->dofMap(); 
-    _sol_vec                = _storeOperatorsUO->SolVec();
-    _sol_vec->init(dof_map.n_dofs(), dof_map.n_local_dofs());
+    // _sol_vec                = _storeOperatorsUO->SolVec();
+    // _sol_vec->init(dof_map.n_dofs(), dof_map.n_local_dofs());
 
 
     if (_ComputeAntidiffusiveFluxes)
@@ -129,35 +130,33 @@ ParrotProblem3::solve()
 {
     if ( 0<_solverType && _solverType <4)
     {
-        if (!_is_jac_matrix_assembled)
-        {
-            std::cout<<"Assembling Jacobian and stabilization matrix...\n";
-            auto t_start = std::chrono::high_resolution_clock::now();
-            computeJacobianSys(_nl_libMesh, *_nl->currentSolution(), _mat_SM);
-            auto t_stop = std::chrono::high_resolution_clock::now();
-            auto diff=std::chrono::duration<double, std::milli>(t_stop-t_start).count();
-            std::cout<<"Done, it took ";
-            std::cout<<diff<<" ms\n";
-
-            _is_jac_matrix_assembled=true;
-
             SparseMatrix <Number> * mat_SM = _nl_libMesh.matrix;
             NumericVector<Number> * rhs_NV = _nl_libMesh.rhs;
 
             std::unique_ptr<NumericVector<Number>> & solutionPointer(_nl_libMesh.solution);
             NumericVector<Number> * sol_NV=solutionPointer.get();
 
+        if (!_is_jac_matrix_assembled)
+        {
+            std::cout<<"\n\nAssembling Jacobian and stabilization matrix...";
+            auto t_start = std::chrono::high_resolution_clock::now();
+            computeJacobianSys(_nl_libMesh, *_nl->currentSolution(), _mat_SM);
+            auto t_stop = std::chrono::high_resolution_clock::now();
+            auto diff=std::chrono::duration<double, std::milli>(t_stop-t_start).count();
+            std::cout<<" Done!\n It took ";
+            std::cout<<diff<<" ms\n";
+
+            _is_jac_matrix_assembled=true;
+
+
             parrotSolver->setMatrixAndVectors(mat_SM,rhs_NV,sol_NV);
             parrotSolver->setConstantMatrix(_const_jacobian);
 
         }
-
         NumericVector<Number> & solOld=_nl->solutionOld() ;
         //computeResidualSys(_nl_libMesh, *_nl->currentSolution(),_rhs_NV);
         computeResidualSys(_nl_libMesh, solOld ,_rhs_NV);
-        _sol_NV.zero();
-        parrotSolver->solve();
-
+        parrotSolver->solve();        
     }
     else
     {
@@ -172,73 +171,13 @@ ParrotProblem3::computeResidualSys(NonlinearImplicitSystem & /*sys*/,
                                    const NumericVector<Number> & soln,
                                    NumericVector<Number> & residual)
 {
-    std::cout<<1<<std::endl;
     _res_m.zero();
     _poro_lumped->vector_mult_add(_res_m,soln);
-    std::cout<<2<<std::endl;
     Real inv_dt = 1.0/this->dt();
-    std::cout<<3<<std::endl;
     _res_m.scale(inv_dt);
-    std::cout<<4<<std::endl;
     residual.pointwise_mult(_res_m,*_dirichlet_bc);
-    std::cout<<5<<std::endl;
     residual.add(*_value_dirichlet_bc);
-
 }
-
-
-
-
-void
-ParrotProblem3::update_sol()
-{
-    std::cout<<"ParrotProblem3::update_sol BEGIN"<<std::endl;
-
-    MooseVariableFEBase  & main_var = this->getVariable(0, "CM", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
-
-    System & main_sys = main_var.sys().system();
-
-    NumericVector<Number> * main_solution = main_sys.solution.get();
-
-
-    _sol_vec                = _storeOperatorsUO->SolVec();
-
-    //_sol_vec->print_matlab("sol_moose.m");
-
-    { 
-        
-        for (const auto & node : this->es().get_mesh().local_node_ptr_range())
-
-        {
-            for (unsigned int comp = 0; comp < node->n_comp(main_sys.number(), main_var.number()); comp++)
-
-            {
-
-                //const dof_id_type proj_index = node->dof_number(_nl.number(), sol_var.number(), comp);
-
-                const dof_id_type to_index = node->dof_number(main_sys.number(), main_var.number(), comp);
-
-                //const dof_id_type to_index_c = node->dof_number(aux_sys.number(), aux_var_c.number(), comp);
-
-
-                main_solution->set(to_index, (*_sol_vec)(to_index));
-
-                //aux_solution->set(to_index_c, correction(proj_index));
-            }
-
-        }
-    }
-
-
-
-    main_solution->close();
-    //aux_solution->close();
-    main_sys.update();
-
-    std::cout<<"ParrotProblem3::update_sol END"<<std::endl;
-
-}
-
 
 void
 ParrotProblem3::computeJacobianSys(NonlinearImplicitSystem & /*sys*/,
@@ -330,3 +269,52 @@ ParrotProblem3::computeStabilizationMatrix(SparseMatrix<Number> & jacobian)
     _is_stab_matrix_assembled=true;
 }
 
+// void
+// ParrotProblem3::update_sol()
+// {
+//     std::cout<<"ParrotProblem3::update_sol BEGIN"<<std::endl;
+
+//     MooseVariableFEBase  & main_var = this->getVariable(0, "CM", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
+
+//     System & main_sys = main_var.sys().system();
+
+//     NumericVector<Number> * main_solution = main_sys.solution.get();
+
+
+//     _sol_vec                = _storeOperatorsUO->SolVec();
+
+//     //_sol_vec->print_matlab("sol_moose.m");
+
+//     { 
+        
+//         for (const auto & node : this->es().get_mesh().local_node_ptr_range())
+
+//         {
+//             for (unsigned int comp = 0; comp < node->n_comp(main_sys.number(), main_var.number()); comp++)
+
+//             {
+
+//                 //const dof_id_type proj_index = node->dof_number(_nl.number(), sol_var.number(), comp);
+
+//                 const dof_id_type to_index = node->dof_number(main_sys.number(), main_var.number(), comp);
+
+//                 //const dof_id_type to_index_c = node->dof_number(aux_sys.number(), aux_var_c.number(), comp);
+
+
+//                 main_solution->set(to_index, (*_sol_vec)(to_index));
+
+//                 //aux_solution->set(to_index_c, correction(proj_index));
+//             }
+
+//         }
+//     }
+
+
+
+//     main_solution->close();
+//     //aux_solution->close();
+//     main_sys.update();
+
+//     std::cout<<"ParrotProblem3::update_sol END"<<std::endl;
+
+// }

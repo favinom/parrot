@@ -14,13 +14,13 @@ back_y=20  #45  #160
 aslist="2" # 3 4 5"
 
 createmesh=0;
-np=20;
+np=6;
 postprocessors=1;
 
 export back_x
 export back_y
 export np
-as=5
+as=2
 export as
 
 if [ $createmesh -eq 1 ]

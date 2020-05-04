@@ -12,12 +12,12 @@ echo $as
 
 if [ $correction -eq 0 ]
 then
-srun -n ${np} ../../../../parrot-opt -i  2advection.i adapSteps=${as}
+mpirun -n ${np} ../../../../parrot-opt -i  2advection.i adapSteps=${as}
 fi
 
 if [ $correction -eq 1 ]
 then
-srun -n ${np} ../../../../parrot-opt -i 2advectionCorrection.i adapSteps=${as}
+mpirun -n ${np} ../../../../parrot-opt -i 2advectionCorrection.i adapSteps=${as}
 fi
 
 

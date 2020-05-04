@@ -3,10 +3,12 @@ conservative = false
 []
 
 [Problem]
-type = ParrotProblem
-use_AFC = true
-operator_userobject = storeOperatorsUO
-[]
+ type = ParrotProblem3
+ use_AFC = true
+ operator_userobject = storeOperatorsUO
+ solver_type = 3
+ []
+
 
 [Mesh]
  file = refinedMesh_00${adapSteps}_mesh.xdr
@@ -91,7 +93,7 @@ num_steps=100
 
 [UserObjects]
 [./soln]
-type = SolveDiffusion
+type = SolveDiffusion2
 execute_on = 'initial'
 block_id='0'
 value_p ='1 1e4'
@@ -102,6 +104,7 @@ value_N_bc='-1.0'
 aux_variable=P_aux
 fractureMeshModifier = fractureUserObject
 #output_file=matrix.e
+solver_type = 3
 [../]
 
 [./assembleVolumeVectors]

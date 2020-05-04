@@ -201,6 +201,30 @@ ParrotProblem3::solve()
     {
         FEProblemBase::solve();
     }
+    
+    auto _I = _storeOperatorsUO->H_Interpolator();
+    
+    auto _hv = _storeOperatorsUO->HangVec();
+
+    const DofMap & dof_map = _nl->dofMap();
+
+    PetscVector<Number> _tmp(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
+
+    _tmp.zero();
+
+    PetscVector<Number> _tmp_sol(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
+
+    _tmp_sol.zero();
+
+    _tmp.pointwise_mult(_sol_NV,*_hv);
+
+    _I->vector_mult(_tmp_sol,_sol_NV);
+
+    _tmp_sol.add(_tmp);
+
+    _sol_NV.zero();
+
+    _sol_NV.add(_tmp_sol);
 
 }
 
@@ -220,14 +244,14 @@ ParrotProblem3::computeResidualSys(NonlinearImplicitSystem & /*sys*/,
     residual.pointwise_mult(_res_m,_regularNodes);
     residual.add(*_value_dirichlet_bc);
 
-    // _res_m.zero();
-    // _poro_lumped->vector_mult_add(_res_m,soln);
-    // Real inv_dt = 1.0/this->dt();
-    // _res_m.scale(inv_dt);
-    // residual.pointwise_mult(_res_m,*_dirichlet_bc);
-    // 
-
-    // residual.add(*_value_dirichlet_bc);
+//     _res_m.zero();
+//     _poro_lumped->vector_mult_add(_res_m,soln);
+//     Real inv_dt = 1.0/this->dt();
+//     _res_m.scale(inv_dt);
+//     residual.pointwise_mult(_res_m,*_dirichlet_bc);
+//
+//
+//     residual.add(*_value_dirichlet_bc);
 }
 
 void

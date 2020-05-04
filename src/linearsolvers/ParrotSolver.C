@@ -81,32 +81,28 @@ PetscErrorCode ParrotSolver::setMatrixAndVectors(
 
 PetscErrorCode ParrotSolver::solve()
 {     
-  if (_factorized==false || _constantMatrix==false)
-  {
-    std::cout<<"Factorizing"<<std::endl;
-    auto t_start = std::chrono::high_resolution_clock::now();
-    //_ierr = PCSetUp(_pc); CHKERRQ(_ierr);
-    _ierr = KSPSetUp(_ksp); CHKERRQ(_ierr);
-    auto t_stop = std::chrono::high_resolution_clock::now();
-    _factorized=true;
-
-    std::cout<<"Factorization time: "<< std::chrono::duration<double, std::milli>(t_stop-t_start).count()<< " ms\n";
-
-  }
-
-  if (_constantMatrix==true)
+  if (_constantMatrix==true && _factorized==true)
   {
     //_ierr = PCSetReusePreconditioner(_ksp, PETSC_TRUE); CHKERRQ(_ierr);
     _ierr = KSPSetReusePreconditioner(_ksp, PETSC_TRUE); CHKERRQ(_ierr);
   }
 
+  std::cout<<"Factorizing"<<std::endl;
+  auto t_start = std::chrono::high_resolution_clock::now();
+  //_ierr = PCSetUp(_pc); CHKERRQ(_ierr);
+  _ierr = KSPSetUp(_ksp); CHKERRQ(_ierr);
+  auto t_stop = std::chrono::high_resolution_clock::now();
+  std::cout<<"Factorization time: "<< std::chrono::duration<double, std::milli>(t_stop-t_start).count()<< " ms\n";
+  _factorized=true;
+
   std::cout<<"Solving"<<std::endl;
   computeResidual();
-  auto t_start = std::chrono::high_resolution_clock::now();
+  
+  t_start = std::chrono::high_resolution_clock::now();
   //_ierr = PCApply(_pc,_rhs_PV->vec(),_sol_PV->vec()); CHKERRQ(_ierr);
   _ierr = KSPSolve(_ksp,_rhs_PV->vec(),_sol_PV->vec()); CHKERRQ(_ierr);
-  auto t_stop = std::chrono::high_resolution_clock::now();
-
+  t_stop = std::chrono::high_resolution_clock::now();
+  
   std::cout<<"Solving time: "<< std::chrono::duration<double, std::milli>(t_stop-t_start).count()<< " ms\n";
   computeResidual();
 

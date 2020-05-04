@@ -15,6 +15,8 @@
 #include "AntidiffusiveFluxes.h"
 #include "StoreOperators.h"
 
+#include "ParrotSolver.h"
+
 class ParrotProblem3;
 
 template <>

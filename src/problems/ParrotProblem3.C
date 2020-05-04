@@ -151,7 +151,7 @@ ParrotProblem3::solve()
         NumericVector<Number> & solOld=_nl->solutionOld() ;
         //computeResidualSys(_nl_libMesh, *_nl->currentSolution(),_rhs_NV);
         computeResidualSys(_nl_libMesh, solOld ,_rhs_NV);
-        //_sol_NV.zero();
+        _sol_NV.zero();
         parrotSolver->solve();
 
     }

@@ -30,12 +30,15 @@ PetscErrorCode ParrotSolver::Construct()
   if (_solverType == 1)
   {
     _ierr = PCSetType(_pc,PCLU); CHKERRQ(_ierr);
-    _ierr = PCFactorSetMatSolverType(_pc,MATSOLVERMUMPS); CHKERRQ(_ierr);
+    //_ierr = PCFactorSetMatSolverType(_pc,MATSOLVERMUMPS); CHKERRQ(_ierr);
+    _ierr = PCFactorSetMatSolverPackage(_pc,MATSOLVERMUMPS); CHKERRQ(_ierr);
+    
   }
   if (_solverType == 2)
   {
     _ierr = PCSetType(_pc,PCCHOLESKY); CHKERRQ(_ierr);
-    _ierr = PCFactorSetMatSolverType(_pc,MATSOLVERMUMPS); CHKERRQ(_ierr);
+    //_ierr = PCFactorSetMatSolverType(_pc,MATSOLVERMUMPS); CHKERRQ(_ierr);
+    _ierr = PCFactorSetMatSolverPackage(_pc,MATSOLVERMUMPS); CHKERRQ(_ierr);
   }
   if (_solverType == 3)
   {

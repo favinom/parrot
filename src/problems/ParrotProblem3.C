@@ -93,6 +93,10 @@ void ParrotProblem3::initialSetup()
 
         _value_dirichlet_bc->close();
 
+        DofMap const & dof_map = _nl->dofMap();
+        _res_m.init(dof_map.n_dofs(), dof_map.n_local_dofs());
+
+
 
     }
 
@@ -169,9 +173,6 @@ ParrotProblem3::computeResidualSys(NonlinearImplicitSystem & /*sys*/,
                                    NumericVector<Number> & residual)
 {
     std::cout<<1<<std::endl;
-
-    DofMap const & dof_map = _nl->dofMap();
-    _res_m.init(dof_map.n_dofs(), dof_map.n_local_dofs());
     _res_m.zero();
     _poro_lumped->vector_mult_add(_res_m,soln);
     std::cout<<2<<std::endl;

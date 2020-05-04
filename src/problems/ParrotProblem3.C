@@ -41,7 +41,10 @@ _sol_NV(_nl->solution()),
 _stab_matrix(_pp_comm),
 _res_m(_pp_comm),
 _use_afc(getParam<bool>("use_AFC")),
-_solverType(getParam<int>("solver_type"))
+_solverType(getParam<int>("solver_type")),
+_regularNodes(_pp_comm),
+_ones(_pp_comm),
+_scale_interpolator(_pp_comm)
 {
  
     if(parameters.isParamValid("operator_userobject"))
@@ -87,18 +90,50 @@ void ParrotProblem3::initialSetup()
         PetscMatrix<Number> * & localmatrix=_storeOperatorsUO[0].StabMatrix();
         localmatrix=&_stab_matrix;
 
+        DofMap const & dof_map = _nl->dofMap();
+        _res_m.init(dof_map.n_dofs(), dof_map.n_local_dofs());
+
+
+                      _ones.init(dof_map.n_dofs(), dof_map.n_local_dofs());
+              _regularNodes.init(dof_map.n_dofs(), dof_map.n_local_dofs());
+        _scale_interpolator.init(dof_map.n_dofs(), dof_map.n_local_dofs());
+
+
         _poro_lumped = _storeOperatorsUO->PoroLumpMassMatrix();
+
+        _interpolator          = _storeOperatorsUO->Interpolator();
+
+        _ones=1;
+        _interpolator->vector_mult_add(_scale_interpolator,_ones);
+        _scale_interpolator.reciprocal();
+
+        //_interpolator->print_matlab("int.m");
+        //_scale_interpolator.print_matlab("scale.m");
 
         _dirichlet_bc = _storeOperatorsUO->BcVec();
         _value_dirichlet_bc = _storeOperatorsUO->ValueBcVec();
 
         _value_dirichlet_bc->close();
 
-        DofMap const & dof_map = _nl->dofMap();
-        _res_m.init(dof_map.n_dofs(), dof_map.n_local_dofs());
+        _ones=1;
+        _ones.close();
 
+        _poro_lumped->vector_mult_add(_regularNodes,_ones);
 
-
+        for (int i=_regularNodes.first_local_index(); i<_regularNodes.last_local_index(); ++i)
+        {
+            Real v=_regularNodes(i);
+            if (std::fabs(v)<1e-10)
+            {
+                _regularNodes.set(i,0.0);
+            }
+            else
+            {
+                _regularNodes.set(i,1.0);
+            }
+        }
+        _regularNodes.close();
+        //_regularNodes.print_matlab("regular.m");
     }
 
 
@@ -156,7 +191,11 @@ ParrotProblem3::solve()
         NumericVector<Number> & solOld=_nl->solutionOld() ;
         //computeResidualSys(_nl_libMesh, *_nl->currentSolution(),_rhs_NV);
         computeResidualSys(_nl_libMesh, solOld ,_rhs_NV);
-        parrotSolver->solve();        
+        parrotSolver->solve();
+
+        //_interpolator->vector_mult_add(_ones,_sol_NV);
+        //_sol_NV.pointwise_mult(_ones,_scale_interpolator);
+
     }
     else
     {
@@ -171,12 +210,24 @@ ParrotProblem3::computeResidualSys(NonlinearImplicitSystem & /*sys*/,
                                    const NumericVector<Number> & soln,
                                    NumericVector<Number> & residual)
 {
+
     _res_m.zero();
     _poro_lumped->vector_mult_add(_res_m,soln);
     Real inv_dt = 1.0/this->dt();
     _res_m.scale(inv_dt);
-    residual.pointwise_mult(_res_m,*_dirichlet_bc);
+
+    _ones.pointwise_mult(_res_m,*_dirichlet_bc);
+    residual.pointwise_mult(_res_m,_regularNodes);
     residual.add(*_value_dirichlet_bc);
+
+    // _res_m.zero();
+    // _poro_lumped->vector_mult_add(_res_m,soln);
+    // Real inv_dt = 1.0/this->dt();
+    // _res_m.scale(inv_dt);
+    // residual.pointwise_mult(_res_m,*_dirichlet_bc);
+    // 
+
+    // residual.add(*_value_dirichlet_bc);
 }
 
 void

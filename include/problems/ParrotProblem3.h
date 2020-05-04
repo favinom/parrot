@@ -75,10 +75,14 @@ public:
 
     std::shared_ptr<PetscVector<Number>> _value_dirichlet_bc;
 
-    //std::shared_ptr<PetscVector<Number>> _sol_vec;
-
     ParrotSolver * parrotSolver;
     int _solverType;
+
+    PetscVector<Number> _regularNodes;
+    PetscVector<Number> _ones;
+
+    std::shared_ptr<PetscMatrix<Number>> _interpolator;
+    PetscVector<Number> _scale_interpolator;
 
 };
 

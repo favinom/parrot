@@ -183,10 +183,14 @@ void AssembleMassMatrix::assemble_mass_matrix(){
     MeshBase::const_element_iterator       el     = mesh.active_local_elements_begin();
     MeshBase::const_element_iterator const end_el = mesh.active_local_elements_end();
 
+
+    std::vector<Real> poroVec;
+
     for ( ; el != end_el; ++el)
     {
     	const Elem * elem = *el;
     	fe->reinit (elem);
+
     	dof_map.dof_indices(elem, dof_indices);
     	dof_map.dof_indices(elem, dof_indices_l);
     	dof_map.dof_indices(elem, dof_indices_p);
@@ -195,6 +199,7 @@ void AssembleMassMatrix::assemble_mass_matrix(){
       dof_map.dof_indices(elem, dof_indices_h);
 
     	int const loc_n=dof_indices.size();
+
 
     	Me.resize(loc_n,loc_n);
     	Me_p.resize(loc_n,loc_n);
@@ -212,28 +217,29 @@ void AssembleMassMatrix::assemble_mass_matrix(){
 
       Me_h.zero();
 
+      Real poro=ComputeMaterialProprties(elem);
+      poroVec.assign(qrule->n_points(), poro);
+      if(_hasMeshModifier)
+      {
+        Real poroFrac=_vector_value.at(_vector_value.size()-1);
+        for (unsigned int qp=0; qp<qrule->n_points(); qp++)
+          if ( _fractureUserObject_ptr[0].isInside(q_points[qp]) )
+              {
+                poroVec.at(qp)=poroFrac;
+              }
+      }
+
     	for (unsigned int i=0; i<phi.size(); i++)
     	{
     		for (unsigned int j=0; j<phi.size(); j++)
     		{
     			for (unsigned int qp=0; qp<qrule->n_points(); qp++)
     			{
-    				Real poro=ComputeMaterialProprties(elem);
-    				if(_hasMeshModifier)
-    				{
-    					if ( _fractureUserObject_ptr[0].isInside(q_points[qp]) )
-    					{
-    						poro=_vector_value.at(_vector_value.size()-1);
-    					}
-    				}
-
-
     				Me  (i,j)   +=  JxW[qp] * phi[i][qp] * phi[j][qp];
-    				Me_p(i,j)   += poro * JxW[qp] * phi[i][qp] * phi[j][qp];
+    				Me_p(i,j)   += poroVec.at(qp) * JxW[qp] * phi[i][qp] * phi[j][qp];
     				Me_l(i,i)   += JxW[qp] * phi[i][qp] * phi[j][qp];
-    				Me_l_p(i,i) += poro * JxW[qp] * phi[i][qp] * phi[j][qp];
+    				Me_l_p(i,i) += poroVec.at(qp) * JxW[qp] * phi[i][qp] * phi[j][qp];
             //Me_h(i,i)    = 0.5;
-
     			}
     		}
     	}
@@ -310,10 +316,6 @@ void AssembleMassMatrix::assemble_mass_matrix(){
     	(*_interpolator).add_matrix (Me_i, dof_indices_i);
 
       //(*_hanging_interpolator).add_matrix (Me_h, dof_indices_h);
-
-    
-
-    
    }
 
    if (!_code_dof_map)
@@ -333,6 +335,18 @@ void AssembleMassMatrix::assemble_mass_matrix(){
    (*_interpolator).close();
    (*_hanging_interpolator).close();
     _hanging_vec->close();
+
+
+    // auto elapsed_di = std::chrono::duration<double, std::milli>(diff_di).count();
+    // std::cout<<"diff_di "<<elapsed_di<<std::endl;
+
+    // auto elapsed_re = std::chrono::duration<double, std::milli>(diff_re).count();
+    // std::cout<<"elapsed_re "<<elapsed_re<<std::endl;
+
+    // auto elapsed_ze = std::chrono::duration<double, std::milli>(diff_re).count();
+    // std::cout<<"elapsed_ze "<<elapsed_ze<<std::endl;
+
+    // exit(1);
    
     _console << "Assemble_Mass_matrix() end "  << std::endl;
     //_interpolator->print_matlab("interp_marco");

@@ -299,20 +299,17 @@ void SolveDiffusion2::AssembleDiffusionOP(EquationSystems & _es, std::string con
     dof_map.dof_indices(elem, dof_indices);
     const unsigned int n_dofs = cast_int<unsigned int>(dof_indices.size());
 
-        // With one variable, we should have the same number of degrees
-        // of freedom as shape functions.
     libmesh_assert_equal_to (n_dofs, phi.size());
 
     ke.resize (n_dofs , n_dofs);
     ke.zero();
 
     Real localPermeability=ComputeMaterialProprties(elem);
-    permeability.resize( qrule->n_points());
+    permeability.assign( qrule->n_points() ,localPermeability );
 
-    for (unsigned int qp=0; qp<qrule->n_points(); qp++)
+    if(_hasMeshModifier)
     {
-      permeability.at(qp)=localPermeability;
-      if(_hasMeshModifier)
+      for (unsigned int qp=0; qp<qrule->n_points(); qp++)
       {
         if ( _fractureUserObject_ptr[0].isInside(q_points[qp]) )
         {
@@ -323,34 +320,13 @@ void SolveDiffusion2::AssembleDiffusionOP(EquationSystems & _es, std::string con
 
     if(_conservativeScheme)
     {
-      if (1)
+      Real sum=0.0;
+      for (unsigned int qp=0; qp<qrule->n_points(); qp++)
       {
-        Real ook=0.0;
-        Real vol=0.0;
-        for (unsigned int qp=0; qp<qrule->n_points(); qp++)
-        {
-          ook+=(JxW[qp]/permeability.at(qp));
-          vol+=JxW[qp];
-        }
-        Real conservativePermeability=vol/ook;
-        for (unsigned int qp=0; qp<qrule->n_points(); qp++)
-        {
-          permeability.at(qp)=conservativePermeability;
-        }
+        sum+=(1.0/permeability.at(qp));
       }
-      else
-      {
-        Real myk=0.0;
-        for (unsigned int qp=0; qp<qrule->n_points(); qp++)
-        {
-          myk+=permeability.at(qp);
-        }
-        Real conservativePermeability=myk/qrule->n_points();
-        for (unsigned int qp=0; qp<qrule->n_points(); qp++)
-        {
-          permeability.at(qp)=conservativePermeability;
-        }
-      }
+      sum=1.0*qrule->n_points()/sum;
+      permeability.assign(qrule->n_points(),sum);
     }  
 
 

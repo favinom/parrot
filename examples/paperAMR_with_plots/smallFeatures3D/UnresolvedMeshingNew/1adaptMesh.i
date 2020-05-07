@@ -42,6 +42,13 @@ fa2_string = '0,90,0,0,-90,-90,-90,-90'
 fa3_string = '0,0,16.2602,-15.8192,90,-90,0,0'
 [../]
 
+[./my]
+type = FractureRefinement
+fractureMeshModifier = fractureUserObject
+refinements = '1 1 1 1'
+outputFileName= 'ciao.e'
+[../]
+
 []
 
 
@@ -51,13 +58,3 @@ fa3_string = '0,0,16.2602,-15.8192,90,-90,0,0'
  line_search = 'none'
  nl_abs_tol = 1e-8
  []
-
-[UserObjects]
-[./soln]
-type = RefineMesh
-fractureMeshModifier = fractureUserObject
-refinements = '1 1 1 1 2 0'
-filename = 'adaptedMesh.e'
-flag=2
-[../]
-[]

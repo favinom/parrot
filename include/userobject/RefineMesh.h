@@ -34,14 +34,19 @@ protected:
 
   FEProblem * _fe_problem;
   EquationSystems & _equationSystems;
-  MooseMesh & _mesh;
-  MeshBase  & _meshBase;
+  MooseMesh & _mooseMesh;
   Parallel::Communicator const & _pp_comm;
+  MeshBase  & _meshBase;
+  UnstructuredMesh * _unstructuredMesh;
+  DistributedMesh  * _distributedMesh;
+  MeshRefinement   * _meshRefinement;
+
+  Mesh * _mesh;
+
   bool _hasMeshModifier;
+  int _flag;
   std::string _meshModifierName;
   std::vector<int> const _refinements;
-  DistributedMesh * _distributedMesh;
-  MeshRefinement  * _meshRefinement;
   std::string  const     _filename;
 
     
@@ -50,28 +55,15 @@ public:
   RefineMesh(const InputParameters & params);
 
   virtual void execute() override {};
-
-  /**
-   * Called before execute() is ever called so that data can be cleared.
-   */
-  virtual void initialize() override ;
-
-  /**
-   * Finalize.  This is called _after_ execute() and _after_ threadJoin()!  This is probably where
-   * you want to do MPI communication!
-   */
   virtual void finalize() override {};
-
-  /**
-   * Must override.
-   *
-   * @param uo The UserObject to be joined into _this_ object.  Take the data from the uo object and
-   * "add" it into the data for this object.
-   */
   virtual void threadJoin(const UserObject &) override {};
 
+  virtual void initialize() override;
   void doAMR();
+  void getInfo(MeshBase * mesh);
   void doUMR(int i);
+
+  void doRefine(UnstructuredMesh & mesh, std::vector<int> const & refinements);
 
 };
 

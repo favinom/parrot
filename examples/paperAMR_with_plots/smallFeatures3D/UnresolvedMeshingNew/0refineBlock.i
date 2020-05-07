@@ -12,13 +12,13 @@ ymin = 0.0
 ymax = 2.25
 zmin = 0.0
 zmax = 1.0
-nx = 9 # 144 # ${nx}
-ny = 20 # 324 # ${ny}
-nz = 9 # 144 # ${nx}
+nx = ${nx}
+ny = ${ny}
+nz = ${nx}
 []
 
 [MeshModifiers]
-active =''
+#active =''
 [./createNewSidesetInflow]
 type = AddSideSetsFromBoundingBox
 boundary_id_old = 'bottom'
@@ -51,11 +51,8 @@ bottom_left = '-0.1 1.8 0.0'
  nl_abs_tol = 1e-8
  []
 
-[UserObjects]
-[./soln]
-type = RefineMesh
-refinements = '1 1 1 1 2 0'
-filename = 'bcMesh.xdr'
-flag=4
-[../]
+
+[Outputs]
+ file_base = refinedMesh
+ xdr=true
 []

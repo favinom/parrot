@@ -10,7 +10,8 @@ solver_type = 3
 []
 
 [Mesh]
- file = refinedMesh_00${adapSteps}_mesh.xdr
+  file = initial_mesh.xdr
+ #refinedMesh_00${adapSteps}_mesh.xdr
   boundary_id = '11 22 23'
   boundary_name = 'inflow outflow1 outflow2'
   parallel_type=DISTRIBUTED
@@ -30,6 +31,14 @@ fa1_string = '0,0,0,0,78.6901,-78.6901,0,0'
 fa2_string = '0,90,0,0,-90,-90,-90,-90'
 fa3_string = '0,0,16.2602,-15.8192,90,-90,0,0'
 [../]
+
+[./my]
+type = FractureRefinement
+fractureMeshModifier = fractureUserObject
+refinements = '0 1 2 0'
+#outputFileName= 'ciao.e'
+[../]
+
 []
 
 [Variables]

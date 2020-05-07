@@ -46,7 +46,7 @@ fa3_string = '0,0,16.2602,-15.8192,90,-90,0,0'
 type = FractureRefinement
 fractureMeshModifier = fractureUserObject
 refinements = '1 1 1 1'
-outputFileName= 'ciao.e'
+#outputFileName= 'ciao.e'
 [../]
 
 []
@@ -57,4 +57,4 @@ outputFileName= 'ciao.e'
  solve_type=LINEAR
  line_search = 'none'
  nl_abs_tol = 1e-8
- []
+[]

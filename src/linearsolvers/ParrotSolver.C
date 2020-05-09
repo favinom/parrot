@@ -44,8 +44,13 @@ PetscErrorCode ParrotSolver::Construct()
   {
     _ierr = PCSetType(_pc,PCHYPRE); CHKERRQ(_ierr);
     _ierr = PCHYPRESetType(_pc, "boomeramg"); CHKERRQ(_ierr);
+
+    // THIS LINE MAY BE REMOVED
+    _ierr = PetscOptionsSetValue(PETSC_NULL,"-pc_hypre_boomeramg_strong_threshold","0.5"); CHKERRQ(_ierr);
+    KSPSetFromOptions(_ksp);
   }
   PetscFunctionReturn(0);
+
 }
 
 ParrotSolver::~ParrotSolver()
@@ -94,6 +99,12 @@ PetscErrorCode ParrotSolver::solve()
   auto t_stop = std::chrono::high_resolution_clock::now();
   std::cout<<"Factorization time: "<< std::chrono::duration<double, std::milli>(t_stop-t_start).count()<< " ms\n";
   _factorized=true;
+
+  std::cout<<"\n\n"<<std::endl;
+  KSPView(_ksp,PETSC_VIEWER_STDOUT_WORLD);
+  std::cout<<"\n\n"<<std::endl;
+  PCView(_pc,PETSC_VIEWER_STDOUT_WORLD);
+  std::cout<<"\n\n"<<std::endl;
 
   std::cout<<"Solving"<<std::endl;
   computeResidual();

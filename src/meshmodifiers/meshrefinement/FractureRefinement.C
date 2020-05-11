@@ -20,6 +20,7 @@ validParams<FractureRefinement>()
     params.addClassDescription("Changes the subdomain ID of elements either (XOR) inside or outside "
                                "the specified box to the specified ID.");    
     params.addRequiredParam<std::string>("fractureMeshModifier","fractureMeshModifier");
+    params.addParam< bool >("doBoundaryRefinement","doBoundaryRefinement");
     params.addParam< std::vector<int> >("refinements","refinements");
     params.addParam<std::string>("outputFileName","outputFileName");
     
@@ -51,12 +52,18 @@ _hasOutputFileName( isParamValid("outputFileName") )
 	{
 		_outputFileName=getParam<std::string >("outputFileName");
 	}
+  if ( isParamValid("doBoundaryRefinement") )
+  {
+    _doBoundary=getParam<bool>("doBoundaryRefinement");
+  }
+  else
+    _doBoundary=false;
 }
 
 void FractureRefinement::modify()
 {
 	_meshBase=&_mesh_ptr->getMesh();
-	Parallel::Communicator const & _pp_comm( _mesh_ptr->getMesh().comm() );
+	//Parallel::Communicator const & _pp_comm( _mesh_ptr->getMesh().comm() );
 	distributedMesh=dynamic_cast<DistributedMesh *>(_meshBase);
 	meshRefinement=new MeshRefinement(distributedMesh[0]);
 
@@ -83,8 +90,16 @@ void FractureRefinement::doAMR()
    		Point center=elem->centroid();
    		Real hmax=elem->hmax();
    		hmax=hmax/2.0*std::sqrt(2.0);
-   		if (_fractureUserObject.isInside(center,hmax))
-   			elem[0].set_refinement_flag(Elem::REFINE);
+      if (_doBoundary)
+      {
+        if (_fractureUserObject.isOnBoundary(center,hmax))
+          elem[0].set_refinement_flag(Elem::REFINE);
+      }
+      else
+      {
+        if (_fractureUserObject.isInside(center,hmax))
+          elem[0].set_refinement_flag(Elem::REFINE);
+      }
    		//else
    		//	elem[0].set_refinement_flag(Elem::DO_NOTHING);
    	}

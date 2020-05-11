@@ -10,6 +10,8 @@
 #include "FractureUserObject.h"
 #include "MooseApp.h"
 
+#define myeps 1e-15
+
 registerMooseObject("parrotApp", FractureUserObject);
 
 template <>
@@ -289,6 +291,121 @@ bool FractureUserObject::isInsideRegion3D(RealVectorValue const & point, int con
             }
             
         }
+    }
+    return false;
+}
+
+
+// THESE HAVE BEEN ADDED TO REFINE THE BOUNDARIES
+bool FractureUserObject::isOnBoundary(RealVectorValue const & point, Real bound) const
+{
+    for (int i=0; i<_fn; ++i)
+    {
+        if (isOnBoundaryOfRegion(point,i,bound))
+            return true;
+    }
+    return false;
+}
+
+bool FractureUserObject::isOnBoundaryOfRegion(RealVectorValue const & point, int i, Real & bound) const
+{
+    bool ret;
+    if (_dim==2)
+    {
+        ret=isOnBoundaryOfRegion2D(point,i,bound);
+    }
+    if (_dim==3)
+    {
+        ret=isOnBoundaryOfRegion3D(point,i,bound);
+    }
+    return ret;
+}
+
+bool FractureUserObject::isOnBoundaryOfRegion2D(RealVectorValue const & point, int const i, Real & bound) const
+{
+    RealVectorValue localbounds;
+    for (int k=0; k<_dim; ++k)
+        localbounds(k)=std::max(_dimension[i](k)/2.0,bound);
+    {
+        Real temp1=std::fabs( _n[i][0]*point-_d[i](0) );
+        if (temp1<localbounds(0))
+        {
+            Real temp2=std::fabs( _n[i][1]*point-_d[i](1) );
+            if ( std::fabs(temp2-localbounds(1)) < bound+myeps ) 
+            {
+                return true;
+            }
+        }
+    }
+    {
+        Real temp2=std::fabs( _n[i][1]*point-_d[i](1) );
+        if (temp2<localbounds(1))
+        {
+            Real temp1=std::fabs( _n[i][0]*point-_d[i](0) );
+            if ( std::fabs(temp1-localbounds(0)) < bound+myeps )
+            {
+                return true;
+            }
+
+        }
+    }
+
+    return false;
+}
+
+bool FractureUserObject::isOnBoundaryOfRegion3D(RealVectorValue const & point, int const i, Real & bound) const
+{   
+    RealVectorValue localbounds;
+    for (int k=0; k<_dim; ++k)
+        localbounds(k)=std::max(_dimension[i](k)/2.0,bound);
+
+    {
+    Real temp1=std::fabs( _n[i][0]*point-_d[i](0) );
+    if (temp1<localbounds(0))
+    {
+        Real temp2=std::fabs( _n[i][1]*point-_d[i](1) );
+        if (temp2<localbounds(1))
+        {
+            Real temp3=std::fabs( _n[i][2]*point-_d[i](2) );
+            if ( std::fabs(temp3-localbounds(2)) <  bound+myeps )
+            {
+                return true;
+            }
+            
+        }
+    }
+    }
+    {
+    Real temp1=std::fabs( _n[i][0]*point-_d[i](0) );
+    if (temp1<localbounds(0))
+    {
+        Real temp2=std::fabs( _n[i][1]*point-_d[i](1) );
+        if ( std::fabs( temp2- localbounds(1)) < bound+myeps )
+        {
+            Real temp3=std::fabs( _n[i][2]*point-_d[i](2) );
+            if (temp3<localbounds(2))
+            {
+                return true;
+            }
+            
+        }
+    }
+    }
+    {
+    Real temp1=std::fabs( _n[i][0]*point-_d[i](0) );
+    if ( std::fabs(temp1-localbounds(0)) < bound+myeps )
+    {
+        Real temp2=std::fabs( _n[i][1]*point-_d[i](1) );
+        if (temp2<localbounds(1))
+        {
+            Real temp3=std::fabs( _n[i][2]*point-_d[i](2) );
+            if (temp3<localbounds(2))
+            {
+                return true;
+            }
+            
+        }
+    }
     }
     return false;
 }

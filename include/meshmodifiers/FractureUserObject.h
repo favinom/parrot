@@ -31,6 +31,12 @@ public:
     FractureUserObject(const InputParameters & parameters);
     
     virtual bool isInsideRegion(RealVectorValue const & point, int const i, Real & bound) const;
+
+
+    // THESE HAVE BEEN ADDED TO REFINE THE BOUNDARIES
+    bool isOnBoundary(RealVectorValue const & point, Real bound) const ;
+    bool isOnBoundaryOfRegion(RealVectorValue const & point, int region, Real & bound) const;
+
         
 protected:
     
@@ -57,5 +63,11 @@ protected:
     
     bool isInsideRegion2D(RealVectorValue const & point, int const i, Real & bound) const;
     bool isInsideRegion3D(RealVectorValue const & point, int const i, Real & bound) const;
+
+
+    // THESE HAVE BEEN ADDED TO REFINE THE BOUNDARIES
+    bool isOnBoundaryOfRegion2D(RealVectorValue const & point, int const i, Real & bound) const;
+    bool isOnBoundaryOfRegion3D(RealVectorValue const & point, int const i, Real & bound) const;
+
     
 };

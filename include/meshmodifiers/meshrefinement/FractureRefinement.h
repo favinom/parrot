@@ -54,4 +54,5 @@ protected:
 	bool _hasOutputFileName;
 	std::string _outputFileName;
 	
+	bool _doBoundary;
 };

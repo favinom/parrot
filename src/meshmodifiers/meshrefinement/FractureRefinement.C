@@ -92,8 +92,10 @@ void FractureRefinement::doAMR()
    		hmax=hmax/2.0*std::sqrt(2.0);
       if (_doBoundary)
       {
-        if (_fractureUserObject.isOnBoundary(center,hmax))
+        if ( _fractureUserObject.isOnBoundary(elem[0]) )
+        {
           elem[0].set_refinement_flag(Elem::REFINE);
+        }
       }
       else
       {

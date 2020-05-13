@@ -12,6 +12,8 @@
 // C++ includes
 #include <string>
 
+#include "libmesh/elem.h"
+
 // MOOSE includes
 #include "RegionUserObject.h"
 
@@ -34,8 +36,8 @@ public:
 
 
     // THESE HAVE BEEN ADDED TO REFINE THE BOUNDARIES
-    bool isOnBoundary(RealVectorValue const & point, Real bound) const ;
-    bool isOnBoundaryOfRegion(RealVectorValue const & point, int region, Real & bound) const;
+    bool isOnBoundary(Elem & elem) const ;
+    bool isOnBoundaryOfRegion(Elem & elem, int region) const;
 
         
 protected:
@@ -55,6 +57,8 @@ protected:
     RealVectorValue * _dimension;
     RealVectorValue ** _n;
     RealVectorValue *_d;
+
+    std::vector< std::vector<RealVectorValue> > _vertex;
     
     void ComputeNormalsFromAngles(RealVectorValue const & angles,
                                   RealVectorValue & n1,
@@ -66,8 +70,8 @@ protected:
 
 
     // THESE HAVE BEEN ADDED TO REFINE THE BOUNDARIES
-    bool isOnBoundaryOfRegion2D(RealVectorValue const & point, int const i, Real & bound) const;
-    bool isOnBoundaryOfRegion3D(RealVectorValue const & point, int const i, Real & bound) const;
+    bool isOnBoundaryOfRegion2D(Elem & elem, int region) const;
+    bool isOnBoundaryOfRegion3D(Elem & elem, int region) const;
 
     
 };

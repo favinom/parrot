@@ -20,14 +20,14 @@ us=3;
 
 correction=0;
 
-createmesh=0;
+createmesh=1;
 
 postprocessor=1;
 
 
 if [ $createmesh -eq 1 ]
 then
-    srun -n ${np} ../../../../parrot-opt -i 0refineBlock.i typeMesh=${typem} origLevel=${ol} adapSteps=${as} Uref=${us}
+    mpirun -n ${np} ../../../../parrot-opt -i 0refineBlock.i typeMesh=${typem} origLevel=${ol} adapSteps=${as} Uref=${us}
     for (( c=0; c<=as+1; c++ ))
     do
     rm refinedMesh_${us}_000$c.xdr
@@ -44,7 +44,7 @@ echo $as
 
 if [ $correction -eq 0 ]
 then
-	srun -n ${np} ../../../../parrot-opt -i 2advection.i typeMesh=${typem} origLevel=${ol} adapSteps=${as} Uref=${us}
+	mpirun -n ${np} ../../../../parrot-opt -i 2advection.i typeMesh=${typem} origLevel=${ol} adapSteps=${as} Uref=${us}
 fi
 if [ $correction -eq 1 ]
 then
@@ -52,8 +52,8 @@ then
 fi
 if [ $postprocessor -eq 1 ]
 then
-    srun -n ${np} ../../../../parrot-opt -i plotLine_master_P.i typeMesh=${typem} origLevel=${ol} adapSteps=${as} Uref=${us}
-    srun -n ${np} ../../../../parrot-opt -i plotLine_master_P_2.i typeMesh=${typem} origLevel=${ol} adapSteps=${as} Uref=${us}
+    mpirun -n ${np} ../../../../parrot-opt -i plotLine_master_P.i typeMesh=${typem} origLevel=${ol} adapSteps=${as} Uref=${us}
+    mpirun -n ${np} ../../../../parrot-opt -i plotLine_master_P_2.i typeMesh=${typem} origLevel=${ol} adapSteps=${as} Uref=${us}
 fi
 
 mv  plotLine_master_P_2_out_sub0.e plotLine_P2_${typem}_${ol}_$us.e

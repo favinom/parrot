@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # number of processors
-np=4;
+np=1;
 #resolution
 res=`expr ${be} + 3 \\* ${fe}`
 echo $res

@@ -51,10 +51,11 @@ PetscErrorCode  KSPSolve_Parrot_PREONLY(KSP ksp)
 
       PCSetType(_ksp_ptr[0].local_pc[0],PCLU);
       PCSetOperators(_ksp_ptr[0].local_pc[0],Hmat,Pmat);
-      PCFactorSetMatSolverPackage(_ksp_ptr[0].local_pc[0],MATSOLVERSUPERLU_DIST); //MATSOLVERSUPERLU_DIST);MATSOLVERMUMPS
+      PCFactorSetMatSolverPackage(_ksp_ptr[0].local_pc[0],MATSOLVERMUMPS); //MATSOLVERSUPERLU_DIST);MATSOLVERMUMPS
           
       std::cout<<"start factorizing?\n";
       auto t_start = std::chrono::high_resolution_clock::now();
+        std::cout<<"done factorizing? 1\n";
       PCSetUp(_ksp_ptr[0].local_pc[0]);
       auto t_end = std::chrono::high_resolution_clock::now();
       std::cout<<"done factorizing?\n";

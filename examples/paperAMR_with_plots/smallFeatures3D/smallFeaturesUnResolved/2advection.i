@@ -90,11 +90,7 @@ full = true
 
 [Outputs]
  file_base = AdvectionOut_${adapSteps}
-# nemesis     = true
- [./Out]
-  type=Nemesis
-  execute_on='FINAL'
-[../]
+exodus     = true
  csv=true
  perf_graph = true
 []

@@ -235,23 +235,27 @@ ParrotProblem3::computeResidualSys(NonlinearImplicitSystem & /*sys*/,
                                    NumericVector<Number> & residual)
 {
 
-    _res_m.zero();
-    _poro_lumped->vector_mult_add(_res_m,soln);
-    Real inv_dt = 1.0/this->dt();
-    _res_m.scale(inv_dt);
+//    _res_m.zero();
+//    _poro_lumped->vector_mult_add(_res_m,soln);
+//    Real inv_dt = 1.0/this->dt();
+//    _res_m.scale(inv_dt);
+//
+//    _ones.pointwise_mult(_res_m,*_dirichlet_bc);
+//    residual.pointwise_mult(_res_m,_regularNodes);
+//    residual.add(*_value_dirichlet_bc);
 
-    _ones.pointwise_mult(_res_m,*_dirichlet_bc);
-    residual.pointwise_mult(_res_m,_regularNodes);
+    _res_m.zero();
+    
+    _poro_lumped->vector_mult(_res_m, soln);
+    
+    residual.pointwise_mult(_res_m,*_dirichlet_bc);
+    
+    Real inv_dt = 1.0/this->dt();
+    
+    residual.scale(inv_dt);
+    
     residual.add(*_value_dirichlet_bc);
 
-//     _res_m.zero();
-//     _poro_lumped->vector_mult_add(_res_m,soln);
-//     Real inv_dt = 1.0/this->dt();
-//     _res_m.scale(inv_dt);
-//     residual.pointwise_mult(_res_m,*_dirichlet_bc);
-//
-//
-//     residual.add(*_value_dirichlet_bc);
 }
 
 void

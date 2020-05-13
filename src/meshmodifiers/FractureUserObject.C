@@ -200,11 +200,11 @@ _fd2_string(getParam<std::string>("fd2_string"))
                 for (int jj=-1; jj<=1; ++++jj)
                     for (int ii=-1; ii<=1; ++++ii)
                     {
-                        counter++;
                         RealVectorValue & t=_vertex.at(i).at(counter);
                         t=RealVectorValue( ii*0.5*_dimension[i](0),jj*0.5*_dimension[i](1),kk*0.5*_dimension[i](2) );
                         t=R*t;
                         t=t+_center[i];
+                        counter++;
                     }
         }
         else

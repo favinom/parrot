@@ -13,7 +13,7 @@ alterRefinement[4]="'1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'" # 18
 declare -a refinement;
 
 refinementType=0
-problemType=0
+problemType=1
 np=20
 
 if [ $refinementType -eq 0 ]
@@ -44,11 +44,12 @@ jobName=run
 errName=run.err
 outName=run.out
 
-runline='bsub -q highmem -m node15 -n '${np}','${np}' -J '${jobName}' -e '${errName}' -o '${outName}' mpirun -n '${np}' ../../../parrot-opt -i '
+# runline='bsub -q highmem -m node15 -n '${np}','${np}' -J '${jobName}' -e '${errName}' -o '${outName}' mpirun -n '${np}' ../../../parrot-opt -i '
+runline='mpirun -n '${np}' ../../../parrot-opt -i '
 export runline
 
-#./runScriptM.sh
-
+./runScriptM.sh
+exit
 len=${#refinement[@]}
 for (( refLev=0; refLev<${len}; refLev++ )) # 
 do

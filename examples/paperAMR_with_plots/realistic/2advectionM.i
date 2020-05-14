@@ -2,18 +2,18 @@
 conservative = false
 []
 
-#[Problem]
-#type = ParrotProblem3
-#use_AFC = true
-#operator_userobject = storeOperatorsUO
-#solver_type = 1
-#[]
-
 [Problem]
-type = ParrotProblem
+type = ParrotProblem3
 use_AFC = true
 operator_userobject = storeOperatorsUO
+solver_type = 3
 []
+
+#[Problem]
+#type = ParrotProblem
+#use_AFC = true
+#operator_userobject = storeOperatorsUO
+#[]
 
 
 [Mesh]
@@ -43,8 +43,8 @@ fd2_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0
 [./my]
 type = FractureRefinement
 fractureMeshModifier = fractureUserObject
-refinements = '1 1 1 1 1 1 1 1 1 1 1 1 1 1' # '1 0 1 0 1 0 1 0 1 0 1 0 1 0' #  1 0 1 0
-#outputFileName= 'ciao.e'
+# refinements = '1 1 1 1 1 1 1 1 1 1 1 1 1 1' # '1 0 1 0 1 0 1 0 1 0 1 0 1 0' #  1 0 1 0
+# outputFileName= 'ciao.e'
 doBoundaryRefinement = true
 [../]
 []
@@ -92,8 +92,8 @@ line_search = none
  dt = 1
  num_steps=36500
 
- petsc_options_iname=' -ksp_type            '   # -mat_view
- petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
+# petsc_options_iname=' -ksp_type            '   # -mat_view
+# petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
 
 
 [./Quadrature] order= NINTH type = GRID [../]
@@ -101,7 +101,7 @@ line_search = none
 []
 
 [Outputs]
- file_base = AdvectionOut
+ file_base = AdvectionOut_${mRefType}_${mRefLev}
  exodus = true
 []
 
@@ -118,8 +118,8 @@ boundary_N_bc=' '
 value_N_bc=' '
 aux_variable=pressure
 fractureMeshModifier = fractureUserObject
-output_file=matrix.e
-solver_type = 1
+output_file=DiffusionOut2_${mRefType}_${mRefLev}
+solver_type = 3
 [../]
 [./storeOperatorsUO]
 type = StoreOperators

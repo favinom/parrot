@@ -4,8 +4,8 @@
  xmax= 700.0
  ymin= 0.0
  ymax= 600.0
- nx = 8
- ny = 8
+ nx = 1
+ ny = 1
  dim = 2
  parallel_type = distributed
 []
@@ -21,12 +21,11 @@ fd1_string = '180.5979,49.5315,28.1273,376.9243,252.1814,268.6406,375.5885,338.2
 fd2_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01'
 [../]
 
-
 [./my]
 type = FractureRefinement
 fractureMeshModifier = fractureUserObject
-refinements = '1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0'
-outputFileName= 'ciao.e'
+# refinements='1 1 1 1' 
+outputFileName= mesh_${mRefType}_${mRefLev}.xdr
 doBoundaryRefinement = true
 [../]
 []
@@ -46,7 +45,7 @@ type = FlowAndTransport
 conservative = true
 fractureMeshModifier =  fractureUserObject
 phi = 0.0 phiFrac = 0.0
-k = 1e-2 kFrac = 1e4
+k = 1e-3 kFrac = 1e3
 [../]
 []
 
@@ -65,18 +64,18 @@ k = 1e-2 kFrac = 1e4
  type=Steady
  solve_type= NEWTON
  line_search = none
- #petsc_options_iname=' -ksp_type -pc_type -pc_factor_shift_type -pc_factor_mat_solver_package '
- #petsc_options_value='  preonly   lu       NONZERO               mumps '
+petsc_options_iname=' -ksp_type -pc_type -pc_factor_shift_type -pc_factor_mat_solver_package '
+petsc_options_value='  preonly   lu       NONZERO               mumps '
  
- petsc_options_iname = '-pc_type -pc_hypre_type'
- petsc_options_value = 'hypre boomeramg'
+# petsc_options_iname = '-pc_type -pc_hypre_type'
+# petsc_options_value = 'hypre boomeramg'
 
 [./Quadrature] order = NINTH type = GRID [../]
 []
 
 
 [Outputs]
- file_base  = DiffusionOut
+ file_base  = DiffusionOut_${mRefType}_${mRefLev}
  exodus     = true
  perf_graph = true
 []

@@ -2,12 +2,19 @@
 conservative = false
 []
 
+#[Problem]
+#type = ParrotProblem3
+#use_AFC = true
+#operator_userobject = storeOperatorsUO
+#solver_type = 1
+#[]
+
 [Problem]
-type = ParrotProblem3
+type = ParrotProblem
 use_AFC = true
 operator_userobject = storeOperatorsUO
-solver_type = 1
 []
+
 
 [Mesh]
  type = GeneratedMesh
@@ -15,8 +22,8 @@ solver_type = 1
  xmax= 700.0
  ymin= 0.0
  ymax= 600.0
- nx = 32
- ny = 32
+ nx = 1 # 32
+ ny = 1 # 32
  dim = 2
  parallel_type = distributed
 []
@@ -36,7 +43,7 @@ fd2_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0
 [./my]
 type = FractureRefinement
 fractureMeshModifier = fractureUserObject
-refinements = '1 0 1 0 1 0 1 0 1 0 1 0 1 0' #  1 0 1 0
+refinements = '1 1 1 1 1 1 1 1 1 1 1 1 1 1' # '1 0 1 0 1 0 1 0 1 0 1 0 1 0' #  1 0 1 0
 #outputFileName= 'ciao.e'
 doBoundaryRefinement = true
 [../]
@@ -85,6 +92,10 @@ line_search = none
  dt = 1
  num_steps=36500
 
+ petsc_options_iname=' -ksp_type            '   # -mat_view
+ petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
+
+
 [./Quadrature] order= NINTH type = GRID [../]
 
 []
@@ -102,9 +113,9 @@ execute_on = 'initial'
 block_id='0'
 value_p ='0.001 1000'
 boundary_D_bc='3 1'
-value_D_bc='1013250.0 0'
-boundary_N_bc=''
-value_N_bc=''
+value_D_bc='1013250.0 0.0' # ' 0'
+boundary_N_bc=' '
+value_N_bc=' '
 aux_variable=pressure
 fractureMeshModifier = fractureUserObject
 output_file=matrix.e

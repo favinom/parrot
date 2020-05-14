@@ -1,5 +1,5 @@
 [Mesh]
- file = refinedMesh_${bepar}_0000_mesh.xdr
+ file = mesh_${mRefType}_${mRefLev}.xdr
  parallel_type = DISTRIBUTED
 []
 
@@ -17,8 +17,7 @@ kernel_coverage_check = false
 [UserObjects]
 [./soln]
 type = SolutionUserObject
-# mesh = AdvectionOut_${bepar}_${amrpar}.e
-mesh = DiffusionOut_${bepar}_${amrpar}.e
+mesh = DiffusionOut_${mRefType}_${mRefLev}.e
 system_variables = pressure
 execute_on = 'initial'
 timestep = 'LATEST'
@@ -39,11 +38,6 @@ execute_on = 'initial'
 type = Transient
 num_steps = 1
 dt = 1
-
-solve_type = 'PJFNK'
-
-petsc_options_iname = '-pc_type -pc_hypre_type'
-petsc_options_value = 'hypre boomeramg'
 []
 
 
@@ -76,7 +70,7 @@ type = TransientMultiApp
 app_type = parrotApp
 execute_on = timestep_end
 input_files = plotLine_horizontal.i
-cli_args = 'Outputs/out/file_base=horizontal_line_${bepar}_${amrpar}'
+cli_args = 'Outputs/out/file_base=horizontal_line_${mRefType}_${mRefLev}'
 [../]
 
 [./sub_vertical]
@@ -84,7 +78,7 @@ type = TransientMultiApp
 app_type = parrotApp
 execute_on = timestep_end
 input_files = plotLine_vertical.i
-cli_args = 'Outputs/out/file_base=vertical_line_${bepar}_${amrpar}'
+cli_args = 'Outputs/out/file_base=vertical_line_${mRefType}_${mRefLev}'
 [../]
 
 []

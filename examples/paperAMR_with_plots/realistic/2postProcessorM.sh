@@ -1,2 +1,2 @@
-$runline scripts/plotLine_master_unresolved.i mRefLev=${refLev} mRefLevName=${refLevName}
+$runline scripts/plotLine_master_unresolved.i mRefLev=${amr} mRefLevName=${amrName} mUmr=${umr}
 

@@ -24,8 +24,8 @@ fd2_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0
 [./my]
 type = FractureRefinement
 fractureMeshModifier = fractureUserObject
-refinements='${mRefLev} 0' 
-outputFileName = mesh_${mRefLevName}.xdr
+refinements='${mRefLev} ${mUmr}' 
+outputFileName = mesh_${mRefLevName}_${mUmr}.xdr
 doBoundaryRefinement = true
 [../]
 []
@@ -75,7 +75,7 @@ petsc_options_value='  preonly   lu       NONZERO               mumps '
 
 
 [Outputs]
- file_base  = DiffusionOut_${mRefLevName}
+ file_base  = DiffusionOut_${mRefLevName}_${mUmr}
  exodus     = true
  perf_graph = true
 []

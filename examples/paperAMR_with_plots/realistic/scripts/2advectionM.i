@@ -22,8 +22,8 @@ solver_type = 3
  xmax= 700.0
  ymin= 0.0
  ymax= 600.0
- nx = 1 # 32
- ny = 1 # 32
+ nx = 7
+ ny = 6
  dim = 2
  parallel_type = distributed
 []
@@ -43,7 +43,7 @@ fd2_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0
 [./my]
 type = FractureRefinement
 fractureMeshModifier = fractureUserObject
-# refinements = '1 1 1 1 1 1 1 1 1 1 1 1 1 1' # '1 0 1 0 1 0 1 0 1 0 1 0 1 0' #  1 0 1 0
+refinements='${mRefLev} 0'
 # outputFileName= 'ciao.e'
 doBoundaryRefinement = true
 [../]
@@ -101,7 +101,7 @@ line_search = none
 []
 
 [Outputs]
- file_base = AdvectionOut_${mRefType}_${mRefLev}
+ file_base = AdvectionOut_${mRefLevName}
  exodus = true
 []
 
@@ -113,13 +113,13 @@ execute_on = 'initial'
 block_id='0'
 value_p ='0.001 1000'
 boundary_D_bc='3 1'
-value_D_bc='1013250.0 0.0' # ' 0'
+value_D_bc='1013250.0 0.0'
 boundary_N_bc=' '
 value_N_bc=' '
 aux_variable=pressure
 fractureMeshModifier = fractureUserObject
-output_file=DiffusionOut2_${mRefType}_${mRefLev}
-solver_type = 3
+output_file=DiffusionOut2_${mRefLevName}.e
+solver_type = 1
 [../]
 [./storeOperatorsUO]
 type = StoreOperators

@@ -1,5 +1,5 @@
 [Mesh]
- file = mesh_${mRefType}_${mRefLev}.xdr
+ file = '../mesh_${mRefLevName}.xdr'
  parallel_type = DISTRIBUTED
 []
 
@@ -17,7 +17,7 @@ kernel_coverage_check = false
 [UserObjects]
 [./soln]
 type = SolutionUserObject
-mesh = DiffusionOut_${mRefType}_${mRefLev}.e
+mesh = '../DiffusionOut_${mRefLevName}.e'
 system_variables = pressure
 execute_on = 'initial'
 timestep = 'LATEST'
@@ -70,7 +70,7 @@ type = TransientMultiApp
 app_type = parrotApp
 execute_on = timestep_end
 input_files = plotLine_horizontal.i
-cli_args = 'Outputs/out/file_base=horizontal_line_${mRefType}_${mRefLev}'
+cli_args = 'Outputs/out/file_base=horizontal_line_${mRefLevName}'
 [../]
 
 [./sub_vertical]
@@ -78,7 +78,7 @@ type = TransientMultiApp
 app_type = parrotApp
 execute_on = timestep_end
 input_files = plotLine_vertical.i
-cli_args = 'Outputs/out/file_base=vertical_line_${mRefType}_${mRefLev}'
+cli_args = 'Outputs/out/file_base=vertical_line_${mRefLevName}'
 [../]
 
 []

@@ -4,8 +4,8 @@
  xmax= 700.0
  ymin= 0.0
  ymax= 600.0
- nx = 1
- ny = 1
+ nx = 7
+ ny = 6
  dim = 2
  parallel_type = distributed
 []
@@ -24,8 +24,8 @@ fd2_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0
 [./my]
 type = FractureRefinement
 fractureMeshModifier = fractureUserObject
-# refinements='1 1 1 1' 
-outputFileName= mesh_${mRefType}_${mRefLev}.xdr
+refinements='${mRefLev} 0' 
+outputFileName = mesh_${mRefLevName}.xdr
 doBoundaryRefinement = true
 [../]
 []
@@ -75,7 +75,7 @@ petsc_options_value='  preonly   lu       NONZERO               mumps '
 
 
 [Outputs]
- file_base  = DiffusionOut_${mRefType}_${mRefLev}
+ file_base  = DiffusionOut_${mRefLevName}
  exodus     = true
  perf_graph = true
 []

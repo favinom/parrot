@@ -60,8 +60,8 @@ doBoundaryRefinement = true
 
 [Materials]
 [./conductivity1] type = FlowAndTransport fractureMeshModifier =  fractureUserObject
-phi = 1.0e11 phiFrac = 1.0e11
-k = 0.001 kFrac = 1000
+phi = ${phiIn} phiFrac = ${phiIn}
+k = 0.000864 kFrac = 864
 pressure = pressure
 [../]
 []
@@ -103,7 +103,7 @@ line_search = none
 [Outputs]
  file_base = AdvectionOut_${mRefLevName}_${mUmr}
  exodus = true
-interval = 365
+ interval = 365
 []
 
 
@@ -129,7 +129,7 @@ type = StoreOperators
 type = AssembleMassMatrix
 operator_userobject = storeOperatorsUO 
 block_id = '0'
-value_p = ' 1.0 1.0'
+value_p = '${phiIn} ${phiIn}'
 execute_on = 'initial'
 constrain_matrix = true
 fractureMeshModifier = fractureUserObject

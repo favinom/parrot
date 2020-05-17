@@ -1,11 +1,29 @@
+[GlobalParams]
+conservative = false
+[]
+
+[Problem]
+type = ParrotProblem3
+use_AFC = true
+operator_userobject = storeOperatorsUO
+solver_type = 1
+[]
+
+#[Problem]
+#type = ParrotProblem
+#use_AFC = true
+#operator_userobject = storeOperatorsUO
+#[]
+
+
 [Mesh]
  type = GeneratedMesh
  xmin= 0.0
  xmax= 700.0
  ymin= 0.0
  ymax= 600.0
- nx = 8
- ny = 8
+ nx = 7
+ ny = 6
  dim = 2
  parallel_type = distributed
 []
@@ -25,58 +43,100 @@ fd2_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0
 [./my]
 type = FractureRefinement
 fractureMeshModifier = fractureUserObject
-refinements = '1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0'
-outputFileName= 'ciao.e'
+refinements='${mRefLev} ${mUmr}'
+# outputFileName= 'ciao.e'
 doBoundaryRefinement = true
 [../]
 []
 
-
 [Variables]
-[./pressure] order=FIRST  family=LAGRANGE [../]
+[./CM] [../]
 []
-
-[Kernels]
-[./myDiffusion] type = PermeabilityDiffusion variable = pressure [../]
+ 
+[AuxVariables]
+[./pressure] [../]
+[./correction] [../]
 []
 
 [Materials]
-[./conductivity1] 
-type = FlowAndTransport
-conservative = true
-fractureMeshModifier =  fractureUserObject
-phi = 0.0 phiFrac = 0.0
-k = 1e-2 kFrac = 1e4
+[./conductivity1] type = FlowAndTransport fractureMeshModifier =  fractureUserObject
+phi = ${phiIn} phiFrac = ${phiIn}
+k = 0.000864 kFrac = 864
+pressure = pressure
 [../]
 []
 
-# observe that with the second BCs the stiffness matrix is SDP and we can use choleski factorization
+[Kernels]
+active='time upwind'
+[upwind] type = Advection variable = CM [../]
+[./time] type = PorosityTimeDerivative variable = CM lumping = true [../]
+[]
+
 [BCs]
-[./outflowBC1] type = DirichletBC variable = pressure value =       0.0  boundary = right [../]
-[./outflowBC2] type = DirichletBC variable = pressure value = 1013250.0  boundary = left  [../]
+[./u_injection_left] type = DirichletBC boundary = left variable = CM value='1.0' [../]
 []
- 
+
 [Preconditioning]
-[./prec] type = SMP full = true ksp_norm = default [../]
+[./SMP]
+type = SMP
+full = true
+[../]
 []
- 
+
 [Executioner]
 
- type=Steady
- solve_type= NEWTON
- line_search = none
- #petsc_options_iname=' -ksp_type -pc_type -pc_factor_shift_type -pc_factor_mat_solver_package '
- #petsc_options_value='  preonly   lu       NONZERO               mumps '
- 
- petsc_options_iname = '-pc_type -pc_hypre_type'
- petsc_options_value = 'hypre boomeramg'
+type = Transient
+solve_type= LINEAR
+line_search = none
 
-[./Quadrature] order = NINTH type = GRID [../]
+ dt = 1
+ num_steps=36500
+
+# petsc_options_iname=' -ksp_type            '   # -mat_view
+# petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
+
+
+[./Quadrature] order= NINTH type = GRID [../]
+
 []
-
 
 [Outputs]
- file_base  = DiffusionOut
- exodus     = true
- perf_graph = true
+ file_base = AdvectionOut_${mRefLevName}_${mUmr}
+ exodus = true
+ interval = 365
 []
+
+
+[UserObjects]
+[./soln]
+type = SolveDiffusion2
+execute_on = 'initial'
+block_id='0'
+value_p ='0.001 1000'
+boundary_D_bc='3 1'
+value_D_bc='1013250.0 0.0'
+boundary_N_bc=' '
+value_N_bc=' '
+aux_variable=pressure
+fractureMeshModifier = fractureUserObject
+output_file=DiffusionOut2_${mRefLevName}_${mUmr}.e
+solver_type = 1
+[../]
+[./storeOperatorsUO]
+type = StoreOperators
+[../]
+[./MassAssembly]
+type = AssembleMassMatrix
+operator_userobject = storeOperatorsUO 
+block_id = '0'
+value_p = '${phiIn} ${phiIn}'
+execute_on = 'initial'
+constrain_matrix = true
+fractureMeshModifier = fractureUserObject
+
+dc_boundaries = '3'
+value_D_bc='1'
+dc_variables='CM'
+[../]
+[]
+

@@ -1,22 +1,11 @@
-[GlobalParams]
-conservative = false
-[]
-
-[Problem]
-type = ParrotProblem3
-use_AFC = true
-operator_userobject = storeOperatorsUO
-solver_type = 1
-[]
-
 [Mesh]
  type = GeneratedMesh
  xmin= 0.0
  xmax= 700.0
  ymin= 0.0
  ymax= 600.0
- nx = 32
- ny = 32
+ nx = 7
+ ny = 6
  dim = 2
  parallel_type = distributed
 []
@@ -32,99 +21,61 @@ fd1_string = '180.5979,49.5315,28.1273,376.9243,252.1814,268.6406,375.5885,338.2
 fd2_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01'
 [../]
 
-
 [./my]
 type = FractureRefinement
 fractureMeshModifier = fractureUserObject
-refinements = '1 0 1 0 1 0 1 0 1 0 1 0 1 0' #  1 0 1 0
-#outputFileName= 'ciao.e'
+refinements='${mRefLev} ${mUmr}' 
+outputFileName = mesh_${mRefLevName}_${mUmr}.xdr
 doBoundaryRefinement = true
 [../]
 []
 
-[Variables]
-[./CM] [../]
-[]
- 
-[AuxVariables]
-[./pressure] [../]
-[./correction] [../]
-[]
 
-[Materials]
-[./conductivity1] type = FlowAndTransport fractureMeshModifier =  fractureUserObject
-phi = 1.0 phiFrac = 1.0
-k = 0.001 kFrac = 1000
-pressure = pressure
-[../]
+[Variables]
+[./pressure] order=FIRST  family=LAGRANGE [../]
 []
 
 [Kernels]
-active='time upwind'
-[upwind] type = Advection variable = CM [../]
-[./time] type = PorosityTimeDerivative variable = CM lumping = true [../]
+[./myDiffusion] type = PermeabilityDiffusion variable = pressure [../]
 []
 
-[BCs]
-[./u_injection_left] type = DirichletBC boundary = left variable = CM value='1.0' [../]
-[]
-
-[Preconditioning]
-[./SMP]
-type = SMP
-full = true
+[Materials]
+[./conductivity1] 
+type = FlowAndTransport
+conservative = true
+fractureMeshModifier =  fractureUserObject
+phi = 0.0 phiFrac = 0.0
+k = 1e-3 kFrac = 1e3
 [../]
 []
 
+# observe that with the second BCs the stiffness matrix is SDP and we can use choleski factorization
+[BCs]
+[./outflowBC1] type = DirichletBC variable = pressure value =       0.0  boundary = right [../]
+[./outflowBC2] type = DirichletBC variable = pressure value = 1013250.0  boundary = left  [../]
+[]
+ 
+[Preconditioning]
+[./prec] type = SMP full = true ksp_norm = default [../]
+[]
+ 
 [Executioner]
 
-type = Transient
-solve_type= LINEAR
-line_search = none
+ type=Steady
+ solve_type= NEWTON
+ line_search = none
+petsc_options_iname=' -ksp_type -pc_type -pc_factor_shift_type -pc_factor_mat_solver_package '
+petsc_options_value='  preonly   lu       NONZERO               mumps '
+ 
+# petsc_options_iname = '-pc_type -pc_hypre_type'
+# petsc_options_value = 'hypre boomeramg'
 
- dt = 1
- num_steps=36500
-
-[./Quadrature] order= NINTH type = GRID [../]
-
+[./Quadrature] order = NINTH type = GRID [../]
 []
+
 
 [Outputs]
- file_base = AdvectionOut
- exodus = true
+ file_base  = DiffusionOut_${mRefLevName}_${mUmr}
+ exodus     = true
+ perf_graph = true
 []
-
-
-[UserObjects]
-[./soln]
-type = SolveDiffusion2
-execute_on = 'initial'
-block_id='0'
-value_p ='0.001 1000'
-boundary_D_bc='3 1'
-value_D_bc='1013250.0 0'
-boundary_N_bc=''
-value_N_bc=''
-aux_variable=pressure
-fractureMeshModifier = fractureUserObject
-output_file=matrix.e
-solver_type = 1
-[../]
-[./storeOperatorsUO]
-type = StoreOperators
-[../]
-[./MassAssembly]
-type = AssembleMassMatrix
-operator_userobject = storeOperatorsUO 
-block_id = '0'
-value_p = ' 1.0 1.0'
-execute_on = 'initial'
-constrain_matrix = true
-fractureMeshModifier = fractureUserObject
-
-dc_boundaries = '3'
-value_D_bc='1'
-dc_variables='CM'
-[../]
-[]
-

@@ -7,6 +7,6 @@ fi
 
 if [ $problemType -eq 1 ]
 then
-$runline scripts/2advectionM.i mRefLev=${amr} mRefLevName=${amrName} mUmr=${umr} phiIn=0.00001157407
+$runline scripts/2advectionM.i mRefLev=${amr} mRefLevName=${amrName} mUmr=${umr} phiIn=1.0
 fi
 

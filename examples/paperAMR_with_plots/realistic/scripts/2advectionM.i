@@ -61,7 +61,7 @@ doBoundaryRefinement = true
 [Materials]
 [./conductivity1] type = FlowAndTransport fractureMeshModifier =  fractureUserObject
 phi = ${phiIn} phiFrac = ${phiIn}
-k = 1e-14 kFrac = 1e-8
+k = 1e-7 kFrac = 1e-1
 pressure = pressure
 [../]
 []

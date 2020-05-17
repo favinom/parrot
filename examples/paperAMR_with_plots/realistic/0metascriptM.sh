@@ -1,5 +1,5 @@
 problemType=1
-np=4
+np=1
 
 declare -a amrList
 declare -a umrList

@@ -51,6 +51,15 @@ source_variable = P_aux
 variable = uh
 [../]
 
+[./toMaria]
+type = MultiAppProjectionTransfer
+direction = to_multiapp
+multi_app = sub_maria
+source_variable = P_aux
+variable = uh
+[../]
+
+
 [./toSubVertical]
 type = MultiAppProjectionTransfer
 direction = to_multiapp
@@ -80,5 +89,14 @@ execute_on = timestep_end
 input_files = plotLine_vertical.i
 cli_args = 'Outputs/out/file_base=vertical_line_${mRefLevName}_${mUmr}'
 [../]
+
+[./sub_maria]
+type = TransientMultiApp
+app_type = parrotApp
+execute_on = timestep_end
+input_files = plotLine_maria.i
+cli_args = 'Outputs/out/file_base=maria_line_${mRefLevName}_${mUmr}'
+[../]
+
 
 []

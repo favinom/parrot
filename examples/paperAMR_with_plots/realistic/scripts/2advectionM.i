@@ -6,7 +6,7 @@ conservative = false
 type = ParrotProblem3
 use_AFC = true
 operator_userobject = storeOperatorsUO
-solver_type = 3
+solver_type = 1
 []
 
 #[Problem]
@@ -43,7 +43,7 @@ fd2_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0
 [./my]
 type = FractureRefinement
 fractureMeshModifier = fractureUserObject
-refinements='${mRefLev} 0'
+refinements='${mRefLev} ${mUmr}'
 # outputFileName= 'ciao.e'
 doBoundaryRefinement = true
 [../]
@@ -60,7 +60,7 @@ doBoundaryRefinement = true
 
 [Materials]
 [./conductivity1] type = FlowAndTransport fractureMeshModifier =  fractureUserObject
-phi = 1.0 phiFrac = 1.0
+phi = 1.0e11 phiFrac = 1.0e11
 k = 0.001 kFrac = 1000
 pressure = pressure
 [../]
@@ -101,8 +101,9 @@ line_search = none
 []
 
 [Outputs]
- file_base = AdvectionOut_${mRefLevName}
+ file_base = AdvectionOut_${mRefLevName}_${mUmr}
  exodus = true
+interval = 365
 []
 
 
@@ -118,7 +119,7 @@ boundary_N_bc=' '
 value_N_bc=' '
 aux_variable=pressure
 fractureMeshModifier = fractureUserObject
-output_file=DiffusionOut2_${mRefLevName}.e
+output_file=DiffusionOut2_${mRefLevName}_${mUmr}.e
 solver_type = 1
 [../]
 [./storeOperatorsUO]

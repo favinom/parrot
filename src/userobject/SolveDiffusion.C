@@ -155,13 +155,13 @@ int SolveDiffusion::solve(EquationSystems & es)
   CHKERRQ(ierr);
   ierr = PCSetOperators(_diff_problem, mat_PM.mat(),mat_PM.mat());
   CHKERRQ(ierr);  
-  ierr = PCFactorSetMatSolverPackage(_diff_problem,MATSOLVERSUPERLU_DIST);
+  ierr = PCFactorSetMatSolverPackage(_diff_problem,MATSOLVERMUMPS);
   CHKERRQ(ierr);
-  ierr = PCSetType(_diff_problem,PCHYPRE);
-  CHKERRQ(ierr);
-  
-  ierr = PCHYPRESetType(_diff_problem, "boomeramg");
-  CHKERRQ(ierr);
+//  ierr = PCSetType(_diff_problem,PCHYPRE);
+//  CHKERRQ(ierr);
+//  
+//  ierr = PCHYPRESetType(_diff_problem, "boomeramg");
+//  CHKERRQ(ierr);
   
   ierr = PCApply(_diff_problem,rhs_PV.vec(),sol_PV.vec()); CHKERRQ(ierr);
   CHKERRQ(ierr);

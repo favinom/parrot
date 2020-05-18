@@ -57,15 +57,20 @@ line_search = none
 petsc_options_iname=' -ksp_type            ' # -mat_view
 petsc_options_value='  ksp_parrot_preonly  ' # ::ascii_matlab
 
+start_time = 0.0
+end_time = 0.5
 dt = 0.0025
-num_steps=200
 
 []
 
 [Outputs]
 file_base = AdvectionOut_${mBe}_${mFe}
-exodus = true
-csv=true
+[./exodus]
+type = Exodus
+sync_only = true
+sync_times = '0.01 0.1 0.5'
+[../]
+csv = true
 perf_graph = true
 []
 
@@ -82,7 +87,7 @@ boundary_N_bc='3 '
 value_N_bc='-1.0 '
 aux_variable='pressure'
 solver_type = 3
-output_file=DiffusionOut2_${mBe}_${mFe}
+output_file=DiffusionOut2_${mBe}_${mFe}.e
 [../]
 
 [./storeOperatorsUO]
@@ -123,7 +128,6 @@ execute_on = 'initial'
 []
 
 [Postprocessors]
-active=''
 [./int0] type = IntegralSolutionOverRegionFast region = 0 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
 [./int1] type = IntegralSolutionOverRegionFast region = 1 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
 [./int2] type = IntegralSolutionOverRegionFast region = 2 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]

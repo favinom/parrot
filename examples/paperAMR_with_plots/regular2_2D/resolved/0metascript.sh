@@ -1,6 +1,7 @@
 createMesh=0
-doRun=1
+doRun=0
 correction=0
+doPost=1
 np=4
 
 declare -a beList
@@ -47,14 +48,10 @@ do
 		export correction
 		./2runScript.sh
 	fi
-
-
-#	exit
-
-#	if [ $doPost -eq 1 ]
-#	then
-#		./2postProcessorM.sh
-#	fi
+	if [ $doPost -eq 1 ]
+	then
+		./3postProcessor.sh
+	fi
 #	if [ $doConv -eq 1 ]
 #	then
 #		./3conversionM.sh

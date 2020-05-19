@@ -7,7 +7,7 @@ np=4
 declare -a beList
 declare -a feList
 
-beList[0]='160';   feList[0]='2';
+beList[0]='80';   feList[0]='2';
 #amrList[1]='10'   umrList[1]='0';
 #amrList[2]='11'   umrList[2]='0';
 #amrList[3]='10'   umrList[3]='1';
@@ -18,8 +18,12 @@ parrotString='mpirun -n ${np} ../../../../parrot-opt -i'
 matlabString='/Applications/MATLAB_R2018b.app/bin/matlab -nodesktop -nosplash -r'
 # matlabString='/soft/matlab/r2019a/bin/matlab -nodesktop -nosplash -r'
 
+pythonString='/Applications/ParaView-5.5.1.app/Contents/bin/pvpython'
+
+
 export parrotString
 export matlabString
+export pythonString
 
 len=${#beList[@]}
 
@@ -34,8 +38,9 @@ do
 	jobName=run_${be}_${fe}
 	errName=run_${be}_${fe}.err
 	outName=run_${be}_${fe}.out
+	node=node15
 
-	# parrotString='bsub -q highmem -m node15 -n '${np}','${np}' -J '${jobName}' -e '${errName}' -o '${outName}' mpirun -n '${np}' ../../../../parrot-opt -i '
+	# parrotString='bsub -q highmem -m $node -n '${np}','${np}' -J '${jobName}' -e '${errName}' -o '${outName}' mpirun -n '${np}' ../../../../parrot-opt -i '
 	# export parrotString
 
 	if [ $createMesh -eq 1 ]
@@ -52,10 +57,6 @@ do
 	then
 		./3postProcessor.sh
 	fi
-#	if [ $doConv -eq 1 ]
-#	then
-#		./3conversionM.sh
-#	fi
 	
 done
 

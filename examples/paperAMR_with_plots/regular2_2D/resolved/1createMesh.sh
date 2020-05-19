@@ -5,16 +5,16 @@ res=`expr ${be} + 3 \\* ${fe}`
 echo $res
 # number of adaptive steps
 
-$parrotString scripts/0generateMesh.i resolution=${res} mBe=${be} mFe=${fe} --mesh-only
-./separateFile.sh uniform_${be}_${fe}.xda ${res}
+$clusterString $parrotString scripts/0generateMesh.i resolution=${res} mBe=${be} mFe=${fe} --mesh-only
+$clusterString ./separateFile.sh uniform_${be}_${fe}.xda ${res}
 
 commandString='faimesh('${be}','${fe}')'
 
-$matlabString ${commandString}
+$clusterString $matlabString ${commandString}
 
-./uniteFile.sh adapted_${be}_${fe}.xda
+$clusterString ./uniteFile.sh adapted_${be}_${fe}.xda
 
-$parrotString scripts/1refineBlock.i mBe=${be} mFe=${fe} --mesh-only
+$clusterString $parrotString scripts/1refineBlock.i mBe=${be} mFe=${fe} --mesh-only
 
 exit
 # up to now, I just exit as we never used adaptivity for these simulations.

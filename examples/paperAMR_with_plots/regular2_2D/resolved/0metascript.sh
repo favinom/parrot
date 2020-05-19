@@ -1,5 +1,5 @@
-createMesh=0
-doRun=0
+createMesh=1
+doRun=1
 correction=0
 doPost=1
 np=4
@@ -12,7 +12,7 @@ beList[0]='80';   feList[0]='2';
 #amrList[2]='11'   umrList[2]='0';
 #amrList[3]='10'   umrList[3]='1';
 
-parrotString='mpirun -n ${np} ../../../../parrot-opt -i'
+parrotString='mpirun -n ${np} ../../../../parrot-opt -i '
 
 # matlabString='Users/mariagiuseppinanestola/Desktop/MATLAB_R2014b.app/bin/matlab -nodesktop -nosplash -r'
 matlabString='/Applications/MATLAB_R2018b.app/bin/matlab -nodesktop -nosplash -r'
@@ -40,8 +40,8 @@ do
 	outName=run_${be}_${fe}.out
 	node=node15
 
-	# parrotString='bsub -q highmem -m $node -n '${np}','${np}' -J '${jobName}' -e '${errName}' -o '${outName}' mpirun -n '${np}' ../../../../parrot-opt -i '
-	# export parrotString
+	# clusterString='bsub -q highmem -m $node -n '${np}','${np}' -J '${jobName}' -e '${errName}' -o '${outName}'
+	export clusterString
 
 	if [ $createMesh -eq 1 ]
 	then

@@ -40,7 +40,7 @@ do
 	outName=run_${be}_${fe}.out
 	nod=node15
 
-	clusterString='bsub -q highmem -m '$nod' -n 16,16 -J '${jobName}' -e '${errName}' -o '${outName}
+	#clusterString='bsub -q highmem -m '$nod' -n 16,16 -J '${jobName}' -e '${errName}' -o '${outName}
 	echo $clusterString
 	export clusterString
 

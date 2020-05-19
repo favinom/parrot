@@ -12,14 +12,14 @@ beList[0]='80';   feList[0]='2';
 #amrList[2]='11'   umrList[2]='0';
 #amrList[3]='10'   umrList[3]='1';
 
-parrotString='mpirun -n ${np} ../../../../parrot-opt -i '
+parrotString='mpirun -n '${np}' ../../../../parrot-opt -i '
 
 # matlabString='Users/mariagiuseppinanestola/Desktop/MATLAB_R2014b.app/bin/matlab -nodesktop -nosplash -r'
-matlabString='/Applications/MATLAB_R2018b.app/bin/matlab -nodesktop -nosplash -r'
-# matlabString='/soft/matlab/r2019a/bin/matlab -nodesktop -nosplash -r'
+# matlabString='/Applications/MATLAB_R2018b.app/bin/matlab -nodesktop -nosplash -r'
+matlabString='/soft/matlab/r2019a/bin/matlab -nodesktop -nosplash -r'
 
 pythonString='/Applications/ParaView-5.5.1.app/Contents/bin/pvpython'
-
+pythonString='~/Applications/ParaView-5.8.0-MPI-Linux-Python3.7-64bit/bin/pvpython'
 
 export parrotString
 export matlabString
@@ -38,16 +38,16 @@ do
 	jobName=run_${be}_${fe}
 	errName=run_${be}_${fe}.err
 	outName=run_${be}_${fe}.out
-	node=node15
+	nod=node15
 
-	# clusterString='bsub -q highmem -m $node -n '${np}','${np}' -J '${jobName}' -e '${errName}' -o '${outName}'
+	clusterString='bsub -q highmem -m '$nod' -n 16,16 -J '${jobName}' -e '${errName}' -o '${outName}
+	echo $clusterString
 	export clusterString
 
 	if [ $createMesh -eq 1 ]
 	then
 		./1createMesh.sh
 	fi
-
 	if [ $doRun -eq 1 ]
 	then
 		export correction

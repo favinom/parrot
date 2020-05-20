@@ -100,11 +100,11 @@ PetscErrorCode ParrotSolver::solve()
   std::cout<<"Factorization time: "<< std::chrono::duration<double, std::milli>(t_stop-t_start).count()<< " ms\n";
   _factorized=true;
 
-  std::cout<<"\n\n"<<std::endl;
-  KSPView(_ksp,PETSC_VIEWER_STDOUT_WORLD);
-  std::cout<<"\n\n"<<std::endl;
-  PCView(_pc,PETSC_VIEWER_STDOUT_WORLD);
-  std::cout<<"\n\n"<<std::endl;
+  //std::cout<<"\n\n"<<std::endl;
+  //KSPView(_ksp,PETSC_VIEWER_STDOUT_WORLD);
+  //std::cout<<"\n\n"<<std::endl;
+  //PCView(_pc,PETSC_VIEWER_STDOUT_WORLD);
+  //std::cout<<"\n\n"<<std::endl;
 
   std::cout<<"Solving"<<std::endl;
   computeResidual();

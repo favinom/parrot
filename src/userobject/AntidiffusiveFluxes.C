@@ -200,7 +200,7 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 
     _J->vector_mult(_tmp, _sol_fluxes);
 
-    _L->get_diagonal(_inv); 
+    _L->get_diagonal(_inv);
 
     _inv.reciprocal();
 
@@ -413,7 +413,7 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
         
         Real value_p = 0.0;
 
-        if(std::abs(_P_p)>1e-16) {
+        if(std::abs(_P_p)>1e-8) {
             
             value_p = _Q_p/_P_p;
             //std::cout<<"value_p==>"<<_P_p<<std::endl;
@@ -421,7 +421,7 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 
         Real value_m = 0.0;
 
-        if(std::abs(_P_m)>1e-16) {
+        if(std::abs(_P_m)>1e-8) {
 
             value_m = _Q_m/_P_m;
         }
@@ -559,10 +559,10 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
         if(it == zero_rows_fluxes.end()){
 
             //std::cout<<"_a_bar(row)"<<_a_bar(row)<<std::endl;
-            //std::cout<<"_inv(row)"<<_inv(row)<<std::endl;
+            //std::cout<<"_inv_p(row)"<<_inv_p(row)<<std::endl;
             
 
-            auto f_bar = _a_bar(row) * _inv(row) * dt;
+            auto f_bar = _a_bar(row) * _inv_p(row) * dt;
 
             (*f).set(row,f_bar);
         }

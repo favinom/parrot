@@ -7,12 +7,14 @@ type = ParrotProblem3
 use_AFC = true
 operator_userobject = storeOperatorsUO
 solver_type = 1
+#antidiffusive_fluxes=antidiffusive_fluxes
 []
 
 #[Problem]
 #type = ParrotProblem
 #use_AFC = true
 #operator_userobject = storeOperatorsUO
+#antidiffusive_fluxes = antidiffusive_fluxes
 #[]
 
 
@@ -22,8 +24,8 @@ solver_type = 1
  xmax= 700.0
  ymin= 0.0
  ymax= 600.0
- nx = 7
- ny = 6
+ nx = 700
+ ny = 600
  dim = 2
  parallel_type = distributed
 []
@@ -61,7 +63,7 @@ doBoundaryRefinement = true
 [Materials]
 [./conductivity1] type = FlowAndTransport fractureMeshModifier =  fractureUserObject
 phi = ${phiIn} phiFrac = ${phiIn}
-k = 1e-7 kFrac = 1e-1
+k = 8.64e-10 kFrac = 8.64e-4
 pressure = pressure
 [../]
 []
@@ -89,11 +91,11 @@ type = Transient
 solve_type= LINEAR
 line_search = none
 
- dt = 1
- num_steps=36500
+ dt = 73
+ end_time = 36500
 
-# petsc_options_iname=' -ksp_type            '   # -mat_view
-# petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
+petsc_options_iname=' -ksp_type            '   # -mat_view
+petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
 
 
 [./Quadrature] order= NINTH type = GRID [../]
@@ -103,7 +105,7 @@ line_search = none
 [Outputs]
  file_base = AdvectionOut_${mRefLevName}_${mUmr}
  exodus = true
- interval = 365
+ interval = 5
 []
 
 
@@ -138,5 +140,15 @@ dc_boundaries = '3'
 value_D_bc='1'
 dc_variables='CM'
 [../]
+
+
+#[./antidiffusive_fluxes]
+# type = AntidiffusiveFluxes
+# operator_userobject = storeOperatorsUO
+# execute_on = 'timestep_end'
+# dc_boundaries = '3 1'
+# WriteCorrection=true
+#[../]
+
 []
 

@@ -25,7 +25,7 @@ fd2_string = '0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0
 type = FractureRefinement
 fractureMeshModifier = fractureUserObject
 refinements='${mRefLev} ${mUmr}' 
-outputFileName = mesh_${mRefLevName}_${mUmr}.xdr
+outputFileName = mesh_${mRefLevName}_${mUmr}.e
 doBoundaryRefinement = true
 [../]
 []

@@ -3,10 +3,10 @@ np=4
 
 declare -a amrList
 declare -a umrList
-amrList[0]='9';   umrList[0]='0';
-amrList[1]='10'   umrList[1]='0';
-amrList[2]='11'   umrList[2]='0';
-amrList[3]='10'   umrList[3]='1';
+amrList[0]='4';   umrList[0]='0';
+#amrList[1]='10'   umrList[1]='0';
+#amrList[2]='11'   umrList[2]='0';
+#amrList[3]='10'   umrList[3]='1';
 
 doRun=1;
 doPost=0;

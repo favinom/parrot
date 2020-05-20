@@ -2,6 +2,7 @@
 type = ParrotProblem
 use_AFC = true
 operator_userobject = storeOperatorsUO
+antidiffusive_fluxes=antidiffusive_fluxes
 []
 
 [Mesh]
@@ -35,20 +36,20 @@ fd2_string = '0.01'
 [./conductivity1]
 type = FlowAndTransport
 block = 0
-k = 1e-6 phi =0.2
+k = 1 phi =2.0e5
 pressure = P_aux
 conservative = false
 fractureMeshModifier =  fractureUserObject
-kFrac=1e-1    phiFrac=0.4
+kFrac=1e5    phiFrac=4e5
 [../]
 [./conductivity2]
 type = FlowAndTransport
 block = 2
-k = 1e-5 phi =0.25
+k = 10 phi =2.5e5
 pressure = P_aux
 conservative = false
 fractureMeshModifier =  fractureUserObject
-kFrac=1e-1    phiFrac=0.4
+kFrac=1e5    phiFrac=4e5
 [../]
 []
 
@@ -87,7 +88,7 @@ num_steps=100
 []
 
 [Outputs]
-file_base = AdvectionOut_${adapSteps}
+file_base = AdvectionOut1000_${adapSteps}
 exodus = true
 csv=true
 perf_graph = true
@@ -100,7 +101,7 @@ perf_graph = true
 type = SolveDiffusion
 execute_on = 'initial'
 block_id='0 2'
-value_p ='1e-6 1e-5 1e-1'
+value_p ='1 10 1e5'
 boundary_D_bc = '11 22'
 value_D_bc='4.0 1.0'
 boundary_N_bc = ''
@@ -115,7 +116,7 @@ conservative=false
 type = AssembleMassMatrix
 operator_userobject = storeOperatorsUO
 block_id = '0   2'
-value_p = ' 0.2 0.25 0.4'
+value_p = ' 2e5 2.5e5 4e4'
 execute_on = 'initial'
 constrain_matrix = true
 dc_boundaries = '11'
@@ -123,7 +124,14 @@ dc_variables='CM'
 value_D_bc='0.01'
 fractureMeshModifier = fractureUserObject
 [../]
-
+ 
+[./antidiffusive_fluxes]
+ type = AntidiffusiveFluxes
+ operator_userobject = storeOperatorsUO
+ execute_on = 'timestep_end'
+ dc_boundaries = '11 22'
+ WriteCorrection=false
+[../]
 
 [./storeOperatorsUO]
 type = StoreOperators

@@ -24,8 +24,8 @@ solver_type = 1
  xmax= 700.0
  ymin= 0.0
  ymax= 600.0
- nx = 700
- ny = 600
+ nx = 70
+ ny = 60
  dim = 2
  parallel_type = distributed
 []
@@ -104,8 +104,14 @@ petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
 
 [Outputs]
  file_base = AdvectionOut_${mRefLevName}_${mUmr}
- exodus = true
+[./exod]
+ type  = Exodus
  interval = 5
+[../]
+[./exod2]
+ type = CSV
+[../]
+
 []
 
 
@@ -141,6 +147,12 @@ value_D_bc='1'
 dc_variables='CM'
 [../]
 
+[./assembleVolumeVectors]
+type=AssembleVolumeVectors
+RegionMeshModifier = fractureUserObject
+execute_on = 'initial'
+[../]
+
 
 #[./antidiffusive_fluxes]
 # type = AntidiffusiveFluxes
@@ -152,3 +164,135 @@ dc_variables='CM'
 
 []
 
+
+
+[Postprocessors]
+[./int0] type = IntegralSolutionOverRegionFast region = 0 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int1] type = IntegralSolutionOverRegionFast region = 1 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int2] type = IntegralSolutionOverRegionFast region = 2 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int3] type = IntegralSolutionOverRegionFast region = 3 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int4] type = IntegralSolutionOverRegionFast region = 4 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int5] type = IntegralSolutionOverRegionFast region = 5 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int6] type = IntegralSolutionOverRegionFast region = 6 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int7] type = IntegralSolutionOverRegionFast region = 7 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int8] type = IntegralSolutionOverRegionFast region = 8 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int9] type = IntegralSolutionOverRegionFast region = 9 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int10] type = IntegralSolutionOverRegionFast region = 10 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int11] type = IntegralSolutionOverRegionFast region = 11 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int12] type = IntegralSolutionOverRegionFast region = 12 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int13] type = IntegralSolutionOverRegionFast region = 13 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int14] type = IntegralSolutionOverRegionFast region = 14 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int15] type = IntegralSolutionOverRegionFast region = 15 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int16] type = IntegralSolutionOverRegionFast region = 16 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int17] type = IntegralSolutionOverRegionFast region = 17 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int18] type = IntegralSolutionOverRegionFast region = 18 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int19] type = IntegralSolutionOverRegionFast region = 19 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int20] type = IntegralSolutionOverRegionFast region = 20 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int21] type = IntegralSolutionOverRegionFast region = 21 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int22] type = IntegralSolutionOverRegionFast region = 22 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int23] type = IntegralSolutionOverRegionFast region = 23 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int24] type = IntegralSolutionOverRegionFast region = 24 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int25] type = IntegralSolutionOverRegionFast region = 25 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int26] type = IntegralSolutionOverRegionFast region = 26 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int27] type = IntegralSolutionOverRegionFast region = 27 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int28] type = IntegralSolutionOverRegionFast region = 28 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int29] type = IntegralSolutionOverRegionFast region = 29 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int30] type = IntegralSolutionOverRegionFast region = 30 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int31] type = IntegralSolutionOverRegionFast region = 31 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int32] type = IntegralSolutionOverRegionFast region = 32 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int33] type = IntegralSolutionOverRegionFast region = 33 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int34] type = IntegralSolutionOverRegionFast region = 34 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int35] type = IntegralSolutionOverRegionFast region = 35 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int36] type = IntegralSolutionOverRegionFast region = 36 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int37] type = IntegralSolutionOverRegionFast region = 37 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int38] type = IntegralSolutionOverRegionFast region = 38 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int39] type = IntegralSolutionOverRegionFast region = 39 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int40] type = IntegralSolutionOverRegionFast region = 40 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int41] type = IntegralSolutionOverRegionFast region = 41 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int42] type = IntegralSolutionOverRegionFast region = 42 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int43] type = IntegralSolutionOverRegionFast region = 43 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int44] type = IntegralSolutionOverRegionFast region = 44 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int45] type = IntegralSolutionOverRegionFast region = 45 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int46] type = IntegralSolutionOverRegionFast region = 46 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int47] type = IntegralSolutionOverRegionFast region = 47 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int48] type = IntegralSolutionOverRegionFast region = 48 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int49] type = IntegralSolutionOverRegionFast region = 49 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int50] type = IntegralSolutionOverRegionFast region = 50 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int51] type = IntegralSolutionOverRegionFast region = 51 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int52] type = IntegralSolutionOverRegionFast region = 52 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int53] type = IntegralSolutionOverRegionFast region = 53 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int54] type = IntegralSolutionOverRegionFast region = 54 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int55] type = IntegralSolutionOverRegionFast region = 55 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int56] type = IntegralSolutionOverRegionFast region = 56 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int57] type = IntegralSolutionOverRegionFast region = 57 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int58] type = IntegralSolutionOverRegionFast region = 58 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int59] type = IntegralSolutionOverRegionFast region = 59 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int60] type = IntegralSolutionOverRegionFast region = 60 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int61] type = IntegralSolutionOverRegionFast region = 61 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+[./int62] type = IntegralSolutionOverRegionFast region = 62 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
+
+[./reg0] type = IntegralSolutionOverRegionFast region = 0 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg1] type = IntegralSolutionOverRegionFast region = 1 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg2] type = IntegralSolutionOverRegionFast region = 2 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg3] type = IntegralSolutionOverRegionFast region = 3 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg4] type = IntegralSolutionOverRegionFast region = 4 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg5] type = IntegralSolutionOverRegionFast region = 5 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg6] type = IntegralSolutionOverRegionFast region = 6 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg7] type = IntegralSolutionOverRegionFast region = 7 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg8] type = IntegralSolutionOverRegionFast region = 8 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg9] type = IntegralSolutionOverRegionFast region = 9 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg10] type = IntegralSolutionOverRegionFast region = 10 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg11] type = IntegralSolutionOverRegionFast region = 11 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg12] type = IntegralSolutionOverRegionFast region = 12 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg13] type = IntegralSolutionOverRegionFast region = 13 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg14] type = IntegralSolutionOverRegionFast region = 14 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg15] type = IntegralSolutionOverRegionFast region = 15 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg16] type = IntegralSolutionOverRegionFast region = 16 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg17] type = IntegralSolutionOverRegionFast region = 17 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg18] type = IntegralSolutionOverRegionFast region = 18 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg19] type = IntegralSolutionOverRegionFast region = 19 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg20] type = IntegralSolutionOverRegionFast region = 20 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg21] type = IntegralSolutionOverRegionFast region = 21 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg22] type = IntegralSolutionOverRegionFast region = 22 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg23] type = IntegralSolutionOverRegionFast region = 23 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg24] type = IntegralSolutionOverRegionFast region = 24 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg25] type = IntegralSolutionOverRegionFast region = 25 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg26] type = IntegralSolutionOverRegionFast region = 26 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg27] type = IntegralSolutionOverRegionFast region = 27 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg28] type = IntegralSolutionOverRegionFast region = 28 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg29] type = IntegralSolutionOverRegionFast region = 29 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg30] type = IntegralSolutionOverRegionFast region = 30 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg31] type = IntegralSolutionOverRegionFast region = 31 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg32] type = IntegralSolutionOverRegionFast region = 32 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg33] type = IntegralSolutionOverRegionFast region = 33 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg34] type = IntegralSolutionOverRegionFast region = 34 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg35] type = IntegralSolutionOverRegionFast region = 35 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg36] type = IntegralSolutionOverRegionFast region = 36 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg37] type = IntegralSolutionOverRegionFast region = 37 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg38] type = IntegralSolutionOverRegionFast region = 38 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg39] type = IntegralSolutionOverRegionFast region = 39 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg40] type = IntegralSolutionOverRegionFast region = 40 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg41] type = IntegralSolutionOverRegionFast region = 41 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg42] type = IntegralSolutionOverRegionFast region = 42 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg43] type = IntegralSolutionOverRegionFast region = 43 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg44] type = IntegralSolutionOverRegionFast region = 44 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg45] type = IntegralSolutionOverRegionFast region = 45 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg46] type = IntegralSolutionOverRegionFast region = 46 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg47] type = IntegralSolutionOverRegionFast region = 47 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg48] type = IntegralSolutionOverRegionFast region = 48 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg49] type = IntegralSolutionOverRegionFast region = 49 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg50] type = IntegralSolutionOverRegionFast region = 50 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg51] type = IntegralSolutionOverRegionFast region = 51 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg52] type = IntegralSolutionOverRegionFast region = 52 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg53] type = IntegralSolutionOverRegionFast region = 53 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg54] type = IntegralSolutionOverRegionFast region = 54 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg55] type = IntegralSolutionOverRegionFast region = 55 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg56] type = IntegralSolutionOverRegionFast region = 56 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg57] type = IntegralSolutionOverRegionFast region = 57 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg58] type = IntegralSolutionOverRegionFast region = 58 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg59] type = IntegralSolutionOverRegionFast region = 59 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg60] type = IntegralSolutionOverRegionFast region = 60 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg61] type = IntegralSolutionOverRegionFast region = 61 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+[./reg62] type = IntegralSolutionOverRegionFast region = 62 doDomainSize = 1 VolumeUserObject = assembleVolumeVectors [../]
+
+[]

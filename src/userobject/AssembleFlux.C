@@ -60,6 +60,8 @@ validParams<AssembleFlux>()
   //params.addParam<std::string>("output_file", "the file name of the output");
   params.addParam<std::string>("fractureMeshModifier","fractureMeshModifier");
   params.addRequiredParam<bool>("conservative","use a conservative scheme?");
+  params.addParam<std::string>("dc_boundaries", "-1", "Dirichlet Boundary ID");
+  params.addParam<std::string>("dc_variables" , "-1", "Variable to which given BC_id applies");
 //  params.addRequiredParam<int>("solver_type","solver_type");
 
   return params;
@@ -83,13 +85,20 @@ _hasMeshModifier( isParamValid("fractureMeshModifier") ),
 _conservativeScheme( getParam<bool>("conservative") ),
 _qrule(_assembly.qRule())
 {
- std::cout<<"ciao IN"<<std::endl;
+// std::cout<<"ciao IN"<<std::endl;
   if (_hasMeshModifier)
   {
     _meshModifierName=getParam<std::string>("fractureMeshModifier");
     //exit(1);
   }
- std::cout<<"ciao OUT"<<std::endl;
+    
+  std::vector<std::string> tmp = split_string(parameters.get<std::string>("dc_boundaries"), ' ');
+  for(auto str_tmp=tmp.begin(); str_tmp != tmp.end(); str_tmp++)
+  {
+        _dc_boundary_id.push_back(atoi(str_tmp->c_str()));
+  }
+    
+// std::cout<<"ciao OUT"<<std::endl;
  }
 
 
@@ -285,11 +294,11 @@ AssembleFlux::ComputeFlux()
             }
           }
 
-       dof_map.constrain_element_matrix_and_vector (ke_2, re, dof_indices);
+       dof_map.constrain_element_matrix_and_vector (ke_1, re, dof_indices);
        dof_map.constrain_element_matrix (ke_2,dof_indices);
        //dof_map.constrain_element_matrix (ke_t,dof_indices);
   
-       _stiffness_matrix_1.add_matrix (ke_2, dof_indices);
+       _stiffness_matrix_1.add_matrix (ke_1, dof_indices);
        _stiffness_matrix_2.add_matrix (ke_2, dof_indices);
        //_stiffness_matrix_t.add_matrix (ke_t, dof_indices);
 
@@ -319,8 +328,9 @@ AssembleFlux::ComputeFlux()
 
 
      _stiffness_matrix_t->vector_mult(_diri_flux,*_nl.currentSolution());
-
-     _diri_flux.add(-1.0,_neum_flux);
+     _diri_flux.print_matlab("diri_flux.m");
+     _neum_flux.print_matlab("neum_flux.m");
+     _diri_flux.add(1.0,_neum_flux);
      _tot_flux.add(-1.0,_diri_flux);
      auto _f_tot = _flux_1.sum();
      std::cout<<"f_tot= "<<_f_tot<<std::endl;
@@ -329,7 +339,7 @@ AssembleFlux::ComputeFlux()
     
 
      _stiffness_matrix_1.vector_mult(_flux_1,*_nl.currentSolution());
-     _flux_1.add(-1.0,_neum_flux);
+     _flux_1.add(1.0,_neum_flux);
      _flux_1.add(-1.0,_diri_flux);
 
 
@@ -343,6 +353,53 @@ AssembleFlux::ComputeFlux()
 
      std::cout<<"f_1= "<<_f1<<std::endl;
      std::cout<<"f_2= "<<_f2<<std::endl;
+    
+     ConstBndNodeRange & bnd_nodes = *_fe_problem.mesh().getBoundaryNodeRange();
+    
+     unsigned int i = 0;
+
+     PetscVector<Number> _bc_vec(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
+    _bc_vec.zero();
+    
+    // std::cout<<"_dc_variables_id"<< _dc_variables_id[0].size()<<std::endl;
+    // std::cout<<"_dc_boundary_id"<< _dc_boundary_id.size()<<std::endl;
+    for(auto boundary = _dc_boundary_id.begin(); boundary != _dc_boundary_id.end(); ++boundary, i++)
+    {
+        // iterate just over boundary nodes
+        for (const auto & bnode : bnd_nodes)
+        {
+            libMesh::Node * current_node = bnode->_node;
+            
+            // check if node is in active boundary list
+            if (_fe_problem.mesh().isBoundaryNode(current_node->id(), *boundary))
+            {
+                // loop over all variables at this node
+                
+                for (auto v = 0; v < _fe_problem.getNonlinearSystemBase().nVariables(); v++)
+                {
+                    const Variable & var = _nl.system().variable(v);
+                    
+                    unsigned int var_num = var.number();
+                    //std::cout<<"nnnnnnn"<< var_num <<std::endl;
+                    
+                    // see if this variable has any dofs at this node
+                    if (current_node->n_dofs(_fe_problem.getNonlinearSystemBase().number(), var_num) > 0)
+                    {
+                        // check if given variable has BC on node
+                        
+                        if(std::find(_dc_variables_id[i].begin(), _dc_variables_id[i].end(), var_num) != _dc_variables_id[i].end())
+                        {
+                            _bc_vec.set(current_node->dof_number(_fe_problem.getNonlinearSystemBase().number(), var_num, 0), 1.0);
+                            
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    _bc_vec.close();
+    
 
      _console << "END ComputeFlux"  << std::endl;
 }
@@ -365,4 +422,109 @@ AssembleFlux::ComputeMaterialProprties(const Elem *elem)
 
 
 
+
+    
+
+    
+
+
+
+void
+AssembleFlux::determine_dc_bnd_var_id(const std::vector<std::string> & BC_var){
+    // automatic fill-in
+    NonlinearSystemBase & _nl = _fe_problem.getNonlinearSystemBase();
+    
+    std::vector<int> vec(_nl.nVariables());
+    
+    std::iota(vec.begin(), vec.end(), 0);
+    
+    unsigned int i;
+    
+    auto str_tmp = BC_var.begin();
+    
+    PetscFunctionBegin;
+    // going over all BC_ids
+    for(i = 0; str_tmp != BC_var.end(); i++, str_tmp++)
+    {
+        std::vector<std::string> tmp = AssembleFlux::split_string(*str_tmp, '-');
+        
+        // check if variable assigned in the input file exists for given simulation
+        bool var_flg = 1;
+        for(auto t = tmp.begin(); t != tmp.end(); ++t)
+        {
+            if(atoi(t->c_str()) >= _nl.nVariables())
+                var_flg = 0;
+        }
+        
+        // in case u havent put anything into input file, or u put too much
+        if(*str_tmp == "-1" || var_flg == 0)
+        {
+            //std::cout<<"no_si"<<_nl.nVariables()<<std::endl;
+            _dc_variables_id.push_back(vec);
+        }
+        else
+        {
+            unsigned int j;
+            std::vector<int > one_BC_id;
+            auto str_in = tmp.begin();
+            for(j = 0; str_in != tmp.end(); j ++, str_in++)
+            {
+                one_BC_id.push_back(atoi(str_in->c_str()));
+            }
+            _dc_variables_id.push_back(one_BC_id);
+        }
+    }
+    
+    // check if u have same number of BC_ids in both parameters
+    if(_dc_variables_id.size() != _dc_boundary_id.size())
+    {
+        _dc_variables_id.clear();
+        for(auto i = 0; i != _dc_boundary_id.size(); i++)
+        {
+            _dc_variables_id.push_back(vec);
+        }
+    }
+    
+    // print out what is considered for zero-ing
+    std::cout<<" ------ BC CONDITIONS Begin ------ \n";
+    unsigned int t = 0;
+    //std::cout<<"_dc_variables_id.begin()"<<_dc_variables_id.size()<<std::endl;
+    for(auto i = _dc_variables_id.begin(); i != _dc_variables_id.end();  t++, i++)
+    {
+        std::cout<<"\n BC_id:  "<< _dc_boundary_id[t] << "   var_ids:  ";
+        std::for_each(i->begin(), i->end(), [](int i){ std::cout << i << "  " ; });
+    }
+    std::cout<<" ------ BC CONDITIONS End ------ \n";
+}
+
+
+
+
+
+std::vector<std::string>
+AssembleFlux::split_string(const std::string & s, char delim)
+{
+    
+    std::vector<std::string> v;
+    
+    if (s.length() == 0)
+        std::cerr << "Got an empty string. Split_string(...) is confused. \n";
+    
+    auto i = 0;
+    auto pos = s.find(delim);
+    while (pos != std::string::npos)
+    {
+        v.push_back(s.substr(i, pos - i));
+        i = ++pos;
+        pos = s.find(delim, pos);
+        
+        if (pos == std::string::npos)
+            v.push_back(s.substr(i, s.length()));
+    }
+    
+    if (v.size() == 0) // if only one word is in the string
+        v.push_back(s);
+    
+    return v;
+}
 

@@ -93,6 +93,19 @@ public:
     bool const _conservativeScheme;
 
     QBase const * const & _qrule;
+    
+    std::vector<int> _dc_boundary_id;
+    
+    std::vector<std::vector<int> > _dc_variables_id;
+    
+    void find_boundary(std::vector<int> &zero_rows_fluxes,
+                       std::vector<int> &_dc_boundary_id);
+    
+    void determine_dc_bnd_var_id(const std::vector<std::string> & BC_var);
+
+    
+    std::vector<std::string> split_string(const std::string & s, char delim);
+    
 
 
 };

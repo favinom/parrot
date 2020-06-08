@@ -204,8 +204,8 @@ AssembleFlux::ComputeFlux()
 
 
   std::vector<dof_id_type> dof_indices;
-
-  DenseMatrix<Number> ke_1, ke_2;
+  DenseMatrix<Number> ke_1;
+  DenseMatrix<Number> ke_2;
   DenseMatrix<Number> ke_t;
   DenseVector<Number> re;
 
@@ -254,8 +254,8 @@ AssembleFlux::ComputeFlux()
         {
          //ke_t(i,j) +=  JxW[qp] * ( dphi[j][qp] * ( permeability.at(qp) *  dphi[i][qp] ) );
 
-          if (elem->subdomain_id()==0)
-            ke_1(i,j) +=  JxW[qp] * ( dphi[j][qp] * ( permeability.at(qp) *  dphi[i][qp] ) );
+          if (elem->subdomain_id()==1)
+            ke_1(i,j) += -1.0*JxW[qp] * ( dphi[j][qp] * ( permeability.at(qp) *  dphi[i][qp] ) );
           if (elem->subdomain_id()==1)
             ke_2(i,j) +=  JxW[qp] * ( dphi[j][qp] * ( permeability.at(qp) *  dphi[i][qp] ) );
         }
@@ -285,11 +285,11 @@ AssembleFlux::ComputeFlux()
             }
           }
 
-       dof_map.constrain_element_matrix_and_vector (ke_1, re, dof_indices);
+       dof_map.constrain_element_matrix_and_vector (ke_2, re, dof_indices);
        dof_map.constrain_element_matrix (ke_2,dof_indices);
        //dof_map.constrain_element_matrix (ke_t,dof_indices);
   
-       _stiffness_matrix_1.add_matrix (ke_1, dof_indices);
+       _stiffness_matrix_1.add_matrix (ke_2, dof_indices);
        _stiffness_matrix_2.add_matrix (ke_2, dof_indices);
        //_stiffness_matrix_t.add_matrix (ke_t, dof_indices);
 
@@ -324,11 +324,14 @@ AssembleFlux::ComputeFlux()
      _tot_flux.add(-1.0,_diri_flux);
      auto _f_tot = _flux_1.sum();
      std::cout<<"f_tot= "<<_f_tot<<std::endl;
+    
+     _stiffness_matrix_1.add(1.0,*_stiffness_matrix_t);
+    
 
      _stiffness_matrix_1.vector_mult(_flux_1,*_nl.currentSolution());
      _flux_1.add(-1.0,_neum_flux);
      _flux_1.add(-1.0,_diri_flux);
-//     _flux_1.add(1.0,_diri_flux);
+
 
 
      _stiffness_matrix_2.vector_mult(_flux_2,*_nl.currentSolution());
@@ -336,10 +339,10 @@ AssembleFlux::ComputeFlux()
      _flux_1.print_matlab("f_1.m");
      _flux_2.print_matlab("f_2.m");
      auto _f1 = _flux_1.sum();
-//     auto _f2 = _flux_2.sum();
-//
+     auto _f2 = _flux_2.sum();
+
      std::cout<<"f_1= "<<_f1<<std::endl;
-//     std::cout<<"f_2= "<<_f2<<std::endl;
+     std::cout<<"f_2= "<<_f2<<std::endl;
 
      _console << "END ComputeFlux"  << std::endl;
 }

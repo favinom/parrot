@@ -348,8 +348,8 @@ AssembleFlux::ComputeFlux()
 
      _stiffness_matrix_2.vector_mult(_flux_2,*_nl.currentSolution());
 
-     //_flux_1.print_matlab("f_1.m");
-     //_flux_2.print_matlab("f_2.m");
+     _flux_1.print_matlab("f_1.m");
+     _flux_2.print_matlab("f_2.m");
      auto _f1 = _flux_1.sum();
      auto _f2 = _flux_2.sum();
 

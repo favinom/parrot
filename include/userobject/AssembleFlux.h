@@ -94,6 +94,8 @@ public:
 
     QBase const * const & _qrule;
     
+    std::string _dc_var;
+    
     std::vector<int> _dc_boundary_id;
     
     std::vector<std::vector<int> > _dc_variables_id;

@@ -83,7 +83,9 @@ _value_N_bc(getParam<std::vector<Real>>("value_N_bc")),
 _value_D_bc(getParam<std::vector<Real>>("value_D_bc")),
 _hasMeshModifier( isParamValid("fractureMeshModifier") ),
 _conservativeScheme( getParam<bool>("conservative") ),
-_qrule(_assembly.qRule())
+_qrule(_assembly.qRule()),
+_dc_var(getParam<std::string>("dc_variables"))
+
 {
 // std::cout<<"ciao IN"<<std::endl;
   if (_hasMeshModifier)
@@ -328,8 +330,8 @@ AssembleFlux::ComputeFlux()
 
 
      _stiffness_matrix_t->vector_mult(_diri_flux,*_nl.currentSolution());
-     _diri_flux.print_matlab("diri_flux.m");
-     _neum_flux.print_matlab("neum_flux.m");
+     //_diri_flux.print_matlab("diri_flux.m");
+     //_neum_flux.print_matlab("neum_flux.m");
      _diri_flux.add(1.0,_neum_flux);
      _tot_flux.add(-1.0,_diri_flux);
      auto _f_tot = _flux_1.sum();
@@ -346,25 +348,25 @@ AssembleFlux::ComputeFlux()
 
      _stiffness_matrix_2.vector_mult(_flux_2,*_nl.currentSolution());
 
-     _flux_1.print_matlab("f_1.m");
-     _flux_2.print_matlab("f_2.m");
+     //_flux_1.print_matlab("f_1.m");
+     //_flux_2.print_matlab("f_2.m");
      auto _f1 = _flux_1.sum();
      auto _f2 = _flux_2.sum();
 
      std::cout<<"f_1= "<<_f1<<std::endl;
      std::cout<<"f_2= "<<_f2<<std::endl;
     
+     AssembleFlux::determine_dc_bnd_var_id(AssembleFlux::split_string(_dc_var, ' '));
+    
      ConstBndNodeRange & bnd_nodes = *_fe_problem.mesh().getBoundaryNodeRange();
     
      unsigned int i = 0;
 
      PetscVector<Number> _bc_vec(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
-    _bc_vec.zero();
-    
-    // std::cout<<"_dc_variables_id"<< _dc_variables_id[0].size()<<std::endl;
-    // std::cout<<"_dc_boundary_id"<< _dc_boundary_id.size()<<std::endl;
-    for(auto boundary = _dc_boundary_id.begin(); boundary != _dc_boundary_id.end(); ++boundary, i++)
-    {
+     _bc_vec.zero();
+ 
+     for(auto boundary = _dc_boundary_id.begin(); boundary != _dc_boundary_id.end(); ++boundary, i++)
+     {
         // iterate just over boundary nodes
         for (const auto & bnode : bnd_nodes)
         {
@@ -373,19 +375,14 @@ AssembleFlux::ComputeFlux()
             // check if node is in active boundary list
             if (_fe_problem.mesh().isBoundaryNode(current_node->id(), *boundary))
             {
-                // loop over all variables at this node
-                
                 for (auto v = 0; v < _fe_problem.getNonlinearSystemBase().nVariables(); v++)
                 {
                     const Variable & var = _nl.system().variable(v);
                     
                     unsigned int var_num = var.number();
-                    //std::cout<<"nnnnnnn"<< var_num <<std::endl;
-                    
-                    // see if this variable has any dofs at this node
+                   
                     if (current_node->n_dofs(_fe_problem.getNonlinearSystemBase().number(), var_num) > 0)
                     {
-                        // check if given variable has BC on node
                         
                         if(std::find(_dc_variables_id[i].begin(), _dc_variables_id[i].end(), var_num) != _dc_variables_id[i].end())
                         {
@@ -396,9 +393,9 @@ AssembleFlux::ComputeFlux()
                 }
             }
         }
-    }
+     }
     
-    _bc_vec.close();
+     _bc_vec.close();
     
 
      _console << "END ComputeFlux"  << std::endl;

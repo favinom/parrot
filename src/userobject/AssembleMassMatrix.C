@@ -196,7 +196,7 @@ void AssembleMassMatrix::assemble_mass_matrix(){
     	dof_map.dof_indices(elem, dof_indices_p);
     	dof_map.dof_indices(elem, dof_indices_l_p);
     	dof_map.dof_indices(elem, dof_indices_i);
-      dof_map.dof_indices(elem, dof_indices_h);
+        dof_map.dof_indices(elem, dof_indices_h);
 
     	int const loc_n=dof_indices.size();
 

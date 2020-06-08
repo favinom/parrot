@@ -55,21 +55,22 @@ validParams<AssembleFlux>()
   params.addRequiredParam<std::vector<boundary_id_type>>("boundary_N_bc","boundary_N_bc");
   params.addRequiredParam<std::vector<Real>>("value_N_bc", "The value of Neumann");
   params.addRequiredParam<std::vector<Real>>("value_D_bc", "The value of Dirichlet");
-  params.addRequiredParam<std::vector<AuxVariableName>>("aux_variable", "The auxiliary variable to store the transferred values in.");
-  params.addParam<std::string>("output_file", "the file name of the output");
+  params.addRequiredParam<AuxVariableName>("sol_variable", "The auxiliary variable to store the transferred values in.");
+  //params.addParam<std::string>("output_file", "the file name of the output");
   params.addParam<std::string>("fractureMeshModifier","fractureMeshModifier");
   params.addRequiredParam<bool>("conservative","use a conservative scheme?");
-  params.addRequiredParam<int>("solver_type","solver_type");
+//  params.addRequiredParam<int>("solver_type","solver_type");
 
   return params;
 }
 
+
 AssembleFlux::AssembleFlux(const InputParameters & parameters) :
 GeneralUserObject(parameters),
-_pp_comm(_fe_problem.es().get_mesh().comm()),
-_stiffness_matrix_1(_pp_comm),
-_stiffness_matrix_2(_pp_comm),
-_stiffness_matrix_t(_pp_comm),
+//_pp_comm(_fe_problem.es().get_mesh().comm()),
+//_stiffness_matrix_1(_pp_comm),
+//_stiffness_matrix_2(_pp_comm),
+//_stiffness_matrix_t(_pp_comm),
 _sol_var_name(getParam<AuxVariableName>("sol_variable")),
 _vector_p(getParam<std::vector<int>>("block_id")),
 _vector_value(getParam<std::vector<Real>>("value_p")),
@@ -81,13 +82,13 @@ _hasMeshModifier( isParamValid("fractureMeshModifier") ),
 _conservativeScheme( getParam<bool>("conservative") ),
 _qrule(_assembly.qRule())
 {
- 
+ std::cout<<"ciao IN"<<std::endl;
   if (_hasMeshModifier)
   {
     _meshModifierName=getParam<std::string>("fractureMeshModifier");
     //exit(1);
   }
-
+ std::cout<<"ciao OUT"<<std::endl;
  }
 
 
@@ -96,31 +97,35 @@ void
 AssembleFlux::initialize()
 {
   _console<<"BEGIN initialize\n";
+    
   DofMap   const & dof_map = _fe_problem.getNonlinearSystemBase().dofMap();
 
-  _stiffness_matrix_1.attach_dof_map(dof_map);
-  _stiffness_matrix_1.zero();
+//  _stiffness_matrix_1.attach_dof_map(dof_map);
+//  _stiffness_matrix_1.zero();
+//
+//  _stiffness_matrix_2.attach_dof_map(dof_map);
+//  _stiffness_matrix_2.zero();
+//
+//  _stiffness_matrix_t.attach_dof_map(dof_map);
+//  _stiffness_matrix_t.zero();
     
-  _stiffness_matrix_2.attach_dof_map(dof_map);
-  _stiffness_matrix_2.zero();
+  solve();
     
-  _stiffness_matrix_t.attach_dof_map(dof_map);
-  _stiffness_matrix_t.zero();
   _console<<"END initialize\n";
 }
 
 
 
-bool
+int
 AssembleFlux::solve()
 {
   _console<<"BEGIN Assembly\n";
-    
+
   ComputeFlux();
   bool assemble=true;
 
   _console<<"END Assembly\n";
-  return assemble;
+    return 1;
  }
 
 void
@@ -130,6 +135,25 @@ AssembleFlux::ComputeFlux()
 
   MeshModifier       const * _myMeshModifier_ptr;
   FractureUserObject const * _fractureUserObject_ptr;
+    
+  DofMap   const & dof_map = _fe_problem.getNonlinearSystemBase().dofMap();
+    
+  PetscMatrix<Number> _stiffness_matrix_1(_fe_problem.es().get_mesh().comm());
+  PetscMatrix<Number> _stiffness_matrix_2(_fe_problem.es().get_mesh().comm());
+  PetscMatrix<Number> _stiffness_matrix_t(_fe_problem.es().get_mesh().comm());
+    
+  _stiffness_matrix_1.attach_dof_map(dof_map);
+  _stiffness_matrix_1.init();
+  //_stiffness_matrix_1.clear();
+
+  _stiffness_matrix_2.attach_dof_map(dof_map);
+  _stiffness_matrix_2.init();
+  //_stiffness_matrix_2.clear();
+
+  _stiffness_matrix_t.attach_dof_map(dof_map);
+  _stiffness_matrix_t.init();
+  //_stiffness_matrix_t.clear();
+
 
   if (_hasMeshModifier)
   {
@@ -141,20 +165,20 @@ AssembleFlux::ComputeFlux()
 
   const MeshBase & mesh = _fe_problem.es().get_mesh();
   const unsigned int dim = mesh.mesh_dimension();
-    
-  DofMap   const & dof_map = _fe_problem.getNonlinearSystemBase().dofMap();
-    
-  PetscVector<Number> _neum_flux(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
+
+  PetscVector<Number> _neum_flux(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
   _neum_flux.zero();
 
-  PetscVector<Number> _diri_flux(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
+  PetscVector<Number> _diri_flux(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
   _diri_flux.zero();
-    
-  PetscVector<Number> _flux_1(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
+
+  PetscVector<Number> _flux_1(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
   _flux_1.zero();
-    
-  PetscVector<Number> _flux_2(_pp_comm, dof_map.n_dofs(), dof_map.n_local_dofs());
+
+  PetscVector<Number> _flux_2(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
   _flux_2.zero();
+    
+  
 
   TransientNonlinearImplicitSystem const & _system = _fe_problem.es().get_system<TransientNonlinearImplicitSystem>("nl0");
   FEType fe_type = _system.get_dof_map().variable_type(0);
@@ -184,6 +208,7 @@ AssembleFlux::ComputeFlux()
   MeshBase::const_element_iterator const end_el = mesh.active_local_elements_end();
 
   std::vector<Number> permeability;
+ 
 
   for ( ; el != end_el; ++el)
   {
@@ -197,10 +222,10 @@ AssembleFlux::ComputeFlux()
 
     ke_1.resize (n_dofs , n_dofs);
     ke_1.zero();
-      
+
     ke_2.resize (n_dofs , n_dofs);
     ke_2.zero();
-      
+
     ke_t.resize (n_dofs , n_dofs);
     ke_t.zero();
 
@@ -218,34 +243,22 @@ AssembleFlux::ComputeFlux()
       }
     }
 
-    if(_conservativeScheme)
-    {
-      Real sum=0.0;
-      for (unsigned int qp=0; qp<qrule->n_points(); qp++)
-      {
-        sum+=(1.0/permeability.at(qp));
-      }
-      sum=1.0*qrule->n_points()/sum;
-      permeability.assign(qrule->n_points(),sum);
-    }  
-
-
     for (unsigned int i=0; i<phi.size(); i++)
       for (unsigned int j=0; j<phi.size(); j++)
         for (unsigned int qp=0; qp<qrule->n_points(); qp++)
         {
-          ke_t(i,j) +=  JxW[qp] * ( dphi[j][qp] * ( permeability.at(qp) *  dphi[i][qp] ) );
-            
-          if (elem->subdomain_id()==1)
+         ke_t(i,j) +=  JxW[qp] * ( dphi[j][qp] * ( permeability.at(qp) *  dphi[i][qp] ) );
+
+          if (elem->subdomain_id()==0)
             ke_1(i,j) +=  JxW[qp] * ( dphi[j][qp] * ( permeability.at(qp) *  dphi[i][qp] ) );
-          if (elem->subdomain_id()==2)
+          if (elem->subdomain_id()==1)
             ke_2(i,j) +=  JxW[qp] * ( dphi[j][qp] * ( permeability.at(qp) *  dphi[i][qp] ) );
         }
 
     re.resize(n_dofs);
     re.zero();
 
-    
+
     for (auto side : elem->side_index_range())
     {
       if (elem->neighbor_ptr(side) == nullptr)
@@ -270,48 +283,53 @@ AssembleFlux::ComputeFlux()
        dof_map.constrain_element_matrix_and_vector (ke_1, re, dof_indices);
        dof_map.constrain_element_matrix (ke_2,dof_indices);
        dof_map.constrain_element_matrix (ke_t,dof_indices);
-
+  
        _stiffness_matrix_1.add_matrix (ke_1, dof_indices);
        _stiffness_matrix_2.add_matrix (ke_2, dof_indices);
        _stiffness_matrix_t.add_matrix (ke_t, dof_indices);
+
        _neum_flux.add_vector(re, dof_indices);
      }
 
 
+
      MooseVariable & var = _fe_problem.getStandardVariable(0, _sol_var_name);
-    
+
      System & sys = var.sys().system();
-    
+
      auto _sol=sys.current_local_solution.get();
-    
+
      _stiffness_matrix_1.close();
      _stiffness_matrix_2.close();
-    
+
      _stiffness_matrix_t.close();
      _neum_flux.close();
-    
-     _console << "Compute_Dirichlet_flux"  << std::endl;
-    
-     _stiffness_matrix_t.vector_mult(_diri_flux,*_sol);
-    
-     _diri_flux.add(-1.0,_neum_flux);
-    
-     _console << "Compute_flux_1"  << std::endl;
-     _stiffness_matrix_1.vector_mult(_flux_1,*_sol);
-     _flux_1.add(-1.0,_neum_flux);
-    
-     _console << "Compute_flux_2"  << std::endl;
+
+//     _console << "Compute_Dirichlet_flux"  << std::endl;
+
+//     _stiffness_matrix_t.vector_mult(_diri_flux,*_sol);
+//
+//     _diri_flux.add(-1.0,_neum_flux);
+//
+//     _console << "Compute_flux_1"  << std::endl;
+    _stiffness_matrix_1.vector_mult(_flux_1,*_sol);
+    _stiffness_matrix_1.print_matlab("s_1.m");
+    _stiffness_matrix_2.print_matlab("s_2.m");
+    _stiffness_matrix_t.print_matlab("s_t.m");
+//     _flux_1.add(-1.0,_neum_flux);
+//
+
      _stiffness_matrix_2.vector_mult(_flux_2,*_sol);
-     _flux_2.add(-1.0, _diri_flux);
-    
+//     _flux_2.add(-1.0, _diri_flux);
+
      auto _f1 = _flux_1.sum();
      auto _f2 = _flux_2.sum();
-    
-     std::cout<<"f_1"<<_f1<<std::endl;
-     std::cout<<"f_2"<<_f2<<std::endl;
-    
+
+     std::cout<<"f_1= "<<_f1<<std::endl;
+     std::cout<<"f_2= "<<_f2<<std::endl;
+
      _console << "END ComputeFlux"  << std::endl;
-   }
+}
 
 
 Real

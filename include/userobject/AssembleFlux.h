@@ -60,11 +60,11 @@ public:
 
   protected:
 
-    Parallel::Communicator const & _pp_comm;
+//    Parallel::Communicator const & _pp_comm;
     
-    PetscMatrix<Number> _stiffness_matrix_1;
-    PetscMatrix<Number> _stiffness_matrix_2;
-    PetscMatrix<Number> _stiffness_matrix_t;
+//    PetscMatrix<Number> _stiffness_matrix_1;
+//    PetscMatrix<Number> _stiffness_matrix_2;
+//    PetscMatrix<Number> _stiffness_matrix_t;
     
     AuxVariableName _sol_var_name;
 
@@ -84,7 +84,7 @@ public:
     std::string _var_name;
     std::string _sys_name;
 
-    bool solve();
+    int solve();
 
 
     bool _hasMeshModifier;

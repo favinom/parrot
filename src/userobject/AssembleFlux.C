@@ -163,7 +163,6 @@ AssembleFlux::ComputeFlux()
     _stiffness_matrix_2.attach_dof_map(dof_map);
     _stiffness_matrix_2.init();
     //_stiffness_matrix_2.clear();
-    
     //_stiffness_matrix_t.attach_dof_map(dof_map);
     //_stiffness_matrix_t.init();
     //_stiffness_matrix_t.clear();
@@ -209,7 +208,8 @@ AssembleFlux::ComputeFlux()
     
     
     
-    TransientNonlinearImplicitSystem const & _system = _fe_problem.es().get_system<TransientNonlinearImplicitSystem>("nl0");
+    TransientNonlinearImplicitSystem const & _system =
+    _fe_problem.es().get_system<TransientNonlinearImplicitSystem>("nl0");
     FEType fe_type = _system.get_dof_map().variable_type(0);
     UniquePtr<FEBase> fe (FEBase::build(dim, fe_type));
     std::unique_ptr<QBase> qrule( QBase::build (_qrule->type(),dim,_qrule->get_order()));
@@ -323,7 +323,7 @@ AssembleFlux::ComputeFlux()
     _neum_flux1.close();
     _neum_flux2.close();
     
-    //MooseVariable & var = _fe_problem.getStandardVariable(0, _sol_var_name);
+    MooseVariable & var = _fe_problem.getStandardVariable(0,"CM");
     
     System & sys = var.sys().system();
     
@@ -337,16 +337,15 @@ AssembleFlux::ComputeFlux()
     NonlinearSystemBase & _nl = _fe_problem.getNonlinearSystemBase();
     
     //_fe_problem.computeJacobianSys(_sys, *_nl.currentSolution(), *_stiffness_matrix_t);
-    
-    
+
     _stiffness_matrix_1.vector_mult(_tmp_flux_1,*_nl.currentSolution());
     _stiffness_matrix_2.vector_mult(_tmp_flux_2,*_nl.currentSolution());
     
     _tmp_flux_1.add(-1.0,_neum_flux1);
     _tmp_flux_2.add(-1.0,_neum_flux2);
-    
-    //_diri_flux1.print_matlab("file1.m");
-    //_diri_flux2.print_matlab("file2.m");
+//
+//    _tmp_flux_1.print_matlab("file_a.m");
+//    _tmp_flux_2.print_matlab("file_b.m");
     
     //_diri_flux1.pointwise_mult(_tmp_flux1,_bc_vec);
     
@@ -390,7 +389,8 @@ AssembleFlux::ComputeFlux()
     _bc_vec.close();
     
     _diri_flux1.pointwise_mult(_tmp_flux_1,_bc_vec);
-    _diri_flux1.print_matlab("print_mat_1.m");
+    _diri_flux2.pointwise_mult(_tmp_flux_2,_bc_vec);
+    _bc_vec.print_matlab("bcv.m");
 
     _stiffness_matrix_1.vector_mult(_flux_1,*_nl.currentSolution());
     _flux_1.add(-1.0,_neum_flux1);
@@ -401,11 +401,10 @@ AssembleFlux::ComputeFlux()
     _flux_1.print_matlab("file1.m");
     _flux_2.print_matlab("file2.m");
     
-    _flux_1.add(-1.0,_diri_flux1);
-    //_flux_2.add(-1.0,_diri_flux2);
+//    _flux_1.add(-1.0,_diri_flux1);
+//    _flux_2.add(-1.0,_diri_flux2);
     
     _tot_flux.add(1.0,_flux_2);
-    
     _tot_flux.add(1.0,_flux_1);
     
      auto _f1 = _flux_1.sum();

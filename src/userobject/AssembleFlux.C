@@ -48,23 +48,23 @@ template <>
 InputParameters
 validParams<AssembleFlux>()
 {
-  InputParameters params = validParams<GeneralUserObject>();
-  
-  params.addRequiredParam<std::vector<int>>("block_id","block_id");
-  params.addRequiredParam<std::vector<Real>>("value_p","value_p");
-  params.addRequiredParam<std::vector<boundary_id_type>>("boundary_D_bc","boundary_D_bc");
-  params.addRequiredParam<std::vector<boundary_id_type>>("boundary_N_bc","boundary_N_bc");
-  params.addRequiredParam<std::vector<Real>>("value_N_bc", "The value of Neumann");
-  params.addRequiredParam<std::vector<Real>>("value_D_bc", "The value of Dirichlet");
-  params.addRequiredParam<AuxVariableName>("sol_variable", "The auxiliary variable to store the transferred values in.");
-  //params.addParam<std::string>("output_file", "the file name of the output");
-  params.addParam<std::string>("fractureMeshModifier","fractureMeshModifier");
-  params.addRequiredParam<bool>("conservative","use a conservative scheme?");
-  params.addParam<std::string>("dc_boundaries", "-1", "Dirichlet Boundary ID");
-  params.addParam<std::string>("dc_variables" , "-1", "Variable to which given BC_id applies");
-//  params.addRequiredParam<int>("solver_type","solver_type");
-
-  return params;
+    InputParameters params = validParams<GeneralUserObject>();
+    
+    params.addRequiredParam<std::vector<int>>("block_id","block_id");
+    params.addRequiredParam<std::vector<Real>>("value_p","value_p");
+    params.addRequiredParam<std::vector<boundary_id_type>>("boundary_D_bc","boundary_D_bc");
+    params.addRequiredParam<std::vector<boundary_id_type>>("boundary_N_bc","boundary_N_bc");
+    params.addRequiredParam<std::vector<Real>>("value_N_bc", "The value of Neumann");
+    params.addRequiredParam<std::vector<Real>>("value_D_bc", "The value of Dirichlet");
+    params.addRequiredParam<AuxVariableName>("sol_variable", "The auxiliary variable to store the transferred values in.");
+    //params.addParam<std::string>("output_file", "the file name of the output");
+    params.addParam<std::string>("fractureMeshModifier","fractureMeshModifier");
+    params.addRequiredParam<bool>("conservative","use a conservative scheme?");
+    params.addParam<std::string>("dc_boundaries", "-1", "Dirichlet Boundary ID");
+    params.addParam<std::string>("dc_variables" , "-1", "Variable to which given BC_id applies");
+    //  params.addRequiredParam<int>("solver_type","solver_type");
+    
+    return params;
 }
 
 
@@ -87,43 +87,43 @@ _qrule(_assembly.qRule()),
 _dc_var(getParam<std::string>("dc_variables"))
 
 {
-// std::cout<<"ciao IN"<<std::endl;
-  if (_hasMeshModifier)
-  {
-    _meshModifierName=getParam<std::string>("fractureMeshModifier");
-    //exit(1);
-  }
+    // std::cout<<"ciao IN"<<std::endl;
+    if (_hasMeshModifier)
+    {
+        _meshModifierName=getParam<std::string>("fractureMeshModifier");
+        //exit(1);
+    }
     
-  std::vector<std::string> tmp = split_string(parameters.get<std::string>("dc_boundaries"), ' ');
-  for(auto str_tmp=tmp.begin(); str_tmp != tmp.end(); str_tmp++)
-  {
+    std::vector<std::string> tmp = split_string(parameters.get<std::string>("dc_boundaries"), ' ');
+    for(auto str_tmp=tmp.begin(); str_tmp != tmp.end(); str_tmp++)
+    {
         _dc_boundary_id.push_back(atoi(str_tmp->c_str()));
-  }
+    }
     
-// std::cout<<"ciao OUT"<<std::endl;
- }
+    // std::cout<<"ciao OUT"<<std::endl;
+}
 
 
 
 void
 AssembleFlux::initialize()
 {
-  _console<<"BEGIN initialize\n";
+    _console<<"BEGIN initialize\n";
     
-  DofMap   const & dof_map = _fe_problem.getNonlinearSystemBase().dofMap();
-
-//  _stiffness_matrix_1.attach_dof_map(dof_map);
-//  _stiffness_matrix_1.zero();
-//
-//  _stiffness_matrix_2.attach_dof_map(dof_map);
-//  _stiffness_matrix_2.zero();
-//
-//  _stiffness_matrix_t.attach_dof_map(dof_map);
-//  _stiffness_matrix_t.zero();
+    DofMap   const & dof_map = _fe_problem.getNonlinearSystemBase().dofMap();
     
-  solve();
+    //  _stiffness_matrix_1.attach_dof_map(dof_map);
+    //  _stiffness_matrix_1.zero();
+    //
+    //  _stiffness_matrix_2.attach_dof_map(dof_map);
+    //  _stiffness_matrix_2.zero();
+    //
+    //  _stiffness_matrix_t.attach_dof_map(dof_map);
+    //  _stiffness_matrix_t.zero();
     
-  _console<<"END initialize\n";
+    solve();
+    
+    _console<<"END initialize\n";
 }
 
 
@@ -131,274 +131,335 @@ AssembleFlux::initialize()
 int
 AssembleFlux::solve()
 {
-  _console<<"BEGIN Assembly\n";
-
-  ComputeFlux();
-  bool assemble=true;
-
-  _console<<"END Assembly\n";
+    _console<<"BEGIN Assembly\n";
+    
+    ComputeFlux();
+    bool assemble=true;
+    
+    _console<<"END Assembly\n";
     return 1;
- }
+}
 
 void
 AssembleFlux::ComputeFlux()
 {
-  _console << "BEGIN ComputeFlux"  << std::endl;
-
-  MeshModifier       const * _myMeshModifier_ptr;
-  FractureUserObject const * _fractureUserObject_ptr;
+    _console << "BEGIN ComputeFlux"  << std::endl;
     
-  DofMap   const & dof_map = _fe_problem.getNonlinearSystemBase().dofMap();
+    MeshModifier       const * _myMeshModifier_ptr;
+    FractureUserObject const * _fractureUserObject_ptr;
     
-  PetscMatrix<Number> _stiffness_matrix_1(_fe_problem.es().get_mesh().comm());
-  PetscMatrix<Number> _stiffness_matrix_2(_fe_problem.es().get_mesh().comm());
-  //PetscMatrix<Number> _stiffness_matrix_t(_fe_problem.es().get_mesh().comm());
+    DofMap   const & dof_map = _fe_problem.getNonlinearSystemBase().dofMap();
     
-  _stiffness_matrix_1.attach_dof_map(dof_map);
-  _stiffness_matrix_1.init();
-  //_stiffness_matrix_1.clear();
-
-  _stiffness_matrix_2.attach_dof_map(dof_map);
-  _stiffness_matrix_2.init();
-  //_stiffness_matrix_2.clear();
-
-  //_stiffness_matrix_t.attach_dof_map(dof_map);
-  //_stiffness_matrix_t.init();
-  //_stiffness_matrix_t.clear();
-
-
-  if (_hasMeshModifier)
-  {
-    MeshModifier const & _myMeshModifier( _app.getMeshModifier( _meshModifierName.c_str()) );
-    _myMeshModifier_ptr=&_myMeshModifier;
-    FractureUserObject const & _fractureUserObject( dynamic_cast<FractureUserObject const &>(_myMeshModifier) );
-    _fractureUserObject_ptr=&_fractureUserObject;
-  }
-
-  const MeshBase & mesh = _fe_problem.es().get_mesh();
-  const unsigned int dim = mesh.mesh_dimension();
-
-  PetscVector<Number> _neum_flux(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
-  _neum_flux.zero();
-
-  PetscVector<Number> _diri_flux(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
-  _diri_flux.zero();
+    PetscMatrix<Number> _stiffness_matrix_1(_fe_problem.es().get_mesh().comm());
+    PetscMatrix<Number> _stiffness_matrix_2(_fe_problem.es().get_mesh().comm());
+    //PetscMatrix<Number> _stiffness_matrix_t(_fe_problem.es().get_mesh().comm());
     
-  PetscVector<Number> _tot_flux(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
-  _tot_flux.zero();
-
-  PetscVector<Number> _flux_1(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
-  _flux_1.zero();
-
-  PetscVector<Number> _flux_2(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
-  _flux_2.zero();
+    _stiffness_matrix_1.attach_dof_map(dof_map);
+    _stiffness_matrix_1.init();
+    //_stiffness_matrix_1.clear();
     
-  
-
-  TransientNonlinearImplicitSystem const & _system = _fe_problem.es().get_system<TransientNonlinearImplicitSystem>("nl0");
-  FEType fe_type = _system.get_dof_map().variable_type(0);
-  UniquePtr<FEBase> fe (FEBase::build(dim, fe_type));
-  std::unique_ptr<QBase> qrule( QBase::build (_qrule->type(),dim,_qrule->get_order()));
-  fe->attach_quadrature_rule (qrule.get());
-  std::unique_ptr<FEBase> fe_face (FEBase::build(dim, fe_type));
-  std::unique_ptr<QBase> qface(fe_type.default_quadrature_rule(dim-1));
-  fe_face->attach_quadrature_rule (qface.get());
-
-
-  const std::vector<Real> & JxW = fe->get_JxW();
-  const std::vector<std::vector<Real> > & phi = fe->get_phi();
-
-  const std::vector<std::vector<RealGradient> > & dphi = fe->get_dphi();
-  const std::vector<Point> & q_points = fe->get_xyz();
-  //const DofMap & dof_map = _system.get_dof_map();
-
-
-
-  std::vector<dof_id_type> dof_indices;
-  DenseMatrix<Number> ke_1;
-  DenseMatrix<Number> ke_2;
-  DenseMatrix<Number> ke_t;
-  DenseVector<Number> re;
-
-  MeshBase::const_element_iterator           el = mesh.active_local_elements_begin();
-  MeshBase::const_element_iterator const end_el = mesh.active_local_elements_end();
-
-  std::vector<Number> permeability;
- 
-
-  for ( ; el != end_el; ++el)
-  {
-    const Elem * elem = *el;
-    fe->reinit (elem);
-
-    dof_map.dof_indices(elem, dof_indices);
-    const unsigned int n_dofs = cast_int<unsigned int>(dof_indices.size());
-
-    libmesh_assert_equal_to (n_dofs, phi.size());
-
-    ke_1.resize (n_dofs , n_dofs);
-    ke_1.zero();
-
-    ke_2.resize (n_dofs , n_dofs);
-    ke_2.zero();
-
-    //ke_t.resize (n_dofs , n_dofs);
-    //ke_t.zero();
-
-    Real localPermeability=ComputeMaterialProprties(elem);
-    permeability.assign( qrule->n_points() ,localPermeability );
-
-    if(_hasMeshModifier)
+    _stiffness_matrix_2.attach_dof_map(dof_map);
+    _stiffness_matrix_2.init();
+    //_stiffness_matrix_2.clear();
+    
+    //_stiffness_matrix_t.attach_dof_map(dof_map);
+    //_stiffness_matrix_t.init();
+    //_stiffness_matrix_t.clear();
+    
+    
+    if (_hasMeshModifier)
     {
-      for (unsigned int qp=0; qp<qrule->n_points(); qp++)
-      {
-        if ( _fractureUserObject_ptr[0].isInside(q_points[qp]) )
-        {
-          permeability.at(qp)=_vector_value.at(_vector_value.size()-1);
-        }
-      }
+        MeshModifier const & _myMeshModifier( _app.getMeshModifier( _meshModifierName.c_str()) );
+        _myMeshModifier_ptr=&_myMeshModifier;
+        FractureUserObject const & _fractureUserObject( dynamic_cast<FractureUserObject const &>(_myMeshModifier) );
+        _fractureUserObject_ptr=&_fractureUserObject;
     }
-
-    for (unsigned int i=0; i<phi.size(); i++)
-      for (unsigned int j=0; j<phi.size(); j++)
-        for (unsigned int qp=0; qp<qrule->n_points(); qp++)
-        {
-         //ke_t(i,j) +=  JxW[qp] * ( dphi[j][qp] * ( permeability.at(qp) *  dphi[i][qp] ) );
-
-          if (elem->subdomain_id()==1)
-            ke_1(i,j) += -1.0*JxW[qp] * ( dphi[j][qp] * ( permeability.at(qp) *  dphi[i][qp] ) );
-          if (elem->subdomain_id()==1)
-            ke_2(i,j) +=  JxW[qp] * ( dphi[j][qp] * ( permeability.at(qp) *  dphi[i][qp] ) );
-        }
-
-    re.resize(n_dofs);
-    re.zero();
-
-
-    for (auto side : elem->side_index_range())
+    
+    const MeshBase & mesh = _fe_problem.es().get_mesh();
+    const unsigned int dim = mesh.mesh_dimension();
+    
+    PetscVector<Number> _neum_flux1(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
+    _neum_flux1.zero();
+    
+    PetscVector<Number> _neum_flux2(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
+    _neum_flux2.zero();
+    
+    PetscVector<Number> _diri_flux1(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
+    _diri_flux1.zero();
+    
+    PetscVector<Number> _diri_flux2(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
+    _diri_flux2.zero();
+    
+    PetscVector<Number> _tot_flux(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
+    _tot_flux.zero();
+    
+    PetscVector<Number> _tmp_flux_1(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
+    _tmp_flux_1.zero();
+    
+    PetscVector<Number> _tmp_flux_2(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
+    _tmp_flux_2.zero();
+    
+    PetscVector<Number> _flux_1(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
+    _flux_1.zero();
+    
+    PetscVector<Number> _flux_2(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
+    _flux_2.zero();
+    
+    
+    
+    TransientNonlinearImplicitSystem const & _system = _fe_problem.es().get_system<TransientNonlinearImplicitSystem>("nl0");
+    FEType fe_type = _system.get_dof_map().variable_type(0);
+    UniquePtr<FEBase> fe (FEBase::build(dim, fe_type));
+    std::unique_ptr<QBase> qrule( QBase::build (_qrule->type(),dim,_qrule->get_order()));
+    fe->attach_quadrature_rule (qrule.get());
+    std::unique_ptr<FEBase> fe_face (FEBase::build(dim, fe_type));
+    std::unique_ptr<QBase> qface(fe_type.default_quadrature_rule(dim-1));
+    fe_face->attach_quadrature_rule (qface.get());
+    
+    
+    const std::vector<Real> & JxW = fe->get_JxW();
+    const std::vector<std::vector<Real> > & phi = fe->get_phi();
+    
+    const std::vector<std::vector<RealGradient> > & dphi = fe->get_dphi();
+    const std::vector<Point> & q_points = fe->get_xyz();
+    //const DofMap & dof_map = _system.get_dof_map();
+    
+    
+    
+    std::vector<dof_id_type> dof_indices;
+    DenseMatrix<Number> ke;
+    DenseVector<Number> re;
+    
+    MeshBase::const_element_iterator           el = mesh.active_local_elements_begin();
+    MeshBase::const_element_iterator const end_el = mesh.active_local_elements_end();
+    
+    std::vector<Number> permeability;
+    
+    
+    for ( ; el != end_el; ++el)
     {
-      if (elem->neighbor_ptr(side) == nullptr)
-      {
-        const std::vector<std::vector<Real>> & phi_face = fe_face->get_phi();
-        const std::vector<Real> & JxW_face = fe_face->get_JxW();
-
-        fe_face->reinit(elem, side);
-
-        for(int k =0; k < _boundary_N_ids.size(); k++){
-
-                if (mesh.get_boundary_info().has_boundary_id (elem, side, _boundary_N_ids[k])) // Apply a traction on the right side
+        const Elem * elem = *el;
+        fe->reinit (elem);
+        
+        dof_map.dof_indices(elem, dof_indices);
+        const unsigned int n_dofs = cast_int<unsigned int>(dof_indices.size());
+        
+        libmesh_assert_equal_to (n_dofs, phi.size());
+        
+        ke.resize (n_dofs , n_dofs);
+        ke.zero();
+        
+        Real localPermeability=ComputeMaterialProprties(elem);
+        permeability.assign( qrule->n_points() ,localPermeability );
+        
+        if(_hasMeshModifier)
+        {
+            for (unsigned int qp=0; qp<qrule->n_points(); qp++)
+            {
+                if ( _fractureUserObject_ptr[0].isInside(q_points[qp]) )
                 {
-                 for (unsigned int qp=0; qp<qface->n_points(); qp++)
-                   for (unsigned int i=0; i != n_dofs; i++)
-                       re(i) += JxW_face[qp] * -1.0 * _value_N_bc.at(k) * phi_face[i][qp];
+                    permeability.at(qp)=_vector_value.at(_vector_value.size()-1);
                 }
-              }
             }
-          }
-
-       dof_map.constrain_element_matrix_and_vector (ke_1, re, dof_indices);
-       dof_map.constrain_element_matrix (ke_2,dof_indices);
-       //dof_map.constrain_element_matrix (ke_t,dof_indices);
-  
-       _stiffness_matrix_1.add_matrix (ke_1, dof_indices);
-       _stiffness_matrix_2.add_matrix (ke_2, dof_indices);
-       //_stiffness_matrix_t.add_matrix (ke_t, dof_indices);
-
-       _neum_flux.add_vector(re, dof_indices);
-     }
-
-
-
-     MooseVariable & var = _fe_problem.getStandardVariable(0, _sol_var_name);
-
-     System & sys = var.sys().system();
-
-     auto _sol=sys.current_local_solution.get();
-
-     _stiffness_matrix_1.close();
-     _stiffness_matrix_2.close();
-    //_stiffness_matrix_t.close();
-     _neum_flux.close();
+        }
+        
+        for (unsigned int i=0; i<phi.size(); i++)
+            for (unsigned int j=0; j<phi.size(); j++)
+                for (unsigned int qp=0; qp<qrule->n_points(); qp++)
+                {
+                    ke(i,j) +=  JxW[qp] * ( dphi[j][qp] * ( permeability.at(qp) *  dphi[i][qp] ) );
+                }
+        
+        re.resize(n_dofs);
+        re.zero();
+        
+        
+        for (auto side : elem->side_index_range())
+        {
+            if (elem->neighbor_ptr(side) == nullptr)
+            {
+                const std::vector<std::vector<Real>> & phi_face = fe_face->get_phi();
+                const std::vector<Real> & JxW_face = fe_face->get_JxW();
+                
+                fe_face->reinit(elem, side);
+                
+                for(int k =0; k < _boundary_N_ids.size(); k++){
+                    
+                    if (mesh.get_boundary_info().has_boundary_id (elem, side, _boundary_N_ids[k])) // Apply a traction on the right side
+                    {
+                        for (unsigned int qp=0; qp<qface->n_points(); qp++)
+                            for (unsigned int i=0; i != n_dofs; i++)
+                                re(i) += JxW_face[qp] * -1.0 * _value_N_bc.at(k) * phi_face[i][qp];
+                    }
+                }
+            }
+        }
+        
+        
+        dof_map.constrain_element_matrix_and_vector (ke, re, dof_indices);
+        
+        if (elem->subdomain_id()==0)
+        {
+            _stiffness_matrix_1.add_matrix (ke, dof_indices);
+            _neum_flux1.add_vector(re, dof_indices);
+        }
+        if (elem->subdomain_id()==1)
+        {
+            _stiffness_matrix_2.add_matrix (ke, dof_indices);
+            _neum_flux2.add_vector(re, dof_indices);
+        }
+        
+    }
     
-     auto &_sys = _fe_problem.es().get_system<TransientNonlinearImplicitSystem>("nl0");
+    _stiffness_matrix_1.close();
+    _stiffness_matrix_2.close();
+    _neum_flux1.close();
+    _neum_flux2.close();
     
-     libMesh::PetscMatrix<libMesh::Number> * _stiffness_matrix_t  = dynamic_cast<libMesh::PetscMatrix<libMesh::Number>* >(_sys.matrix);
+    MooseVariable & var = _fe_problem.getStandardVariable(0, _sol_var_name);
     
-     NonlinearSystemBase & _nl = _fe_problem.getNonlinearSystemBase();
+    System & sys = var.sys().system();
     
-     _fe_problem.computeJacobianSys(_sys, *_nl.currentSolution(), *_stiffness_matrix_t);
-
-
-     _stiffness_matrix_t->vector_mult(_diri_flux,*_nl.currentSolution());
-     //_diri_flux.print_matlab("diri_flux.m");
-     //_neum_flux.print_matlab("neum_flux.m");
-     _diri_flux.add(1.0,_neum_flux);
-     _tot_flux.add(-1.0,_diri_flux);
-     auto _f_tot = _flux_1.sum();
-     std::cout<<"f_tot= "<<_f_tot<<std::endl;
+    auto _sol=sys.current_local_solution.get();
     
-     _stiffness_matrix_1.add(1.0,*_stiffness_matrix_t);
     
-
-     _stiffness_matrix_1.vector_mult(_flux_1,*_nl.currentSolution());
-     _flux_1.add(1.0,_neum_flux);
-     _flux_1.add(-1.0,_diri_flux);
-
-
-
-     _stiffness_matrix_2.vector_mult(_flux_2,*_nl.currentSolution());
-
-     _flux_1.print_matlab("f_1.m");
-     _flux_2.print_matlab("f_2.m");
-     auto _f1 = _flux_1.sum();
-     auto _f2 = _flux_2.sum();
-
-     std::cout<<"f_1= "<<_f1<<std::endl;
-     std::cout<<"f_2= "<<_f2<<std::endl;
+    auto &_sys = _fe_problem.es().get_system<TransientNonlinearImplicitSystem>("nl0");
     
-     AssembleFlux::determine_dc_bnd_var_id(AssembleFlux::split_string(_dc_var, ' '));
+    //libMesh::PetscMatrix<libMesh::Number> * _stiffness_matrix_t  = dynamic_cast<libMesh::PetscMatrix<libMesh::Number>* >(_sys.matrix);
     
-     ConstBndNodeRange & bnd_nodes = *_fe_problem.mesh().getBoundaryNodeRange();
+    NonlinearSystemBase & _nl = _fe_problem.getNonlinearSystemBase();
     
-     unsigned int i = 0;
+    //_fe_problem.computeJacobianSys(_sys, *_nl.currentSolution(), *_stiffness_matrix_t);
+    
+    
+    _stiffness_matrix_1.vector_mult(_tmp_flux_1,*_nl.currentSolution());
+    _stiffness_matrix_2.vector_mult(_tmp_flux_2,*_nl.currentSolution());
+    
+    _tmp_flux_1.add(-1.0,_neum_flux1);
+    _tmp_flux_2.add(-1.0,_neum_flux2);
+    
+    //_diri_flux1.print_matlab("file1.m");
+    //_diri_flux2.print_matlab("file2.m");
+    
+    //_diri_flux1.pointwise_mult(_tmp_flux1,_bc_vec);
+    
+    PetscVector<Number> _bc_vec(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
+    _bc_vec.zero();
+    
+    AssembleFlux::determine_dc_bnd_var_id(AssembleFlux::split_string(_dc_var, ' '));
 
-     PetscVector<Number> _bc_vec(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
-     _bc_vec.zero();
- 
-     for(auto boundary = _dc_boundary_id.begin(); boundary != _dc_boundary_id.end(); ++boundary, i++)
-     {
-        // iterate just over boundary nodes
+    ConstBndNodeRange & bnd_nodes = *_fe_problem.mesh().getBoundaryNodeRange();
+
+    unsigned int i = 0;
+    for(auto boundary = _dc_boundary_id.begin(); boundary != _dc_boundary_id.end(); ++boundary, i++)
+    {
+        //    // iterate just over boundary nodes
         for (const auto & bnode : bnd_nodes)
         {
             libMesh::Node * current_node = bnode->_node;
-            
+
             // check if node is in active boundary list
             if (_fe_problem.mesh().isBoundaryNode(current_node->id(), *boundary))
             {
                 for (auto v = 0; v < _fe_problem.getNonlinearSystemBase().nVariables(); v++)
                 {
                     const Variable & var = _nl.system().variable(v);
-                    
+
                     unsigned int var_num = var.number();
-                   
+
                     if (current_node->n_dofs(_fe_problem.getNonlinearSystemBase().number(), var_num) > 0)
                     {
-                        
+
                         if(std::find(_dc_variables_id[i].begin(), _dc_variables_id[i].end(), var_num) != _dc_variables_id[i].end())
                         {
                             _bc_vec.set(current_node->dof_number(_fe_problem.getNonlinearSystemBase().number(), var_num, 0), 1.0);
-                            
+
                         }
                     }
                 }
             }
         }
-     }
+    }
+    _bc_vec.close();
     
-     _bc_vec.close();
+    _diri_flux1.pointwise_mult(_tmp_flux_1,_bc_vec);
+    _diri_flux1.print_matlab("print_mat_1.m");
+    //_diri_flux2.pointwise_mult(_tmp_flux_2,_bc_vec);
     
-
-     _console << "END ComputeFlux"  << std::endl;
+    
+    _stiffness_matrix_1.vector_mult(_flux_1,*_nl.currentSolution());
+    _flux_1.add(-1.0,_neum_flux1);
+    
+    _stiffness_matrix_2.vector_mult(_flux_2,*_nl.currentSolution());
+    _flux_2.add(-1.0,_neum_flux2);
+    
+    _flux_1.print_matlab("file1.m");
+    _flux_2.print_matlab("file2.m");
+    
+    _flux_1.add(-1.0,_diri_flux1);
+    //_flux_2.add(-1.0,_diri_flux2);
+    
+    _tot_flux.add(1.0,_flux_2);
+    
+    _tot_flux.add(1.0,_flux_1);
+    
+     auto _f1 = _flux_1.sum();
+     auto _f2 = _flux_2.sum();
+     auto _ft = _tot_flux.sum();
+    
+     std::cout<<"f_1= "<<_f1<<std::endl;
+     std::cout<<"f_2= "<<_f2<<std::endl;
+     std::cout<<"f_t= "<<_ft<<std::endl;
+    
+    
+    
+    
+//    MooseVariableFEBase  & flux_1_var = _fe_problem.getVariable(0, "flux_1", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
+//
+//    MooseVariableFEBase  & flux_2_var = _fe_problem.getVariable(0, "flux_2", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
+//
+//    MooseVariableFEBase  & sol_var = _fe_problem.getVariable(0, "CM", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
+//
+//    System & main_sys = sol_var.sys().system();
+//
+//    System & aux_sys = flux_1_var.sys().system();
+//
+//    NumericVector<Number> * aux_solution = aux_sys.solution.get();
+//
+//
+//    {
+//
+//        for (const auto & node : _fe_problem.es().get_mesh().local_node_ptr_range())
+//
+//        {
+//            for (unsigned int comp = 0; comp < node->n_comp(main_sys.number(), sol_var.number()); comp++)
+//
+//            {
+//
+//                const dof_id_type proj_index = node->dof_number(_nl.number(), sol_var.number(), comp);
+//
+//                const dof_id_type to_index_1 = node->dof_number(aux_sys.number(), flux_1_var.number(), comp);
+//                const dof_id_type to_index_2 = node->dof_number(aux_sys.number(), flux_2_var.number(), comp);
+//
+//                //main_solution->set(to_index, sol(proj_index));
+//
+//                aux_solution->set(to_index_1, _diri_flux1(proj_index));
+//                aux_solution->set(to_index_2, _diri_flux2(proj_index));
+//            }
+//
+//        }
+//    }
+//
+//
+//
+//    //main_solution->close();
+//    aux_solution->close();
+//    //main_sys.update();
+//    aux_sys.update();
+    
+    
+    
+    _console << "END ComputeFlux"  << std::endl;
 }
 
 
@@ -408,21 +469,14 @@ AssembleFlux::ComputeMaterialProprties(const Elem *elem)
     Real permeability=0.0;
     for(int ll=0; ll<_vector_p.size(); ll++)
     {
-      if (elem->subdomain_id()==_vector_p[ll])
-      {
-        permeability = _vector_value[ll];
-      }
+        if (elem->subdomain_id()==_vector_p[ll])
+        {
+            permeability = _vector_value[ll];
+        }
     }
     return permeability;
 }
 
-
-
-
-
-    
-
-    
 
 
 
@@ -524,4 +578,3 @@ AssembleFlux::split_string(const std::string & s, char delim)
     
     return v;
 }
-

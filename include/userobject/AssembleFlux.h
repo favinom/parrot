@@ -66,7 +66,7 @@ public:
 //    PetscMatrix<Number> _stiffness_matrix_2;
 //    PetscMatrix<Number> _stiffness_matrix_t;
     
-    AuxVariableName _sol_var_name;
+    //AuxVariableName _sol_var_name;
 
     std::vector<int> _vector_p;
     std::vector<Real> _vector_value;
@@ -74,7 +74,7 @@ public:
     std::vector<boundary_id_type> _boundary_N_ids;
     std::vector<Real> _value_N_bc;
     std::vector<Real> _value_D_bc;
-
+    Real _value_b;
     void ComputeFlux();
 
     Real ComputeMaterialProprties(const Elem *elem);

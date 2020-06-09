@@ -56,7 +56,8 @@ validParams<AssembleFlux>()
     params.addRequiredParam<std::vector<boundary_id_type>>("boundary_N_bc","boundary_N_bc");
     params.addRequiredParam<std::vector<Real>>("value_N_bc", "The value of Neumann");
     params.addRequiredParam<std::vector<Real>>("value_D_bc", "The value of Dirichlet");
-    params.addRequiredParam<AuxVariableName>("sol_variable", "The auxiliary variable to store the transferred values in.");
+    params.addRequiredParam<Real>("value_b", "The value of body force");
+    //params.addRequiredParam<AuxVariableName>("sol_variable", "The auxiliary variable to store the transferred values in.");
     //params.addParam<std::string>("output_file", "the file name of the output");
     params.addParam<std::string>("fractureMeshModifier","fractureMeshModifier");
     params.addRequiredParam<bool>("conservative","use a conservative scheme?");
@@ -74,13 +75,14 @@ GeneralUserObject(parameters),
 //_stiffness_matrix_1(_pp_comm),
 //_stiffness_matrix_2(_pp_comm),
 //_stiffness_matrix_t(_pp_comm),
-_sol_var_name(getParam<AuxVariableName>("sol_variable")),
+//_sol_var_name(getParam<AuxVariableName>("sol_variable")),
 _vector_p(getParam<std::vector<int>>("block_id")),
 _vector_value(getParam<std::vector<Real>>("value_p")),
 _boundary_D_ids(getParam<std::vector<boundary_id_type>>("boundary_D_bc")),
 _boundary_N_ids(getParam<std::vector<boundary_id_type>>("boundary_N_bc")),
 _value_N_bc(getParam<std::vector<Real>>("value_N_bc")),
 _value_D_bc(getParam<std::vector<Real>>("value_D_bc")),
+_value_b(getParam<Real>("value_b")),
 _hasMeshModifier( isParamValid("fractureMeshModifier") ),
 _conservativeScheme( getParam<bool>("conservative") ),
 _qrule(_assembly.qRule()),
@@ -273,6 +275,11 @@ AssembleFlux::ComputeFlux()
         re.resize(n_dofs);
         re.zero();
         
+        for (unsigned int i=0; i<phi.size(); i++)
+                for (unsigned int qp=0; qp<qrule->n_points(); qp++)
+                {
+                    re(i) += JxW[qp] * -1.0 * _value_b * phi[i][qp];
+                }
         
         for (auto side : elem->side_index_range())
         {
@@ -316,7 +323,7 @@ AssembleFlux::ComputeFlux()
     _neum_flux1.close();
     _neum_flux2.close();
     
-    MooseVariable & var = _fe_problem.getStandardVariable(0, _sol_var_name);
+    //MooseVariable & var = _fe_problem.getStandardVariable(0, _sol_var_name);
     
     System & sys = var.sys().system();
     
@@ -384,9 +391,7 @@ AssembleFlux::ComputeFlux()
     
     _diri_flux1.pointwise_mult(_tmp_flux_1,_bc_vec);
     _diri_flux1.print_matlab("print_mat_1.m");
-    //_diri_flux2.pointwise_mult(_tmp_flux_2,_bc_vec);
-    
-    
+
     _stiffness_matrix_1.vector_mult(_flux_1,*_nl.currentSolution());
     _flux_1.add(-1.0,_neum_flux1);
     
@@ -411,54 +416,7 @@ AssembleFlux::ComputeFlux()
      std::cout<<"f_2= "<<_f2<<std::endl;
      std::cout<<"f_t= "<<_ft<<std::endl;
     
-    
-    
-    
-//    MooseVariableFEBase  & flux_1_var = _fe_problem.getVariable(0, "flux_1", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
-//
-//    MooseVariableFEBase  & flux_2_var = _fe_problem.getVariable(0, "flux_2", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
-//
-//    MooseVariableFEBase  & sol_var = _fe_problem.getVariable(0, "CM", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
-//
-//    System & main_sys = sol_var.sys().system();
-//
-//    System & aux_sys = flux_1_var.sys().system();
-//
-//    NumericVector<Number> * aux_solution = aux_sys.solution.get();
-//
-//
-//    {
-//
-//        for (const auto & node : _fe_problem.es().get_mesh().local_node_ptr_range())
-//
-//        {
-//            for (unsigned int comp = 0; comp < node->n_comp(main_sys.number(), sol_var.number()); comp++)
-//
-//            {
-//
-//                const dof_id_type proj_index = node->dof_number(_nl.number(), sol_var.number(), comp);
-//
-//                const dof_id_type to_index_1 = node->dof_number(aux_sys.number(), flux_1_var.number(), comp);
-//                const dof_id_type to_index_2 = node->dof_number(aux_sys.number(), flux_2_var.number(), comp);
-//
-//                //main_solution->set(to_index, sol(proj_index));
-//
-//                aux_solution->set(to_index_1, _diri_flux1(proj_index));
-//                aux_solution->set(to_index_2, _diri_flux2(proj_index));
-//            }
-//
-//        }
-//    }
-//
-//
-//
-//    //main_solution->close();
-//    aux_solution->close();
-//    //main_sys.update();
-//    aux_sys.update();
-    
-    
-    
+
     _console << "END ComputeFlux"  << std::endl;
 }
 

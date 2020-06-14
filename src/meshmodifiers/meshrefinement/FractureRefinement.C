@@ -99,7 +99,7 @@ void FractureRefinement::doAMR()
       }
       else
       {
-        if (_fractureUserObject.isInside(center,hmax))
+        if (_fractureUserObject.isInside(center,0.0) || _fractureUserObject.isOnBoundary(elem[0]))
           elem[0].set_refinement_flag(Elem::REFINE);
       }
    		//else

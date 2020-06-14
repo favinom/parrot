@@ -72,6 +72,7 @@ public:
     std::vector<Real> _vector_value;
     std::vector<boundary_id_type> _boundary_D_ids;
     std::vector<boundary_id_type> _boundary_N_ids;
+    std::vector<BoundaryName> _boundary_M_ids;
     std::vector<Real> _value_N_bc;
     std::vector<Real> _value_D_bc;
     Real _value_b;
@@ -108,6 +109,7 @@ public:
     
     std::vector<std::string> split_string(const std::string & s, char delim);
     
+    UserObjectName const _userObjectName;
 
 
 };

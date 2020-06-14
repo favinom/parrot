@@ -1,9 +1,9 @@
 #!/bin/bash
 
-as=4;
-np=6;
-createmesh=0;
-correction=0;
+as=5;
+np=4;
+createmesh=1;
+correction=3;
 
 if [ $createmesh -eq 1 ]
 then
@@ -47,7 +47,7 @@ else
 fi
 echo $as
 
-#mpirun -n ${np} ../../../../parrot-opt -i 1diffusion.i adapSteps=${as}
+mpirun -n ${np} ../../../../parrot-opt -i 1diffusion.i adapSteps=${as}
 
 if [ $correction -eq 0 ]
 then

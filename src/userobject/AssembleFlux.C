@@ -55,16 +55,16 @@ validParams<AssembleFlux>()
     params.addRequiredParam<std::vector<boundary_id_type>>("boundary_D_bc","boundary_D_bc");
     params.addRequiredParam<std::vector<boundary_id_type>>("boundary_N_bc","boundary_N_bc");
     params.addRequiredParam<std::vector<Real>>("value_N_bc", "The value of Neumann");
-    params.addRequiredParam<std::vector<Real>>("value_D_bc", "The value of Dirichlet");
+//    params.addRequiredParam<std::vector<Real>>("value_D_bc", "The value of Dirichlet");
     params.addRequiredParam<Real>("value_b", "The value of body force");
+    params.addRequiredParam<std::vector<BoundaryName>>("boundary_M_bc","boundary_M_bc");
     //params.addRequiredParam<AuxVariableName>("sol_variable", "The auxiliary variable to store the transferred values in.");
     //params.addParam<std::string>("output_file", "the file name of the output");
     params.addParam<std::string>("fractureMeshModifier","fractureMeshModifier");
     params.addRequiredParam<bool>("conservative","use a conservative scheme?");
     params.addParam<std::string>("dc_boundaries", "-1", "Dirichlet Boundary ID");
     params.addParam<std::string>("dc_variables" , "-1", "Variable to which given BC_id applies");
-    //  params.addRequiredParam<int>("solver_type","solver_type");
-    
+    params.addParam<UserObjectName>("operator_userobject","The userobject that stores our operators");
     return params;
 }
 
@@ -80,20 +80,20 @@ _vector_p(getParam<std::vector<int>>("block_id")),
 _vector_value(getParam<std::vector<Real>>("value_p")),
 _boundary_D_ids(getParam<std::vector<boundary_id_type>>("boundary_D_bc")),
 _boundary_N_ids(getParam<std::vector<boundary_id_type>>("boundary_N_bc")),
+_boundary_M_ids(getParam<std::vector<BoundaryName>>("boundary_M_bc")),
 _value_N_bc(getParam<std::vector<Real>>("value_N_bc")),
-_value_D_bc(getParam<std::vector<Real>>("value_D_bc")),
+//_value_D_bc(getParam<std::vector<Real>>("value_D_bc")),
 _value_b(getParam<Real>("value_b")),
 _hasMeshModifier( isParamValid("fractureMeshModifier") ),
 _conservativeScheme( getParam<bool>("conservative") ),
 _qrule(_assembly.qRule()),
-_dc_var(getParam<std::string>("dc_variables"))
+_dc_var(getParam<std::string>("dc_variables")),
+_userObjectName(getParam<UserObjectName>("operator_userobject"))
 
 {
-    // std::cout<<"ciao IN"<<std::endl;
     if (_hasMeshModifier)
     {
         _meshModifierName=getParam<std::string>("fractureMeshModifier");
-        //exit(1);
     }
     
     std::vector<std::string> tmp = split_string(parameters.get<std::string>("dc_boundaries"), ' ');
@@ -101,8 +101,6 @@ _dc_var(getParam<std::string>("dc_variables"))
     {
         _dc_boundary_id.push_back(atoi(str_tmp->c_str()));
     }
-    
-    // std::cout<<"ciao OUT"<<std::endl;
 }
 
 
@@ -113,16 +111,7 @@ AssembleFlux::initialize()
     _console<<"BEGIN initialize\n";
     
     DofMap   const & dof_map = _fe_problem.getNonlinearSystemBase().dofMap();
-    
-    //  _stiffness_matrix_1.attach_dof_map(dof_map);
-    //  _stiffness_matrix_1.zero();
-    //
-    //  _stiffness_matrix_2.attach_dof_map(dof_map);
-    //  _stiffness_matrix_2.zero();
-    //
-    //  _stiffness_matrix_t.attach_dof_map(dof_map);
-    //  _stiffness_matrix_t.zero();
-    
+
     solve();
     
     _console<<"END initialize\n";
@@ -154,19 +143,17 @@ AssembleFlux::ComputeFlux()
     
     PetscMatrix<Number> _stiffness_matrix_1(_fe_problem.es().get_mesh().comm());
     PetscMatrix<Number> _stiffness_matrix_2(_fe_problem.es().get_mesh().comm());
-    //PetscMatrix<Number> _stiffness_matrix_t(_fe_problem.es().get_mesh().comm());
-    
+    PetscMatrix<Number> _boundary_matrix(_fe_problem.es().get_mesh().comm());
+  
     _stiffness_matrix_1.attach_dof_map(dof_map);
     _stiffness_matrix_1.init();
-    //_stiffness_matrix_1.clear();
+    _boundary_matrix.attach_dof_map(dof_map);
+    _boundary_matrix.init();
+
     
     _stiffness_matrix_2.attach_dof_map(dof_map);
     _stiffness_matrix_2.init();
-    //_stiffness_matrix_2.clear();
-    //_stiffness_matrix_t.attach_dof_map(dof_map);
-    //_stiffness_matrix_t.init();
-    //_stiffness_matrix_t.clear();
-    
+
     
     if (_hasMeshModifier)
     {
@@ -229,7 +216,7 @@ AssembleFlux::ComputeFlux()
     
     
     std::vector<dof_id_type> dof_indices;
-    DenseMatrix<Number> ke;
+    DenseMatrix<Number> ke, ke_m;
     DenseVector<Number> re;
     
     MeshBase::const_element_iterator           el = mesh.active_local_elements_begin();
@@ -278,7 +265,7 @@ AssembleFlux::ComputeFlux()
         for (unsigned int i=0; i<phi.size(); i++)
                 for (unsigned int qp=0; qp<qrule->n_points(); qp++)
                 {
-                    re(i) += JxW[qp] * -1.0 * _value_b * phi[i][qp];
+                    re(i) += JxW[qp] * 1.0 * _value_b * phi[i][qp];
                 }
         
         for (auto side : elem->side_index_range())
@@ -305,12 +292,12 @@ AssembleFlux::ComputeFlux()
         
         dof_map.constrain_element_matrix_and_vector (ke, re, dof_indices);
         
-        if (elem->subdomain_id()==0)
+        if (elem->subdomain_id()==_vector_p[0] || elem->subdomain_id()==_vector_p[1])
         {
             _stiffness_matrix_1.add_matrix (ke, dof_indices);
             _neum_flux1.add_vector(re, dof_indices);
         }
-        if (elem->subdomain_id()==1)
+        if (elem->subdomain_id()==_vector_p[2] || elem->subdomain_id()==_vector_p[3])
         {
             _stiffness_matrix_2.add_matrix (ke, dof_indices);
             _neum_flux2.add_vector(re, dof_indices);
@@ -327,30 +314,24 @@ AssembleFlux::ComputeFlux()
     
     System & sys = var.sys().system();
     
-    auto _sol=sys.current_local_solution.get();
-    
-    
+    auto _sol = sys.current_local_solution.get();
     auto &_sys = _fe_problem.es().get_system<TransientNonlinearImplicitSystem>("nl0");
-    
-    //libMesh::PetscMatrix<libMesh::Number> * _stiffness_matrix_t  = dynamic_cast<libMesh::PetscMatrix<libMesh::Number>* >(_sys.matrix);
-    
     NonlinearSystemBase & _nl = _fe_problem.getNonlinearSystemBase();
-    
-    //_fe_problem.computeJacobianSys(_sys, *_nl.currentSolution(), *_stiffness_matrix_t);
+ 
 
     _stiffness_matrix_1.vector_mult(_tmp_flux_1,*_nl.currentSolution());
     _stiffness_matrix_2.vector_mult(_tmp_flux_2,*_nl.currentSolution());
     
     _tmp_flux_1.add(-1.0,_neum_flux1);
     _tmp_flux_2.add(-1.0,_neum_flux2);
-//
-//    _tmp_flux_1.print_matlab("file_a.m");
-//    _tmp_flux_2.print_matlab("file_b.m");
     
-    //_diri_flux1.pointwise_mult(_tmp_flux1,_bc_vec);
+    //_stiffness_matrix_1.print_matlab("_stiffness_matrix_1.m");
+    //_stiffness_matrix_1.print_matlab("_stiffness_matrix_2.m");
+    (*_nl.currentSolution()).print_matlab("sol.m");
     
     PetscVector<Number> _bc_vec(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
     _bc_vec.zero();
+    _console<<"Dirichlet::begin" <<std::endl;
     
     AssembleFlux::determine_dc_bnd_var_id(AssembleFlux::split_string(_dc_var, ' '));
 
@@ -387,10 +368,11 @@ AssembleFlux::ComputeFlux()
         }
     }
     _bc_vec.close();
-    
+    _bc_vec.print_matlab("bc.m");
+    //_tmp_flux_1.print_matlab("tmp_flux.m");
+    _console<<"Dirichlet::end" <<std::endl;
     _diri_flux1.pointwise_mult(_tmp_flux_1,_bc_vec);
     _diri_flux2.pointwise_mult(_tmp_flux_2,_bc_vec);
-    _bc_vec.print_matlab("bcv.m");
 
     _stiffness_matrix_1.vector_mult(_flux_1,*_nl.currentSolution());
     _flux_1.add(-1.0,_neum_flux1);
@@ -398,11 +380,13 @@ AssembleFlux::ComputeFlux()
     _stiffness_matrix_2.vector_mult(_flux_2,*_nl.currentSolution());
     _flux_2.add(-1.0,_neum_flux2);
     
-    _flux_1.print_matlab("file1.m");
-    _flux_2.print_matlab("file2.m");
+//    _neum_flux1.print_matlab("f_n1.m");
+//    
+//    _diri_flux1.print_matlab("d_n1.m");
+//    _diri_flux2.print_matlab("d_n2.m");
     
-//    _flux_1.add(-1.0,_diri_flux1);
-//    _flux_2.add(-1.0,_diri_flux2);
+    _flux_1.add(-1.0,_diri_flux1);
+    _flux_2.add(-1.0,_diri_flux2);
     
     _tot_flux.add(1.0,_flux_2);
     _tot_flux.add(1.0,_flux_1);
@@ -411,10 +395,200 @@ AssembleFlux::ComputeFlux()
      auto _f2 = _flux_2.sum();
      auto _ft = _tot_flux.sum();
     
+    
+    MeshBase::const_element_iterator           el_3 = mesh.active_local_elements_begin();
+    MeshBase::const_element_iterator const end_el_3 = mesh.active_local_elements_end();
+    
+    _console<<"_Boundary Mass begin" <<std::endl;
+    _console<<"new_id "<<mesh.get_boundary_info().get_id_by_name(_boundary_M_ids[0])<<std::endl;
+    _console<<"new_id "<<mesh.get_boundary_info().get_id_by_name(_boundary_M_ids[1])<<std::endl;
+    
+    for ( ; el_3 != end_el_3; ++el_3)
+    {
+        const Elem * elem = *el_3;
+        
+        fe->reinit (elem);
+        
+        dof_map.dof_indices(elem, dof_indices);
+        
+        const unsigned int n_dofs = cast_int<unsigned int>(dof_indices.size());
+        
+        libmesh_assert_equal_to (n_dofs, phi.size());
+        
+        
+        ke_m.resize (n_dofs , n_dofs);
+        ke_m.zero();
+        
+        
+        for (auto side : elem->side_index_range())
+        {
+            //if (elem->neighbor_ptr(side) == nullptr)
+            {
+                const std::vector<std::vector<Real>> & phi_face = fe_face->get_phi();
+                const std::vector<Real> & JxW_face = fe_face->get_JxW();
+                
+                fe_face->reinit(elem, side);
+                
+                for(int k =0; k < _boundary_M_ids.size(); k++)
+                {
+                    if (mesh.get_boundary_info().has_boundary_id (elem, side, mesh.get_boundary_info().get_id_by_name(_boundary_M_ids[k]))) // Apply a traction on the right side
+                    {
+                        //std::cout<<"ciao"<<std::endl;
+                        for (unsigned int qp=0; qp<qface->n_points(); qp++)
+                        {
+                            for (unsigned int i=0; i != n_dofs; i++)
+                            {
+                                for (unsigned int j=0; j != n_dofs; j++)
+                                {
+                                    
+                                    ke_m(i,i) += JxW_face[qp] * phi_face[i][qp] * phi_face[j][qp];
+                                    
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        dof_map.constrain_element_matrix(ke_m,dof_indices);
+        
+        _boundary_matrix.add_matrix (ke_m, dof_indices);
+        
+        
+    }
+    
+    
+    _boundary_matrix.close();
+    
+    PetscVector<Number> _diag(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
+    _diag.zero();
+
+    
+    
+    _boundary_matrix.get_diagonal(_diag);
+
+    //_diag.print_matlab("diag_text.m");
+    
+    for (dof_id_type i=_diag.first_local_index(); i<_diag.last_local_index(); i++){
+        if(_diag(i)==0)
+        {
+            _diag.set(i,1.0);
+        }
+    }
+    
+    _diag.close();
+    
+    StoreOperators & storeOperatorsUO=_fe_problem.getUserObjectTempl<StoreOperators>(_userObjectName);
+    
+    auto _I = storeOperatorsUO.H_Interpolator();
+    
+    auto _hv = storeOperatorsUO.HangVec();
+    
+    PetscVector<Number> _f_1(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
+    _f_1.zero();
+    
+    PetscVector<Number> _f_2(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
+    _f_2.zero();
+    
+    _diag.reciprocal();
+    
+    _f_1.pointwise_mult(_flux_1,_diag);
+    
+    _f_2.pointwise_mult(_flux_2,_diag);
+    
+    PetscVector<Number> _tmp(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
+    
+    _tmp.zero();
+    
+    PetscVector<Number> _tmp_sol(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
+    
+    _tmp_sol.zero();
+    
+    _tmp.pointwise_mult(_f_1,*_hv);
+    
+    _I->vector_mult(_tmp_sol,_f_1);
+    
+    _tmp_sol.add(_tmp);
+    
+    _f_1.zero();
+    
+    _f_1.add(_tmp_sol);
+    
+    _tmp.zero();
+    
+    _tmp_sol.zero();
+    
+    _tmp.pointwise_mult(_f_2,*_hv);
+    
+    _I->vector_mult(_tmp_sol,_f_2);
+    
+    _tmp_sol.add(_tmp);
+    
+    _f_2.zero();
+    
+    _f_2.add(_tmp_sol);
+    
+    
+
+    
+    //_flux_1.print_matlab("_flux1.m");
+    
+    //_f_1.print_matlab("_f_1.m");
+    
      std::cout<<"f_1= "<<_f1<<std::endl;
      std::cout<<"f_2= "<<_f2<<std::endl;
      std::cout<<"f_t= "<<_ft<<std::endl;
     
+    
+    
+    
+    // copy projected solution into target es
+    
+    MooseVariableFEBase  & _flux_var_1 = _fe_problem.getVariable(0, "flux_1", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
+    
+    MooseVariableFEBase  & _flux_var_2 = _fe_problem.getVariable(0, "flux_2", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
+    
+    MooseVariableFEBase  & sol_var = _fe_problem.getVariable(0, "CM", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
+    
+    // solution of the original system
+    System & main_sys = sol_var.sys().system();
+    
+    System & aux_sys = _flux_var_1.sys().system();
+    
+    NumericVector<Number> * aux_solution = aux_sys.solution.get();
+    
+    {
+        
+        for (const auto & node : _fe_problem.es().get_mesh().local_node_ptr_range())
+            
+        {
+            for (unsigned int comp = 0; comp < node->n_comp(main_sys.number(), sol_var.number()); comp++)
+                
+            {
+                
+                const dof_id_type proj_index = node->dof_number(_nl.number(), sol_var.number(), comp);
+                
+                //const dof_id_type to_index = node->dof_number(main_sys.number(), main_var.number(), comp);
+                
+                const dof_id_type to_index_1 = node->dof_number(aux_sys.number(), _flux_var_1.number(), comp);
+                
+                const dof_id_type to_index_2 = node->dof_number(aux_sys.number(), _flux_var_2.number(), comp);
+                
+                //main_solution->set(to_index, sol(proj_index));
+                
+                aux_solution->set(to_index_1, _f_1(proj_index));
+                aux_solution->set(to_index_2, _f_2(proj_index));
+            }
+        }
+    }
+    
+    
+    
+    //main_solution->close();
+    aux_solution->close();
+    //main_sys.update();
+    aux_sys.update();
 
     _console << "END ComputeFlux"  << std::endl;
 }

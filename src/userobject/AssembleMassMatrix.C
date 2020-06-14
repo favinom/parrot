@@ -18,20 +18,6 @@
 // #include "MooseVariableFEBase.h"
 
 #include "libmesh/quadrature_gauss.h"
-// #include "libmesh/exodusII_io.h"
-// #include "libmesh/nonlinear_implicit_system.h"
-// #include "libmesh/petsc_matrix.h"
-// #include "libmesh/petsc_vector.h"
-// #include "libmesh/sparse_matrix.h"
-// #include "libmesh/equation_systems.h"
-// #include "libmesh/linear_implicit_system.h"
-// #include "libmesh/transient_system.h"
-// #include "libmesh/dirichlet_boundaries.h"
-// #include "libmesh/zero_function.h"
-// #include "libmesh/const_function.h"
-// #include "libmesh/parsed_function.h"
-// #include "libmesh/petsc_matrix.h"
-// #include "libmesh/petsc_vector.h"
 
 registerMooseObject("parrotApp", AssembleMassMatrix);
 
@@ -335,6 +321,7 @@ void AssembleMassMatrix::assemble_mass_matrix(){
    (*_interpolator).close();
    (*_hanging_interpolator).close();
     _hanging_vec->close();
+   //(*_hanging_interpolator).print_matlab("hang_m.m");
 
 
     // auto elapsed_di = std::chrono::duration<double, std::milli>(diff_di).count();

@@ -284,6 +284,7 @@ AssembleFlux::ComputeFlux()
                         for (unsigned int qp=0; qp<qface->n_points(); qp++)
                             for (unsigned int i=0; i != n_dofs; i++)
                                 re(i) += JxW_face[qp] * -1.0 * _value_N_bc.at(k) * phi_face[i][qp];
+                                //std::cout<<"ciao"<<_value_N_bc.at(k)<<std::endl;
                     }
                 }
             }
@@ -301,6 +302,7 @@ AssembleFlux::ComputeFlux()
         {
             _stiffness_matrix_2.add_matrix (ke, dof_indices);
             _neum_flux2.add_vector(re, dof_indices);
+            //std::cout<<"ciao"<<std::endl;
         }
         
     }
@@ -549,7 +551,7 @@ AssembleFlux::ComputeFlux()
     
     MooseVariableFEBase  & _flux_var_2 = _fe_problem.getVariable(0, "flux_2", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
     
-    MooseVariableFEBase  & sol_var = _fe_problem.getVariable(0, "pressure", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
+    MooseVariableFEBase  & sol_var = _fe_problem.getVariable(0, "CM", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
     
     // solution of the original system
     System & main_sys = sol_var.sys().system();

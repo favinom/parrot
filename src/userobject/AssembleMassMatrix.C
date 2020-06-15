@@ -105,6 +105,7 @@ void AssembleMassMatrix::assemble_mass_matrix(){
    	_lump_mass_matrix->attach_dof_map(dof_map);
    	_poro_lump_mass_matrix->attach_dof_map(dof_map);
     _hanging_interpolator->attach_dof_map(dof_map);
+       
    	_interpolator->init();
    	_mass_matrix->init();
    	_poro_mass_matrix->init();
@@ -193,7 +194,7 @@ void AssembleMassMatrix::assemble_mass_matrix(){
     	Me_l_p.resize(loc_n,loc_n);
     	Me_i.resize(loc_n,loc_n);
 
-      Me_h.resize(loc_n,loc_n);
+        Me_h.resize(loc_n,loc_n);
 
     	Me.zero();
     	Me_p.zero();
@@ -201,19 +202,19 @@ void AssembleMassMatrix::assemble_mass_matrix(){
     	Me_l_p.zero();
     	Me_i.zero();
 
-      Me_h.zero();
+        Me_h.zero();
 
-      Real poro=ComputeMaterialProprties(elem);
-      poroVec.assign(qrule->n_points(), poro);
-      if(_hasMeshModifier)
-      {
-        Real poroFrac=_vector_value.at(_vector_value.size()-1);
-        for (unsigned int qp=0; qp<qrule->n_points(); qp++)
-          if ( _fractureUserObject_ptr[0].isInside(q_points[qp]) )
-              {
-                poroVec.at(qp)=poroFrac;
-              }
-      }
+        Real poro=ComputeMaterialProprties(elem);
+        poroVec.assign(qrule->n_points(), poro);
+        if(_hasMeshModifier)
+        {
+            Real poroFrac=_vector_value.at(_vector_value.size()-1);
+            for (unsigned int qp=0; qp<qrule->n_points(); qp++)
+              if ( _fractureUserObject_ptr[0].isInside(q_points[qp]) )
+                  {
+                    poroVec.at(qp)=poroFrac;
+                  }
+        }
 
     	for (unsigned int i=0; i<phi.size(); i++)
     	{
@@ -250,7 +251,7 @@ void AssembleMassMatrix::assemble_mass_matrix(){
            {
             if(Me_h(i,j)==1){
 
-              _hanging_vec->set(dof_indices.at(i),0.0);  
+              _hanging_vec->set(dof_indices.at(i),0.0);
 
             }
             if (Me_h(i,j)<0){
@@ -260,7 +261,7 @@ void AssembleMassMatrix::assemble_mass_matrix(){
               // std::cout<<"dof_indices.at(j)"<<dof_indices.at(j)<<std::endl;
               // std::cout<<"value"<<Me_h(i,j)<<std::endl;
               //std::cout<<"end"<<std::endl;
-              //_hanging_vec->set(dof_indices.at(j),0.0);  
+              //_hanging_vec->set(dof_indices.at(j),0.0);
 
               Real value = -1.0 * Me_h(i,j);
               

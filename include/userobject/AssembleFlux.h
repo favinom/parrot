@@ -66,7 +66,7 @@ public:
 //    PetscMatrix<Number> _stiffness_matrix_2;
 //    PetscMatrix<Number> _stiffness_matrix_t;
     
-    //AuxVariableName _sol_var_name;
+    VariableName _sol_var_name;
 
     std::vector<int> _vector_p;
     std::vector<Real> _vector_value;

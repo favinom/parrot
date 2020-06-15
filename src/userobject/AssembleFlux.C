@@ -58,7 +58,7 @@ validParams<AssembleFlux>()
 //    params.addRequiredParam<std::vector<Real>>("value_D_bc", "The value of Dirichlet");
     params.addRequiredParam<Real>("value_b", "The value of body force");
     params.addRequiredParam<std::vector<BoundaryName>>("boundary_M_bc","boundary_M_bc");
-    //params.addRequiredParam<AuxVariableName>("sol_variable", "The auxiliary variable to store the transferred values in.");
+    params.addRequiredParam<VariableName>("sol_variable", "The auxiliary variable to store the transferred values in.");
     //params.addParam<std::string>("output_file", "the file name of the output");
     params.addParam<std::string>("fractureMeshModifier","fractureMeshModifier");
     params.addRequiredParam<bool>("conservative","use a conservative scheme?");
@@ -75,7 +75,7 @@ GeneralUserObject(parameters),
 //_stiffness_matrix_1(_pp_comm),
 //_stiffness_matrix_2(_pp_comm),
 //_stiffness_matrix_t(_pp_comm),
-//_sol_var_name(getParam<AuxVariableName>("sol_variable")),
+_sol_var_name(getParam<VariableName>("sol_variable")),
 _vector_p(getParam<std::vector<int>>("block_id")),
 _vector_value(getParam<std::vector<Real>>("value_p")),
 _boundary_D_ids(getParam<std::vector<boundary_id_type>>("boundary_D_bc")),
@@ -325,7 +325,7 @@ AssembleFlux::ComputeFlux()
     _neum_flux1.close();
     _neum_flux2.close();
     
-    MooseVariable & var = _fe_problem.getStandardVariable(0,"pressure");
+    MooseVariable & var = _fe_problem.getStandardVariable(0,_sol_var_name);
     
     System & sys = var.sys().system();
     
@@ -564,7 +564,7 @@ AssembleFlux::ComputeFlux()
     
     MooseVariableFEBase  & _flux_var_2 = _fe_problem.getVariable(0, "flux_2", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
     
-    MooseVariableFEBase  & sol_var = _fe_problem.getVariable(0, "pressure", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
+    MooseVariableFEBase  & sol_var = _fe_problem.getVariable(0, _sol_var_name, Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
     
     // solution of the original system
     System & main_sys = sol_var.sys().system();

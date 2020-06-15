@@ -17,9 +17,9 @@ solve = false
 
 [MeshModifiers]
 
-[./subdomains_0]
+[./subdomains_1]
  type = SubdomainBoundingBox
- top_right =   '0.5 1.001 0.0'
+ top_right =   ' 0.501 1.001 0.0'
  bottom_left = '-0.01 -0.01 0.0'
  block_id = 1
  block_name = block_1
@@ -27,22 +27,20 @@ solve = false
 
 [./subdomains_2]
  type = SubdomainBoundingBox
- top_right =   '0.5 1.001 0.0'
- bottom_left = '-0.01 -0.01 0.0'
- block_id = 1
- block_name = block_1
+ top_right =   '1.01 1.01 0.0'
+ bottom_left = '0.499 -0.01 0.0'
+ block_id = 2
+ block_name = block_2
  [../]
 
 
 [./center_side_set_2]
 type = SideSetsBetweenSubdomains
-master_block = 0
-paired_block = 1
+master_block = 1
+paired_block = 2
 new_boundary = 'new_side_set_2'
 depends_on = 'subdomains_1 subdomains_2'
 [../]
-
-
 
 [./fractureUserObject]
  type = FractureUserObject
@@ -97,7 +95,7 @@ petsc_options_value='  preonly   lu       NONZERO               mumps '
 [./soln]
 type = SolveDiffusion3
 execute_on = 'initial'
-block_id='0 1'
+block_id='1 2'
 value_p ='1 1 1e4'
 boundary_D_bc='1'
 value_D_bc='1.0'
@@ -115,7 +113,7 @@ type = StoreOperators
 [./MassAssembly]
  type = AssembleMassMatrix
  operator_userobject = storeOperatorsUO
- block_id = '1 1'
+ block_id = '1 2'
  value_p = '1.0 1.0'
  execute_on = 'initial'
  constrain_matrix = true
@@ -128,7 +126,7 @@ type = StoreOperators
 [./assF]
 type = AssembleFlux
 execute_on = 'timestep_end'
-block_id='0 1'
+block_id='1 2'
 value_p ='1.0 1.0 1e4'
 boundary_D_bc='1'
 #value_D_bc='1.0'
@@ -140,7 +138,7 @@ value_b=0.0
 operator_userobject = storeOperatorsUO
 dc_variables='pressure'
 dc_boundaries = '1'
-boundary_M_bc=''
+boundary_M_bc='SideSetsBetweenSubdomains'
 [../]
  
 []

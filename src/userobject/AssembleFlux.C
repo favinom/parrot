@@ -284,7 +284,6 @@ AssembleFlux::ComputeFlux()
                         for (unsigned int qp=0; qp<qface->n_points(); qp++)
                             for (unsigned int i=0; i != n_dofs; i++)
                                 re(i) += JxW_face[qp] * -1.0 * _value_N_bc.at(k) * phi_face[i][qp];
-                                //std::cout<<"ciao"<<_value_N_bc.at(k)<<std::endl;
                     }
                 }
             }
@@ -292,17 +291,31 @@ AssembleFlux::ComputeFlux()
         
         
         dof_map.constrain_element_matrix_and_vector (ke, re, dof_indices);
-        
-        if (elem->subdomain_id()==_vector_p[0] || elem->subdomain_id()==_vector_p[1])
-        {
-            _stiffness_matrix_1.add_matrix (ke, dof_indices);
-            _neum_flux1.add_vector(re, dof_indices);
+        if(_vector_p.size()>2){
+            if (elem->subdomain_id()==_vector_p[0] || elem->subdomain_id()==_vector_p[1])
+            {
+                _stiffness_matrix_1.add_matrix (ke, dof_indices);
+                _neum_flux1.add_vector(re, dof_indices);
+            }
+            if (elem->subdomain_id()==_vector_p[2] || elem->subdomain_id()==_vector_p[3])
+            {
+                _stiffness_matrix_2.add_matrix (ke, dof_indices);
+                _neum_flux2.add_vector(re, dof_indices);
+            }
         }
-        if (elem->subdomain_id()==_vector_p[2] || elem->subdomain_id()==_vector_p[3])
+        else
         {
-            _stiffness_matrix_2.add_matrix (ke, dof_indices);
-            _neum_flux2.add_vector(re, dof_indices);
-            //std::cout<<"ciao"<<std::endl;
+            if (elem->subdomain_id()==_vector_p[0])
+            {
+                _stiffness_matrix_1.add_matrix (ke, dof_indices);
+                _neum_flux1.add_vector(re, dof_indices);
+            }
+            if (elem->subdomain_id()==_vector_p[1])
+            {
+                _stiffness_matrix_2.add_matrix (ke, dof_indices);
+                _neum_flux2.add_vector(re, dof_indices);
+            }
+        
         }
         
     }
@@ -312,7 +325,7 @@ AssembleFlux::ComputeFlux()
     _neum_flux1.close();
     _neum_flux2.close();
     
-    MooseVariable & var = _fe_problem.getStandardVariable(0,"CM");
+    MooseVariable & var = _fe_problem.getStandardVariable(0,"pressure");
     
     System & sys = var.sys().system();
     
@@ -329,7 +342,7 @@ AssembleFlux::ComputeFlux()
     
     //_stiffness_matrix_1.print_matlab("_stiffness_matrix_1.m");
     //_stiffness_matrix_1.print_matlab("_stiffness_matrix_2.m");
-    (*_nl.currentSolution()).print_matlab("sol.m");
+    //(*_nl.currentSolution()).print_matlab("sol.m");
     
     PetscVector<Number> _bc_vec(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
     _bc_vec.zero();
@@ -370,7 +383,7 @@ AssembleFlux::ComputeFlux()
         }
     }
     _bc_vec.close();
-    _bc_vec.print_matlab("bc.m");
+    //_bc_vec.print_matlab("bc.m");
     //_tmp_flux_1.print_matlab("tmp_flux.m");
     _console<<"Dirichlet::end" <<std::endl;
     _diri_flux1.pointwise_mult(_tmp_flux_1,_bc_vec);
@@ -551,7 +564,7 @@ AssembleFlux::ComputeFlux()
     
     MooseVariableFEBase  & _flux_var_2 = _fe_problem.getVariable(0, "flux_2", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
     
-    MooseVariableFEBase  & sol_var = _fe_problem.getVariable(0, "CM", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
+    MooseVariableFEBase  & sol_var = _fe_problem.getVariable(0, "pressure", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
     
     // solution of the original system
     System & main_sys = sol_var.sys().system();

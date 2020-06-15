@@ -549,7 +549,7 @@ AssembleFlux::ComputeFlux()
     
     MooseVariableFEBase  & _flux_var_2 = _fe_problem.getVariable(0, "flux_2", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
     
-    MooseVariableFEBase  & sol_var = _fe_problem.getVariable(0, "CM", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
+    MooseVariableFEBase  & sol_var = _fe_problem.getVariable(0, "pressure", Moose::VarKindType::VAR_ANY, Moose::VarFieldType::VAR_FIELD_STANDARD);
     
     // solution of the original system
     System & main_sys = sol_var.sys().system();

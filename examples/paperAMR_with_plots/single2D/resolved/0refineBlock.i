@@ -12,6 +12,7 @@ solve = false
 []
 
 [MeshModifiers]
+#active=''
 [./subdomains_0]
  type = SubdomainBoundingBox
  bottom_left = '-51.00 -40.00001 0.0'

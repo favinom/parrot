@@ -9,12 +9,14 @@ xmin=-50.0
 xmax= 50.0
 ymin=-50.0
 ymax= 50.0
-nx = 1600
-ny = 1600
+nx = 50
+ny = 50
 dim = 2
 []
 
 [MeshModifiers]
+active='createNewSidesetInflow createNewSidesetOutflow subdomains_0 fractureUserObject'
+ 
 [./createNewSidesetInflow]
 type = AddSideSetsFromBoundingBox
 boundary_id_old = 'left'
@@ -33,9 +35,9 @@ top_right =   '51.0 -40.0 0.0'
  
 [./subdomains_0]
 type = SubdomainBoundingBox
-bottom_left = '-51.00 -40.00001 0.0'
-top_right =   '0.0000 51.0001 0.0'
-block_id = 0
+bottom_left = '-51.00 -51.00001 0.0'
+top_right =   '51.0000 -40.0001 0.0'
+block_id = 2
 block_name = up_block_0
 [../]
 

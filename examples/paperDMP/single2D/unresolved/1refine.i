@@ -26,8 +26,8 @@ fd2_string = '0.01'
 [./my]
 type = FractureRefinement
 fractureMeshModifier = fractureUserObject
-refinements='3 0' 
-outputFileName = mesh_3_0.e
+refinements='6 0'
+#outputFileName = mesh_6_0.e
 doBoundaryRefinement = false
 [../]
 
@@ -41,3 +41,8 @@ solve_type=LINEAR
 line_search = 'none'
 nl_abs_tol = 1e-8
 []
+
+[Outputs]
+ xda     = true
+ perf_graph = true
+ []

@@ -36,20 +36,20 @@ fd2_string = '0.01'
 [./conductivity1]
 type = FlowAndTransport
 block = 0
-k = 1e-6 phi =0.2
+k = 1 phi=2.0e5
 pressure = P_aux
 conservative = false
 fractureMeshModifier =  fractureUserObject
-kFrac=1e-1    phiFrac=0.4
+kFrac=1e5    phiFrac=4e5
 [../]
 [./conductivity2]
 type = FlowAndTransport
-block = 1
-k = 1e-5 phi =0.25
+block = 2
+k = 10 phi=2.5e5
 pressure = P_aux
 conservative = false
 fractureMeshModifier =  fractureUserObject
-kFrac=1e-1    phiFrac=0.4
+kFrac=1e5    phiFrac=4e5
 [../]
 []
 
@@ -81,7 +81,7 @@ petsc_options_iname=' -ksp_type            '   # -mat_view
 petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
 
 dt = 1e7
-num_steps=1
+num_steps=100
 
 [./Quadrature] order=TENTH [../]
 
@@ -101,7 +101,7 @@ perf_graph = true
 type = SolveDiffusion
 execute_on = 'initial'
 block_id='0 2'
-value_p ='1e-6 1e-5 1e-1'
+value_p ='1 10 1e5'
 boundary_D_bc = '11 22'
 value_D_bc='4.0 1.0'
 boundary_N_bc = ''
@@ -115,8 +115,8 @@ conservative=false
 [./MassAssembly]
 type = AssembleMassMatrix
 operator_userobject = storeOperatorsUO
-block_id = '0   1'
-value_p = ' 0.2 0.25 0.4'
+block_id = '0 2'
+value_p = '2.0e5 2.5e5 4e5'
 execute_on = 'initial'
 constrain_matrix = true
 dc_boundaries = '11'
@@ -124,7 +124,7 @@ dc_variables='CM'
 value_D_bc='0.01'
 fractureMeshModifier = fractureUserObject
 [../]
- 
+
 [./antidiffusive_fluxes]
  type = AntidiffusiveFluxes
  operator_userobject = storeOperatorsUO
@@ -136,15 +136,4 @@ fractureMeshModifier = fractureUserObject
 [./storeOperatorsUO]
 type = StoreOperators
 [../]
- 
 []
-
-
-
-
-
-
-
-
-
-

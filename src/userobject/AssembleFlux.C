@@ -289,6 +289,7 @@ AssembleFlux::ComputeFlux()
             }
         }
         
+        //std::cout<<"_vector_p.size()"<<_vector_p.size()<<std::endl;
         
         dof_map.constrain_element_matrix_and_vector (ke, re, dof_indices);
         if(_vector_p.size()>2){
@@ -415,8 +416,8 @@ AssembleFlux::ComputeFlux()
     MeshBase::const_element_iterator const end_el_3 = mesh.active_local_elements_end();
     
     _console<<"_Boundary Mass begin" <<std::endl;
-    _console<<"new_id "<<mesh.get_boundary_info().get_id_by_name(_boundary_M_ids[0])<<std::endl;
-    _console<<"new_id "<<mesh.get_boundary_info().get_id_by_name(_boundary_M_ids[1])<<std::endl;
+    //_console<<"new_id "<<mesh.get_boundary_info().get_id_by_name(_boundary_M_ids[0])<<std::endl;
+    //_console<<"new_id "<<mesh.get_boundary_info().get_id_by_name(_boundary_M_ids[1])<<std::endl;
     
     for ( ; el_3 != end_el_3; ++el_3)
     {
@@ -446,6 +447,7 @@ AssembleFlux::ComputeFlux()
                 
                 for(int k =0; k < _boundary_M_ids.size(); k++)
                 {
+                    //_console<<"new_id "<<mesh.get_boundary_info().has_boundary_id (elem, side, mesh.get_boundary_info().get_id_by_name(_boundary_M_ids[k]))<<std::endl;
                     if (mesh.get_boundary_info().has_boundary_id (elem, side, mesh.get_boundary_info().get_id_by_name(_boundary_M_ids[k]))) // Apply a traction on the right side
                     {
                         //std::cout<<"ciao"<<std::endl;
@@ -466,7 +468,7 @@ AssembleFlux::ComputeFlux()
             }
         }
         
-        dof_map.constrain_element_matrix(ke_m,dof_indices);
+        //dof_map.constrain_element_matrix(ke_m,dof_indices);
         
         _boundary_matrix.add_matrix (ke_m, dof_indices);
         
@@ -482,8 +484,11 @@ AssembleFlux::ComputeFlux()
     
     
     _boundary_matrix.get_diagonal(_diag);
+    
+    Real diagSum=_diag.sum();
+    _console<<diagSum<<std::endl;
 
-    //_diag.print_matlab("diag_text.m");
+    _diag.print_matlab("diag_text.m");
     
     for (dof_id_type i=_diag.first_local_index(); i<_diag.last_local_index(); i++){
         if(_diag(i)==0)

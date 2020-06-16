@@ -208,12 +208,12 @@ void AssembleMassMatrix::assemble_mass_matrix(){
         poroVec.assign(qrule->n_points(), poro);
         if(_hasMeshModifier)
         {
-            Real poroFrac=_vector_value.at(_vector_value.size()-1);
-            for (unsigned int qp=0; qp<qrule->n_points(); qp++)
-              if ( _fractureUserObject_ptr[0].isInside(q_points[qp]) )
-                  {
-                    poroVec.at(qp)=poroFrac;
-                  }
+        Real poroFrac=_vector_value.at(_vector_value.size()-1);
+        for (unsigned int qp=0; qp<qrule->n_points(); qp++)
+          if ( _fractureUserObject_ptr[0].isInside(q_points[qp]) )
+              {
+                poroVec.at(qp)=poroFrac;
+              }
         }
 
     	for (unsigned int i=0; i<phi.size(); i++)

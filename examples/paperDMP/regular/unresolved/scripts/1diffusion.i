@@ -18,19 +18,30 @@ parallel_type = distributed
 
 [./subdomains_1]
 type = SubdomainBoundingBox
-top_right =   ' 0.5 1.001 0.0'
+# top_right =   ' 0.5 1.001 0.0'
+# bottom_left = '-0.01 -0.01 0.0'
+
 bottom_left = '-0.01 -0.01 0.0'
+top_right =   ' 1.01 0.7 0.0'
+
+
 block_id = 1
 block_name = block_1
 [../]
 
 [./subdomains_2]
 type = SubdomainBoundingBox
+# top_right =   '1.01 1.01 0.0'
+# bottom_left = '0.5 -0.01 0.0'
+
+bottom_left = '0.0 0.7 0.0'
 top_right =   '1.01 1.01 0.0'
-bottom_left = '0.5 -0.01 0.0'
+
+
 block_id = 2
 block_name = block_2
 [../]
+
 
 
 [./center_side_set_2]
@@ -55,7 +66,7 @@ fd2_string = '1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4'
 type = FractureRefinement
 fractureMeshModifier = fractureUserObject
 refinements='${mRefLev} ${mUmr}'
-outputFileName = mesh_${mResName}_${mRefLevName}_${mUmr}.e
+# outputFileName = mesh_${mResName}_${mRefLevName}_${mUmr}.e
 doBoundaryRefinement = true
 [../]
 
@@ -102,9 +113,10 @@ boundary_N_bc='3 '
 value_N_bc='-1.0 '
 aux_variable=pressure
 fractureMeshModifier = fractureUserObject
-output_file=DiffusionOut2_${mResName}_${mRefLevName}_${mUmr}.e
+# output_file=DiffusionOut2_${mResName}_${mRefLevName}_${mUmr}.e
 solver_type = 1
 conservative = false
+stabilize = true
 [../]
 
 
@@ -127,7 +139,7 @@ value_D_bc='1.0'
 
 
 [./assF]
-type = AssembleFlux
+type = AssembleFlux3
 execute_on = 'timestep_end'
 block_id='1 2'
 value_p ='1.0 1.0 1e4'
@@ -143,6 +155,7 @@ dc_variables='pressure'
 dc_boundaries = '1'
 sol_variable='pressure'
 boundary_M_bc='new_side_set_2'
+stabilize = true
 [../]
 
 []

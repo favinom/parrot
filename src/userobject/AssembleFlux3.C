@@ -632,8 +632,11 @@ AssembleFlux3::ComputeFlux()
                 
                 //main_solution->set(to_index, sol(proj_index));
                 
-                aux_solution->set(to_index_1, _f_1(proj_index));
-                aux_solution->set(to_index_2, _f_2(proj_index));
+                //aux_solution->set(to_index_1, _f_1(proj_index));
+                //aux_solution->set(to_index_2, _f_2(proj_index));
+                aux_solution->set(to_index_1, _flux_1(proj_index));
+                aux_solution->set(to_index_2, _flux_2(proj_index));
+
             }
         }
     }

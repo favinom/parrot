@@ -57,6 +57,7 @@ validParams<SolveDiffusion3>()
   params.addRequiredParam<std::vector<Real>>("value_D_bc", "The value of Dirichlet");
   params.addRequiredParam<std::vector<AuxVariableName>>("aux_variable", "The auxiliary variable to store the transferred values in.");
   params.addParam<std::string>("output_file", "the file name of the output");
+  params.addParam<bool>("stabilize", "shall we stabilize?");
   params.addParam<std::string>("fractureMeshModifier","fractureMeshModifier");
   params.addRequiredParam<bool>("conservative","use a conservative scheme?");
   params.addRequiredParam<int>("solver_type","solver_type");
@@ -98,6 +99,12 @@ _solverType(getParam<int>("solver_type"))
     paramError("variable", "You need to specify one and only one variable");
 
   parrotSolver=new ParrotSolver(_solverType);
+
+  _stabilize=false;
+  if (isParamValid("stabilize"))
+  {
+    _stabilize=getParam<bool>("stabilize");
+  }
 
 }
 
@@ -352,6 +359,9 @@ void SolveDiffusion3::AssembleDiffusionOP(EquationSystems & _es, std::string con
 
        dof_map.constrain_element_matrix_and_vector (ke, re, dof_indices);
 
+       if (_stabilize)
+       {
+
        DenseMatrix<Number> stab;
        stab.resize (ke.m() , ke.n());
        stab.zero();
@@ -375,6 +385,7 @@ void SolveDiffusion3::AssembleDiffusionOP(EquationSystems & _es, std::string con
 
         //std::cout<<stab<<std::endl;
         ke+=stab;
+      }
 
        _system.matrix->add_matrix (ke, dof_indices);
        _system.rhs->add_vector(re, dof_indices);

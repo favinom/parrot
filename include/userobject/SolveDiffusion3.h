@@ -101,5 +101,7 @@ public:
 
     ParrotSolver * parrotSolver;
 
+    bool _stabilize;
+
 };
 

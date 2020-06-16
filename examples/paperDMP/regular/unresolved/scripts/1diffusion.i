@@ -11,7 +11,7 @@ ymax= 1.0
 nx = ${mRes}
 ny = ${mRes}
 dim = 2
-parallel_type = distributed
+# parallel_type = distributed
 []
 
 [MeshModifiers]
@@ -44,7 +44,7 @@ block_name = block_2
 
 
 
-[./center_side_set_2]
+[./aaacenter_side_set_2]
 type = SideSetsBetweenSubdomains
 master_block = block_1
 paired_block = block_2
@@ -62,11 +62,11 @@ fd1_string = '1.0,1.0,0.5,0.5,0.25,0.25'
 fd2_string = '1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4'
 [../]
 
-[./my]
+[./zzz]
 type = FractureRefinement
 fractureMeshModifier = fractureUserObject
 refinements='${mRefLev} ${mUmr}'
-# outputFileName = mesh_${mResName}_${mRefLevName}_${mUmr}.e
+# outputFileName = mesh_${mResName}_${mRefLevName}_${mUmr}.xdr
 doBoundaryRefinement = true
 [../]
 
@@ -116,7 +116,7 @@ fractureMeshModifier = fractureUserObject
 # output_file=DiffusionOut2_${mResName}_${mRefLevName}_${mUmr}.e
 solver_type = 1
 conservative = false
-stabilize = true
+stabilize = false
 [../]
 
 
@@ -155,7 +155,7 @@ dc_variables='pressure'
 dc_boundaries = '1'
 sol_variable='pressure'
 boundary_M_bc='new_side_set_2'
-stabilize = true
+stabilize = false
 [../]
 
 []

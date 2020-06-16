@@ -1,3 +1,7 @@
+[GlobalParams]
+stabilize = false
+[]
+
 [Problem]
 solve = false
 []
@@ -24,7 +28,6 @@ type = SubdomainBoundingBox
 bottom_left = '-0.01 -0.01 0.0'
 top_right =   ' 1.01 0.7 0.0'
 
-
 block_id = 1
 block_name = block_1
 [../]
@@ -37,14 +40,11 @@ type = SubdomainBoundingBox
 bottom_left = '0.0 0.7 0.0'
 top_right =   '1.01 1.01 0.0'
 
-
 block_id = 2
 block_name = block_2
 [../]
 
-
-
-[./aaacenter_side_set_2]
+[./zzzcenter_side_set_2]
 type = SideSetsBetweenSubdomains
 master_block = block_1
 paired_block = block_2
@@ -62,12 +62,13 @@ fd1_string = '1.0,1.0,0.5,0.5,0.25,0.25'
 fd2_string = '1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4'
 [../]
 
-[./zzz]
+[./aaa]
 type = FractureRefinement
 fractureMeshModifier = fractureUserObject
 refinements='${mRefLev} ${mUmr}'
-# outputFileName = mesh_${mResName}_${mRefLevName}_${mUmr}.xdr
+# outputFileName = mesh_${mResName}_${mRefLevName}_${mUmr}.e
 doBoundaryRefinement = true
+depends_on = 'zzzcenter_side_set_2'
 [../]
 
 []
@@ -95,7 +96,7 @@ petsc_options_value='  preonly   lu       NONZERO               mumps '
 
 
 [Outputs]
-file_base  = DiffusionOut_${mResName}_${mRefLevName}_${mUmr}
+file_base  = DiffusionOutN_${mResName}_${mRefLevName}_${mUmr}
 exodus     = true
 []
 
@@ -116,7 +117,6 @@ fractureMeshModifier = fractureUserObject
 # output_file=DiffusionOut2_${mResName}_${mRefLevName}_${mUmr}.e
 solver_type = 1
 conservative = false
-stabilize = false
 [../]
 
 
@@ -155,7 +155,6 @@ dc_variables='pressure'
 dc_boundaries = '1'
 sol_variable='pressure'
 boundary_M_bc='new_side_set_2'
-stabilize = false
 [../]
 
 []

@@ -97,7 +97,7 @@ value_D_bc='1.0'
 
 
 [./assF]
-type = AssembleFlux
+type = AssembleFlux3
 execute_on = 'timestep_end'
 block_id='1 2'
 value_p ='1.0 1.0 1e4'

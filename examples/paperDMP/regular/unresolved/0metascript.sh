@@ -3,12 +3,12 @@ np=1
 
 declare -a amrList
 declare -a umrList
-resList[0]='10'; amrList[0]='1';   umrList[0]='0';
+resList[0]='320'; amrList[0]='6';   umrList[0]='0';
 #resList[0]='100'; amrList[1]='10'   umrList[1]='0';
 #resList[0]='100'; amrList[2]='11'   umrList[2]='0';
 #resList[0]='100'; amrList[3]='10'   umrList[3]='1';
 
-doRun=1;
+doRun=0;
 doPost=1;
 
 pythonString='/Applications/ParaView-5.5.1.app/Contents/bin/pvpython'
@@ -72,7 +72,7 @@ do
 	fi
 	if [ $doPost -eq 1 ]
 	then
-		 $pythonString scripts/postprocessor.py DiffusionOut2_${resName}_${amrName}_${umr}.e
+		 $pythonString scripts/postprocessor.py DiffusionOutN_${resName}_${amrName}_${umr}.e
 	fi	
 done
 

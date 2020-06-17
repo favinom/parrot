@@ -27,7 +27,8 @@ resList[15]='1280'; amrList[15]='6';   umrList[15]='0';
 doRun=1;
 doPost=0;
 
-pythonString='/Applications/ParaView-5.5.1.app/Contents/bin/pvpython'
+#pythonString='/Applications/ParaView-5.5.1.app/Contents/bin/pvpython'
+pythonString='~/Applications/ParaView-5.8.0-MPI-Linux-Python3.7-64bit/bin/pvpython'
 parrotString='mpirun -n '${np}' ../../../../parrot-opt -i '
 clusterString=''
 

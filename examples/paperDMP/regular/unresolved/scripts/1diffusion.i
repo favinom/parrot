@@ -67,7 +67,7 @@ type = FractureRefinement
 fractureMeshModifier = fractureUserObject
 refinements='${mRefLev} ${mUmr}'
 # outputFileName = mesh_${mResName}_${mRefLevName}_${mUmr}.e
-doBoundaryRefinement = true
+doBoundaryRefinement = false
 depends_on = 'zzzcenter_side_set_2'
 [../]
 

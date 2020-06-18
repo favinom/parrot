@@ -1,5 +1,5 @@
-problemType=0
-np=16
+problemType=1
+np=4
 
 declare -a amrList
 declare -a umrList
@@ -62,7 +62,7 @@ function makeClusterStringLausanne
 len=${#amrList[@]}
 
 #for (( i=0; i<len; i++ )) # 
-for (( i=0; i<25; i++ )) # 
+for (( i=2; i<3; i++ )) # 
 do
 	export problemType
 	res=${resList[$i]}
@@ -94,7 +94,7 @@ do
 	export amrName
 	export umr
 
-	makeClusterStringLausanne $res $amr $umr 16
+	#makeClusterStringLausanne $res $amr $umr 16
         runString=$clusterString' '$parrotString
 	export runString
 	if [ $doRun -eq 1 ]

@@ -7,6 +7,5 @@ fi
 
 if [ $problemType -eq 1 ]
 then
-$runString scripts/2advectionM.i mRefLev=${amr} mRefLevName=${amrName} mUmr=${umr} phiIn=1.0
+$runString scripts/2advection.i mRes=${res} mResName=${resName} mRefLev=${amr} mRefLevName=${amrName} mUmr=${umr} # MeshModifiers/my/refinements=\'${val}\'
 fi
-

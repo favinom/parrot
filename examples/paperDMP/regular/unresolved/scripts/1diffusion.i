@@ -1,5 +1,5 @@
 [GlobalParams]
-stabilize = false
+stabilize = true
 []
 
 [Problem]
@@ -15,7 +15,7 @@ ymax= 1.0
 nx = ${mRes}
 ny = ${mRes}
 dim = 2
-# parallel_type = distributed
+parallel_type = distributed
 []
 
 [MeshModifiers]
@@ -96,7 +96,7 @@ petsc_options_value='  preonly   lu       NONZERO               mumps '
 
 
 [Outputs]
-file_base  = DiffusionOutN_${mResName}_${mRefLevName}_${mUmr}
+file_base  = DiffusionOutS_${mResName}_${mRefLevName}_${mUmr}
 exodus     = true
 []
 

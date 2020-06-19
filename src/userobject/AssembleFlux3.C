@@ -65,10 +65,7 @@ validParams<AssembleFlux3>()
     params.addParam<std::string>("dc_boundaries", "-1", "Dirichlet Boundary ID");
     params.addParam<std::string>("dc_variables" , "-1", "Variable to which given BC_id applies");
     params.addParam<UserObjectName>("operator_userobject","The userobject that stores our operators");
-
-
     params.addParam<bool>("stabilize", "shall we stabilize?");
-
     return params;
 }
 
@@ -106,7 +103,7 @@ _userObjectName(getParam<UserObjectName>("operator_userobject"))
         _dc_boundary_id.push_back(atoi(str_tmp->c_str()));
     }
 
-  _stabilize=false;
+      _stabilize=false;
   if (isParamValid("stabilize"))
   {
     _stabilize=getParam<bool>("stabilize");
@@ -300,6 +297,7 @@ AssembleFlux3::ComputeFlux()
             }
         }
         
+        //std::cout<<"_vector_p.size()"<<_vector_p.size()<<std::endl;
         
         dof_map.constrain_element_matrix_and_vector (ke, re, dof_indices);
 
@@ -326,11 +324,13 @@ AssembleFlux3::ComputeFlux()
             }
           }
         }
+
+        //std::cout<<stab<<std::endl;
         ke+=stab;
-    }
+      }
 
 
-
+        
         if(_vector_p.size()>2){
             if (elem->subdomain_id()==_vector_p[0] || elem->subdomain_id()==_vector_p[1])
             {
@@ -455,8 +455,8 @@ AssembleFlux3::ComputeFlux()
     MeshBase::const_element_iterator const end_el_3 = mesh.active_local_elements_end();
     
     _console<<"_Boundary Mass begin" <<std::endl;
-    _console<<"new_id "<<mesh.get_boundary_info().get_id_by_name(_boundary_M_ids[0])<<std::endl;
-    _console<<"new_id "<<mesh.get_boundary_info().get_id_by_name(_boundary_M_ids[1])<<std::endl;
+    //_console<<"new_id "<<mesh.get_boundary_info().get_id_by_name(_boundary_M_ids[0])<<std::endl;
+    //_console<<"new_id "<<mesh.get_boundary_info().get_id_by_name(_boundary_M_ids[1])<<std::endl;
     
     for ( ; el_3 != end_el_3; ++el_3)
     {
@@ -486,6 +486,7 @@ AssembleFlux3::ComputeFlux()
                 
                 for(int k =0; k < _boundary_M_ids.size(); k++)
                 {
+                    //_console<<"new_id "<<mesh.get_boundary_info().has_boundary_id (elem, side, mesh.get_boundary_info().get_id_by_name(_boundary_M_ids[k]))<<std::endl;
                     if (mesh.get_boundary_info().has_boundary_id (elem, side, mesh.get_boundary_info().get_id_by_name(_boundary_M_ids[k]))) // Apply a traction on the right side
                     {
                         //std::cout<<"ciao"<<std::endl;
@@ -506,7 +507,7 @@ AssembleFlux3::ComputeFlux()
             }
         }
         
-        dof_map.constrain_element_matrix(ke_m,dof_indices);
+        //dof_map.constrain_element_matrix(ke_m,dof_indices);
         
         _boundary_matrix.add_matrix (ke_m, dof_indices);
         
@@ -522,6 +523,9 @@ AssembleFlux3::ComputeFlux()
     
     
     _boundary_matrix.get_diagonal(_diag);
+    
+    Real diagSum=_diag.sum();
+    _console<<"diagSum= "<<diagSum<<std::endl;
 
     //_diag.print_matlab("diag_text.m");
     
@@ -632,11 +636,8 @@ AssembleFlux3::ComputeFlux()
                 
                 //main_solution->set(to_index, sol(proj_index));
                 
-                //aux_solution->set(to_index_1, _f_1(proj_index));
-                //aux_solution->set(to_index_2, _f_2(proj_index));
-                aux_solution->set(to_index_1, _flux_1(proj_index));
-                aux_solution->set(to_index_2, _flux_2(proj_index));
-
+                aux_solution->set(to_index_1, _f_1(proj_index));
+                aux_solution->set(to_index_2, _f_2(proj_index));
             }
         }
     }

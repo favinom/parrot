@@ -45,7 +45,8 @@ protected:
    	MeshModifier const & _myMeshModifier;
 	FractureUserObject const & _fractureUserObject;
 	MeshBase * _meshBase;
-	DistributedMesh * distributedMesh;
+	//DistributedMesh * distributedMesh;
+	UnstructuredMesh * distributedMesh;
 	MeshRefinement * meshRefinement;
 
 	bool _hasRefinementVector;

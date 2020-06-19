@@ -64,7 +64,7 @@ void FractureRefinement::modify()
 {
 	_meshBase=&_mesh_ptr->getMesh();
 	//Parallel::Communicator const & _pp_comm( _mesh_ptr->getMesh().comm() );
-	distributedMesh=dynamic_cast<DistributedMesh *>(_meshBase);
+	distributedMesh=dynamic_cast<UnstructuredMesh *>(_meshBase);
 	meshRefinement=new MeshRefinement(distributedMesh[0]);
 
 	if (_hasRefinementVector)

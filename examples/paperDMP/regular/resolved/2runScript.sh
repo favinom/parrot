@@ -19,5 +19,5 @@ then
 fi
 if [ $correction -eq 2 ]
 then
-	$clusterString $parrotString ./scripts/1diffusion.i mBe=${be} mFe=${fe}
+	$clusterString $parrotString ./scripts/2diffusion.i mBe=${be} mFe=${fe}
 fi

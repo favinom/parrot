@@ -7,6 +7,7 @@ fe=$2
 
 correction=$3
 
+comman="runResolved"
 source ./0defineVariable.sh
 
 if [ $correction -eq 0 ]

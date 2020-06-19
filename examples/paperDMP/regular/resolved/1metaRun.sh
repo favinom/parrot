@@ -6,7 +6,6 @@ action="./3runScript.sh"
 correction=2
 
 $action   80  1 $correction
-exit
 $action   80  2 $correction
 $action   80  4 $correction
 $action   80  8 $correction

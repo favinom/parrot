@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# number of background elements
+be=$1
+# number of fracture elements
+fe=$2
+
+correction=$3
+
+source ./0defineVariable.sh
+
 if [ $correction -eq 0 ]
 then
 	$clusterString $parrotString ./scripts/3advection.i mBe=${be} mFe=${fe}
@@ -10,5 +19,5 @@ then
 fi
 if [ $correction -eq 2 ]
 then
-	$clusterString $parrotString 2diffusion.i resolution=${res} unifSteps=${us} adaptSteps=${as}
+	$clusterString $parrotString ./scripts/1diffusion.i mBe=${be} mFe=${fe}
 fi

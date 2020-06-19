@@ -3,6 +3,7 @@
 action="./2createMesh.sh"
 
 $action   80  1
+exit
 $action   80  2
 $action   80  4
 $action   80  8

@@ -1,5 +1,5 @@
 [GlobalParams]
-stabilize = true
+stabilize = false
 []
 
 [Problem]

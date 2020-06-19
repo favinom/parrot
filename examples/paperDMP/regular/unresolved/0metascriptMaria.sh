@@ -1,9 +1,9 @@
-problemType=0
+problemType=1
 np=4
 
 declare -a amrList
 declare -a umrList
-resList[0]='100'; amrList[0]='6';   umrList[0]='0';
+resList[0]='160'; amrList[0]='8';   umrList[0]='0';
 #resList[0]='100'; amrList[1]='10'   umrList[1]='0';
 #resList[0]='100'; amrList[2]='11'   umrList[2]='0';
 #resList[0]='100'; amrList[3]='10'   umrList[3]='1';

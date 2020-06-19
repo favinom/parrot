@@ -4,15 +4,15 @@ solve = false
 []
 
 [Mesh]
-type = GeneratedMesh
-xmin=-50.0
-xmax= 50.0
-ymin=-50.0
-ymax= 50.0
-nx = 200
-ny = 200
-dim = 2
-[]
+ type = GeneratedMesh
+ xmin=-50.0
+ xmax= 50.0
+ ymin=-50.0
+ ymax= 50.0
+ nx = ${mRes}
+ ny = ${mRes}
+ dim = 2
+ []
 
 [MeshModifiers]
 [./createNewSidesetInflow]
@@ -108,19 +108,9 @@ nl_abs_tol = 1e-8
 []
 
 [Outputs]
-file_base = refinedMesh
+file_base = Refined_${mRes}
 #exodus = true
 perf_graph = true
 xdr = true
 []
 
-#[Adaptivity]
-#marker = simplemark
-#steps = ${adapSteps}
-#[./Markers]
-#[./simplemark]
-#type = RegionMarker
-#regionMeshModifier = fractureUserObject
-#[../]
-#[../]
-#[]

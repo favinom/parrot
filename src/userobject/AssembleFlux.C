@@ -488,7 +488,7 @@ AssembleFlux::ComputeFlux()
     Real diagSum=_diag.sum();
     _console<<diagSum<<std::endl;
 
-    _diag.print_matlab("diag_text.m");
+    //_diag.print_matlab("diag_text.m");
     
     for (dof_id_type i=_diag.first_local_index(); i<_diag.last_local_index(); i++){
         if(_diag(i)==0)

@@ -108,9 +108,7 @@ nl_abs_tol = 1e-8
 []
 
 [Outputs]
-file_base = Refined_${mRes}
-#exodus = true
-perf_graph = true
+file_base = scripts/Refined_${mRes}
 xdr = true
 []
 

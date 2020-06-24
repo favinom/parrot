@@ -413,7 +413,7 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
         
         Real value_p = 0.0;
 
-        if(std::abs(_P_p)>1e-8) {
+        if(std::abs(_P_p)>0) {
             
             value_p = _Q_p/_P_p;
             //std::cout<<"value_p==>"<<_P_p<<std::endl;
@@ -421,7 +421,7 @@ AntidiffusiveFluxes::stabilize_coeffiecient()
 
         Real value_m = 0.0;
 
-        if(std::abs(_P_m)>1e-8) {
+        if(std::abs(_P_m)>0) {
 
             value_m = _Q_m/_P_m;
         }

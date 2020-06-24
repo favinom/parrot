@@ -24,7 +24,7 @@ fd2_string = '1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4'
 type = FractureRefinement
 fractureMeshModifier = fractureUserObject
 refinements='${mRefLev} ${mUmr}'
-outputFileName = mesh_${mResName}_${mRefLevName}_${mUmr}.xdr
+# outputFileName = mesh_${mResName}_${mRefLevName}_${mUmr}.e
 doBoundaryRefinement = true
 [../]
 
@@ -61,7 +61,7 @@ exodus     = true
 [UserObjects]
 
 [./soln]
-type = SolveDiffusion3
+type = SolveDiffusion2
 execute_on = 'initial'
 block_id='1 2'
 value_p ='1 1 1e4'
@@ -71,7 +71,7 @@ boundary_N_bc='3 '
 value_N_bc='-1.0 '
 aux_variable=pressure
 fractureMeshModifier = fractureUserObject
-output_file=DiffusionOut2_${mResName}_${mRefLevName}_${mUmr}.e
+# output_file=DiffusionOut2_${mResName}_${mRefLevName}_${mUmr}.e
 solver_type = 1
 conservative = false
 stabilize = false

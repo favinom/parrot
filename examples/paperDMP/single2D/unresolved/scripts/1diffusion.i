@@ -1,33 +1,36 @@
+[GlobalParams]
+stabilize = false
+[]
+
 [Problem]
 solve = false
 []
 
-
 [Mesh]
-file = refinedMesh_0001_mesh.xdr
+file = Refined_${mRes}_0001_mesh.xdr
 parallel_type=distributed
 []
 
 
+
 [MeshModifiers]
+
 [./fractureUserObject]
 type = FractureUserObject
-fn = 6
-fx_string = '0.5,0.5,0.75,0.75,0.625,0.625'
-fy_string = '0.5,0.5,0.75,0.75,0.625,0.625'
-fa1_string = '0.0,90.0,0.0,90.0,0.0,90.0'
-fd1_string = '1.0,1.0,0.5,0.5,0.25,0.25'
-fd2_string = '1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4'
+fn = 1
+fx_string = '0.0'
+fy_string = '0.0'
+fa1_string = '-30.963756532073525'
+fd1_string = '2000.0'
+fd2_string = '0.01'
 [../]
 
 [./my]
 type = FractureRefinement
 fractureMeshModifier = fractureUserObject
 refinements='${mRefLev} ${mUmr}'
-outputFileName = mesh_${mResName}_${mRefLevName}_${mUmr}.xdr
 doBoundaryRefinement = true
 [../]
-
 []
 
 
@@ -47,13 +50,13 @@ line_search = none
 petsc_options_iname=' -ksp_type -pc_type -pc_factor_shift_type -pc_factor_mat_solver_package '
 petsc_options_value='  preonly   lu       NONZERO               mumps '
 
-[./Quadrature] order = NINTH type = GRID [../]
+[./Quadrature] order = TENTH type=GRID [../]
 []
 
 
 
 [Outputs]
-file_base  = DiffusionOut_${mResName}_${mRefLevName}_${mUmr}
+file_base  = DiffusionOutS_${mResName}_${mRefLevName}_${mUmr}
 exodus     = true
 []
 
@@ -63,18 +66,16 @@ exodus     = true
 [./soln]
 type = SolveDiffusion3
 execute_on = 'initial'
-block_id='1 2'
-value_p ='1 1 1e4'
-boundary_D_bc='1'
-value_D_bc='1.0'
-boundary_N_bc='3 '
-value_N_bc='-1.0 '
-aux_variable=pressure
+block_id='0 2 3 1'
+value_p ='1e-6 1e-5 1e-6 1e-5 1e-1'
+boundary_D_bc = '11 22'
+value_D_bc='4.0 1.0'
+boundary_N_bc = ''
+value_N_bc=''
+aux_variable='pressure'
 fractureMeshModifier = fractureUserObject
-output_file=DiffusionOut2_${mResName}_${mRefLevName}_${mUmr}.e
 solver_type = 1
 conservative = false
-stabilize = false
 [../]
 
 
@@ -85,33 +86,34 @@ type = StoreOperators
 [./MassAssembly]
 type = AssembleMassMatrix
 operator_userobject = storeOperatorsUO
-block_id = '1 2'
-value_p = '1.0 1.0'
+block_id='0 2 3 1'
+value_p = ' 0.2 0.25 0.2 0.25 0.4'
 execute_on = 'initial'
 constrain_matrix = true
+dc_boundaries = '11'
 dc_variables='pressure'
-dc_boundaries = '1'
-value_D_bc='1.0'
-#fractureMeshModifier = fractureUserObject
+value_D_bc='0.01'
+fractureMeshModifier = fractureUserObject
 [../]
 
 
 [./assF]
-type = AssembleFlux3
+type = AssembleFlux
 execute_on = 'timestep_end'
-block_id='1 2'
-value_p ='1.0 1.0 1e4'
-boundary_D_bc='1'
-#value_D_bc='1.0'
-boundary_N_bc='3 '
-value_N_bc='-1.0 '
+block_id='0 2 3 1'
+value_p ='1e-6 1e-5 1e-6 1e-5 1e-1'
+boundary_D_bc='11 22'
+value_D_bc='4.0 1.0'
+boundary_N_bc=''
+value_N_bc=''
 fractureMeshModifier = fractureUserObject
 conservative = false
+dc_boundaries = '11 22'
 value_b=0.0
-operator_userobject = storeOperatorsUO
 dc_variables='pressure'
-dc_boundaries = '1'
 sol_variable='pressure'
-boundary_M_bc='new_side_set_2'
+boundary_M_bc='new_side_set_1 new_side_set_2'
+operator_userobject=storeOperatorsUO
 [../]
+
 []

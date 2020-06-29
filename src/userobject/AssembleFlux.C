@@ -517,7 +517,7 @@ AssembleFlux::ComputeFlux()
     
     _f_2.pointwise_mult(_flux_2,_diag);
     
-    PetscVector<Number> _tmp(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
+    /*PetscVector<Number> _tmp(_fe_problem.es().get_mesh().comm(), dof_map.n_dofs(), dof_map.n_local_dofs());
     
     _tmp.zero();
     
@@ -547,7 +547,7 @@ AssembleFlux::ComputeFlux()
     
     _f_2.zero();
     
-    _f_2.add(_tmp_sol);
+    _f_2.add(_tmp_sol);*/
     
     
 

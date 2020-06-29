@@ -7,7 +7,7 @@ stabilize = false
 type = ParrotProblem3
 use_AFC = true
 solver_type = 1
-#antidiffusive_fluxes=antidiffusive_fluxes
+antidiffusive_fluxes=antidiffusive_fluxes
 operator_userobject = storeOperatorsUO
 solve = false
 []
@@ -146,5 +146,12 @@ dc_boundaries = '3'
 value_D_bc='1.0'
 #fractureMeshModifier = fractureUserObject
 [../]
-
+ 
+[./antidiffusive_fluxes]
+ type = AntidiffusiveFluxes3
+ operator_userobject = storeOperatorsUO
+ execute_on = 'timestep_end'
+ dc_boundaries = '3'
+ WriteCorrection=true
+[../]
 []

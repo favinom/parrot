@@ -106,7 +106,7 @@ file_base = AdvectionOut_${mResName}_${mRefLevName}_${mUmr}
 [./exodus]
 type = Exodus
 sync_only = true
-sync_times = '0.01 0.1 0.5'
+sync_times = '0.0050 0.01 0.1 0.5'
 [../]
 csv = true
 perf_graph = true

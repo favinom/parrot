@@ -6,7 +6,7 @@ declare -a umrList
 declare -a resList
 resList[0]='80'; amrList[0]='7';   umrList[0]='0';
 resList[1]='80'; amrList[1]='8';   umrList[1]='0';
-resList[2]='80'; amrList[2]='7';   umrList[2]='0';
+resList[2]='80'; amrList[2]='8';   umrList[2]='0';
 resList[3]='80'; amrList[3]='10';   umrList[3]='0';
 resList[4]='80'; amrList[4]='11';   umrList[4]='0';
 

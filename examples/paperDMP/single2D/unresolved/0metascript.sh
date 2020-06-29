@@ -5,9 +5,9 @@ np=4
 #declare -a umrList
 #declare -a resList
 
-resList[0]='400'; amrList[0]='6';   umrList[0]='0';
-resList[1]='400'; amrList[1]='7';   umrList[1]='0';
-resList[2]='400'; amrList[2]='8';   umrList[2]='0';
+resList[0]='200'; amrList[0]='6';   umrList[0]='0';
+resList[1]='200'; amrList[1]='7';   umrList[1]='0';
+resList[2]='200'; amrList[2]='8';   umrList[2]='0';
 #
 #
 #resList[3]='400'; amrList[5]='6';   umrList[5]='0';

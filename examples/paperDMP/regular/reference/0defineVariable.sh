@@ -1,8 +1,8 @@
 #!/bin/bash
-np=16
-npReserve=48
-#node="-q highmem -m node15 "
-node="-m node05 "
+np=32
+npReserve=32
+node="-q highmem -m node15 "
+#node="-m node05 "
 jobName="${comman}_$1_$2"
 outName="$jobName.out"
 errName="$jobName.err"

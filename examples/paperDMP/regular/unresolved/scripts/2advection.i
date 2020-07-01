@@ -7,7 +7,7 @@ stabilize = false
 type = ParrotProblem3
 use_AFC = true
 solver_type = 1
-#antidiffusive_fluxes=antidiffusive_fluxes
+antidiffusive_fluxes=antidiffusive_fluxes
 operator_userobject = storeOperatorsUO
 solve = false
 []
@@ -106,7 +106,7 @@ file_base = AdvectionOut_${mResName}_${mRefLevName}_${mUmr}
 [./exodus]
 type = Exodus
 sync_only = true
-sync_times = '0.01 0.1 0.5'
+sync_times = '0.0050 0.01 0.1 0.5'
 [../]
 csv = true
 perf_graph = true
@@ -146,5 +146,12 @@ dc_boundaries = '3'
 value_D_bc='1.0'
 #fractureMeshModifier = fractureUserObject
 [../]
-
+ 
+[./antidiffusive_fluxes]
+ type = AntidiffusiveFluxes3
+ operator_userobject = storeOperatorsUO
+ execute_on = 'timestep_end'
+ dc_boundaries = '3'
+ WriteCorrection=true
+[../]
 []

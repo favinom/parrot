@@ -10,4 +10,4 @@ else
 fi
 
 
-mpirun -n ${np} ../../../../parrot-opt -i 2advectionM.i resolution=${res} adapSteps=${as} Problem/operator_userobject='storeOperatorsUO' UserObjects/active='soln assembleVolumeVectors MassAssembly storeOperatorsUO'
+mpirun -n ${np} ../../../../parrot-opt -i 2advectionM.i resolution=${res} adapSteps=${as} Problem/operator_userobject='storeOperatorsUO' UserObjects/active='soln assembleVolumeVectors MassAssembly storeOperatorsUO antidiffusive'

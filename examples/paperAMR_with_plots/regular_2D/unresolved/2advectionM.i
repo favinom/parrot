@@ -1,11 +1,12 @@
 [GlobalParams]
-conservative = true
+conservative = false
 []
 
 [Problem]
 type = ParrotProblem
 use_AFC = true
-#operator_userobject = storeOperatorsUO
+antidiffusive_fluxes=antidiffusive
+operator_userobject = storeOperatorsUO
 []
 
 [Mesh]
@@ -86,7 +87,15 @@ line_search = none
 
 
 [UserObjects]
-#active='soln'
+ 
+[./antidiffusive]
+ type = AntidiffusiveFluxes
+ operator_userobject = storeOperatorsUO
+ dc_boundaries = '1'
+ execute_on = 'timestep_end'
+ WriteCorrection=true
+[../]
+ 
 [./soln]
 type = SolveDiffusion
 execute_on = 'initial'
@@ -100,9 +109,11 @@ aux_variable=P_aux
 fractureMeshModifier = fractureUserObject
 #output_file=matrix.e
 [../]
+ 
 [./storeOperatorsUO]
 type = StoreOperators
 [../]
+ 
 [./MassAssembly]
 type = AssembleMassMatrix
 operator_userobject = storeOperatorsUO 
@@ -111,18 +122,12 @@ value_p = ' 1.0 1.0'
 execute_on = 'initial'
 constrain_matrix = true
 fractureMeshModifier = fractureUserObject
-
 dc_boundaries = '3'
 dc_variables='CM'
 value_D_bc='1.0'
+[../]
 
-[../]
-[./antidiffusiveFluxes]
- type = AntidiffusiveFluxes
-operator_userobject = storeOperatorsUO
- execute_on = 'timestep_end'
- dc_boundaries = '1'
-[../]
+ 
 [./assembleVolumeVectors]
 type=AssembleVolumeVectors
 fractureMeshModifier = aa2
@@ -131,7 +136,7 @@ execute_on = 'initial'
 []
 
 [Postprocessors]
-
+active=''
  [./int0] type = IntegralSolutionOverRegionFast region = 0 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
  [./int1] type = IntegralSolutionOverRegionFast region = 1 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]
  [./int2] type = IntegralSolutionOverRegionFast region = 2 doDomainSize = 0 VolumeUserObject = assembleVolumeVectors [../]

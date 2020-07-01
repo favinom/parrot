@@ -6,7 +6,7 @@ declare -a umrList
 declare -a resList
 resList[0]='80'; amrList[0]='7';   umrList[0]='0';
 resList[1]='80'; amrList[1]='8';   umrList[1]='0';
-resList[2]='80'; amrList[2]='9';   umrList[2]='0';
+resList[2]='80'; amrList[2]='8';   umrList[2]='0';
 resList[3]='80'; amrList[3]='10';   umrList[3]='0';
 resList[4]='80'; amrList[4]='11';   umrList[4]='0';
 
@@ -62,7 +62,7 @@ function makeClusterStringLausanne
 len=${#amrList[@]}
 
 #for (( i=0; i<len; i++ )) # 
-for (( i=2; i<3; i++ )) # 
+for (( i=2; i<3; i++ )) #
 do
 	export problemType
 	res=${resList[$i]}

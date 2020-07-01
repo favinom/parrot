@@ -6,43 +6,35 @@ stabilize = false
 [Problem]
 type = ParrotProblem3
 use_AFC = true
-solver_type = 1
-#antidiffusive_fluxes=antidiffusive_fluxes
+antidiffusive_fluxes=antidiffusiveFluxes
 operator_userobject = storeOperatorsUO
-solve = false
+solver_type=1
+solve=false
 []
 
 [Mesh]
-type = GeneratedMesh
-xmin= 0.0
-xmax= 1.0
-ymin= 0.0
-ymax= 1.0
-nx = ${mRes}
-ny = ${mRes}
-dim = 2
-parallel_type = distributed
+file = Refined_${mRes}_0001_mesh.xdr
+parallel_type=distributed
 []
 
 [MeshModifiers]
+
 [./fractureUserObject]
 type = FractureUserObject
-fn = 6
-fx_string = '0.5,0.5,0.75,0.75,0.625,0.625'
-fy_string = '0.5,0.5,0.75,0.75,0.625,0.625'
-fa1_string = '0.0,90.0,0.0,90.0,0.0,90.0'
-fd1_string = '1.0,1.0,0.5,0.5,0.25,0.25'
-fd2_string = '1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4'
+fn = 1
+fx_string = '0.0'
+fy_string = '0.0'
+fa1_string = '-30.963756532073525'
+fd1_string = '2000.0'
+fd2_string = '0.01'
 [../]
 
-[./aaa]
+[./my]
 type = FractureRefinement
 fractureMeshModifier = fractureUserObject
 refinements='${mRefLev} ${mUmr}'
-# outputFileName = mesh_${mResName}_${mRefLevName}_${mUmr}.e
 doBoundaryRefinement = false
 [../]
-
 []
 
 [Variables]
@@ -50,29 +42,37 @@ doBoundaryRefinement = false
 []
 
 [AuxVariables]
-[./pressure] [../]
+[./P_aux] [../]
 [./correction] [../]
 []
 
 [Materials]
-[./conductivity1] type = FlowAndTransport fractureMeshModifier =  fractureUserObject
-phi = 1.0 phiFrac = 1.0
-k = 1 kFrac = 1e4
-pressure = pressure
+[./conductivity1]
+type = FlowAndTransport
+block = '0 3'
+k = 1e-6 phi =0.2
+pressure = P_aux
+conservative = false
+fractureMeshModifier =  fractureUserObject
+kFrac=1e-1    phiFrac=0.4
+[../]
+[./conductivity2]
+type = FlowAndTransport
+block = '1 2'
+k = 1e-5 phi =0.25
+pressure = P_aux
+conservative = false
+fractureMeshModifier =  fractureUserObject
+kFrac=1e-1    phiFrac=0.4
 [../]
 []
-
 [Kernels]
 [upwind] type = Advection variable = CM [../]
 [./time] type = PorosityTimeDerivative variable = CM lumping = true [../]
 []
 
 [BCs]
-[./u_injection_left]
- type = DirichletBC
- boundary = left
- variable = CM
- value='1.0' [../]
+[./u_injection_left] type = DirichletBC boundary = 11 variable = CM value='0.01' [../]
 []
 
 [Preconditioning]
@@ -83,21 +83,19 @@ full = true
 []
 
 [Executioner]
-
-type = Transient
-solve_type= LINEAR
-line_search = none
-
-petsc_options_iname=' -ksp_type            '   # -mat_view
-petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
-
-start_time = 0.0
-end_time = 0.5
-dt = 0.0025
-
-
-[./Quadrature] order= NINTH type = GRID [../]
-
+ 
+ type = Transient
+ solve_type= LINEAR
+ line_search = none
+ 
+ petsc_options_iname=' -ksp_type            '   # -mat_view
+ petsc_options_value='  ksp_parrot_preonly  '   # ::ascii_matlab
+ 
+ dt = 1e7
+ num_steps=100
+ 
+[./Quadrature] order=TENTH [../]
+ 
 []
 
 
@@ -106,45 +104,56 @@ file_base = AdvectionOut_${mResName}_${mRefLevName}_${mUmr}
 [./exodus]
 type = Exodus
 sync_only = true
-sync_times = '0.01 0.1 0.5'
+sync_times = '1e8 5e8 1e9'
 [../]
+exodus=true
 csv = true
 perf_graph = true
 []
 
 [UserObjects]
-
+active='soln MassAssembly storeOperatorsUO antidiffusiveFluxes'
 [./soln]
 type = SolveDiffusion3
 execute_on = 'initial'
-block_id='0'
-value_p ='1.0 1e4'
-boundary_D_bc='1'
-value_D_bc='1.0'
-boundary_N_bc='3 '
-value_N_bc='-1.0 '
-aux_variable=pressure
+block_id='0 2 3 1'
+value_p ='1e-6 1e-5 1e-6 1e-5 1e-1'
+boundary_D_bc = '11 22'
+value_D_bc='4.0 1.0'
+boundary_N_bc = ''
+value_N_bc=''
+aux_variable=P_aux
 fractureMeshModifier = fractureUserObject
-# output_file=DiffusionOut2_${mResName}_${mRefLevName}_${mUmr}.e
-solver_type = 1
-conservative = false
-[../]
-
-[./storeOperatorsUO]
-type = StoreOperators
+#output_file=matrix.e
+conservative=false
+solver_type=1
 [../]
 
 [./MassAssembly]
 type = AssembleMassMatrix
 operator_userobject = storeOperatorsUO
-block_id = '0'
-value_p = '1.0'
+block_id='0 2 3 1'
+value_p = ' 0.2 0.25 0.2 0.25 0.4'
 execute_on = 'initial'
 constrain_matrix = true
-dc_variables='pressure'
-dc_boundaries = '3'
-value_D_bc='1.0'
-#fractureMeshModifier = fractureUserObject
+dc_boundaries = '11'
+dc_variables='CM'
+value_D_bc='0.01'
+fractureMeshModifier = fractureUserObject
 [../]
 
+
+
+[./storeOperatorsUO]
+type = StoreOperators
+[../]
+
+[./antidiffusiveFluxes]
+type = AntidiffusiveFluxes3
+operator_userobject = storeOperatorsUO
+execute_on = 'timestep_end'
+dc_boundaries = '11'
+WriteCorrection=true
+[../]
 []
+

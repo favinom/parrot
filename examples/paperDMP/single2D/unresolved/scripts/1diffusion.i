@@ -29,7 +29,7 @@ fd2_string = '0.01'
 type = FractureRefinement
 fractureMeshModifier = fractureUserObject
 refinements='${mRefLev} ${mUmr}'
-doBoundaryRefinement = true
+doBoundaryRefinement = false
 [../]
 []
 

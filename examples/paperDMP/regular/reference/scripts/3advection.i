@@ -47,7 +47,7 @@ fractureMeshModifier = fractureUserObject
 []
 
 [Kernels]
-[upwind] type = Advection variable = CM [../]
+[./upwind] type = Advection variable = CM [../]
 [./time] type = PorosityTimeDerivative variable = CM lumping = true [../]
 []
 
@@ -119,8 +119,8 @@ block_id = '1 2'
 value_p = '1.0 1.0'
 execute_on = 'initial'
 constrain_matrix = true
-dc_variables='pressure'
-dc_boundaries = '1'
+dc_variables='CM'
+dc_boundaries = '3'
 value_D_bc='1.0'
 #fractureMeshModifier = fractureUserObject
 [../]
